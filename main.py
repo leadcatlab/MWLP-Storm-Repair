@@ -1,5 +1,5 @@
 from graph import graph
-import algos
+from algos import WLP
 
 #graphDict = {
 #    "numNodes": 4,
@@ -38,3 +38,4 @@ import algos
 
 g = graph.randomComplete(4)
 print(g)
+print(WLP(g, [0, 1, 2, 3]))

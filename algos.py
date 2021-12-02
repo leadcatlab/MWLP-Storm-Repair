@@ -1,5 +1,7 @@
-import graph
+from graph import graph
+from itertools import permutations
 from helper import permutation
+
 
 def WLP(g, order: list[int]) -> float:
     if len(order) <= 1:
@@ -9,25 +11,29 @@ def WLP(g, order: list[int]) -> float:
     for node in order:
         assert(node < n)
     wlp = 0.0
-    for node in order[1:]:
+    for i, node in enumerate(order[1:]):
         # find length of path
         path: float = 0.0
-        for before in order[:node]:
-            path += g.edgeWeight[before][before + 1]
+        for j, before in enumerate(order[:i]):
+            path += g.edgeWeight[before][order[j + 1]]
 
         wlp += g.nodeWeight[node] * path
 
     return wlp
 
 
-def brute_force(G):
-    list = []
+def bruteForceMWLP(g) -> float:
+    # TODO: THIS RELIES ON WLP WORKING FULLY BUT I HAVE NOT TESTED WLP
 
-    #since its a complete graph, we could just take a permutation of the given nodes
-    for i in range(G.numNodes):
-        list.append(i)
-    perm = permutation(list)
+    # for now assume complete
+    assert(graph.isComplete(g))
 
+    mwlp = float('inf')
+    nodes = [i for i in range(g.numNodes)]
+    for order in permutations(nodes):
+        mwlp = min(mwlp, WLP(g, order))
+
+    return mwlp
     
 
 

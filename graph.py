@@ -1,4 +1,5 @@
 from __future__ import annotations
+import random
 
 class graph:
     def __init__(self, numNodes=0):
@@ -15,7 +16,7 @@ class graph:
     """
     @staticmethod
     def FromDict(dictionary: dict) -> graph:
-        g: graph = graph(dictionary["numNodes"])
+        g = graph(dictionary["numNodes"])
 
         assert len(dictionary["nodeWeight"]) == g.numNodes
         g.nodeWeight = dictionary["nodeWeight"]
@@ -23,6 +24,21 @@ class graph:
         for (startingNode, endingNode, nodeWeight) in dictionary["edges"]:
             g.addEdge(startingNode, endingNode, nodeWeight)
 
+        return g
+
+    @staticmethod
+    def randomComplete(n: int) -> graph:
+        g = graph(n)
+        
+        g.nodeWeight = [random.randint(1, 100) for _ in range(n)]
+        
+        for i in range(n):
+            for j in range(i + 1, n):
+                weight: float = random.random()
+                g.addEdge(i, j, weight)
+                g.addEdge(j, i, weight)
+
+        assert(graph.isComplete(g))
         return g
 
     def addNode(self, nodeWeight: int = 0) -> None:
@@ -77,7 +93,7 @@ class graph:
             nodes: str = ""
 
             for j in currentList:
-                nodes += str(j) + " with distance " + str(self.edgeWeight[i][j])
+                nodes += str(j) + " with distance " + str(self.edgeWeight[i][j]) + " "
 
             toPrint += "Node " + str(i) + " is connected to " + nodes + "\n"
 

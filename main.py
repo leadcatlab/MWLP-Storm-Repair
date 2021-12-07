@@ -40,11 +40,13 @@ import numpy as np
 
 def benchmark(n: int, rounds: int) -> None:
     inOrder: tuple[int, ...] = tuple(i for i in range(n))
+
     brute_forces: list[float] = []
     in_orders: list[float] = []
     random_orders: list[float] = []
     nearest_ns: list[float] = []
     greedy_orders: list[float] = []
+
     for _ in range(rounds):
         g = graph.randomComplete(n)
         brute_forces.append(algos.bruteForceMWLP(g))
@@ -56,16 +58,24 @@ def benchmark(n: int, rounds: int) -> None:
         greedy_orders.append(algos.greedy(g))
 
     print(
-        f"{'brute force':22}{'in order':22}{'random order':22}{'nearest neighbor':22}{'greedy':22} "
+        f"{'brute force':22}"
+        + f"{'in order':22}"
+        + f"{'random order':22}"
+        + f"{'nearest neighbor':22}"
+        + f"{'greedy':22}"
     )
     for br, io, ro, nn, gr in zip(
         brute_forces, in_orders, random_orders, nearest_ns, greedy_orders
     ):
-        print(f"{br : <22}{io : <22}{ro : <22}{nn : <22}{gr : <22}")
+        print(f"{br : <22}{io : <22}" + f"{ro : <22}" + f"{nn : <22}" + f"{gr : <22}")
 
     print()
     print(
-        f"{'' : <22}{'in order % diff' : <22}{'random % diff' : <22}{'nearest n % diff' : <22}{'greedy % diff' : <22}"
+        f"{'' : <22}"
+        + f"{'in order % diff' : <22}"
+        + f"{'random % diff' : <22}"
+        + f"{'nearest n % diff' : <22}"
+        + f"{'greedy % diff' : <22}"
     )
 
     io_sum: float = 0.0
@@ -94,7 +104,11 @@ def benchmark(n: int, rounds: int) -> None:
         greedy_sum += greedy_percent
 
         print(
-            f"{'' : <22}{str(in_order_percent) + '%' : <22}{str(random_percent) + '%' : <22}{str(nearest_n_percent) + '%' : <22}{str(greedy_percent) + '%' : <22}"
+            f"{'' : <22}"
+            + f"{str(in_order_percent) + '%' : <22}"
+            + f"{str(random_percent) + '%' : <22}"
+            + f"{str(nearest_n_percent) + '%' : <22}"
+            + f"{str(greedy_percent) + '%' : <22}"
         )
 
     print()
@@ -104,7 +118,10 @@ def benchmark(n: int, rounds: int) -> None:
     nn_av = nn_sum / rounds
     greedy_av = greedy_sum / rounds
     print(
-        f"{'' : <22}{str(io_av) + '%' : <22}{str(rand_av) + '%' : <22}{str(nn_av) + '%' : <22}{str(greedy_av) + '%' : <22}"
+        f"{'' : <22}{str(io_av) + '%' : <22}"
+        + f"{str(rand_av) + '%' : <22}"
+        + f"{str(nn_av) + '%' : <22}"
+        + f"{str(greedy_av) + '%' : <22}"
     )
 
 

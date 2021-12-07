@@ -38,7 +38,7 @@ import algos
 
 n: int = 11
 g = graph.randomComplete(n)
-inOrder: tuple[int] = tuple(i for i in range(n))
+inOrder: tuple[int, ...] = tuple(i for i in range(n))
 print(f"WLP on path order {inOrder} = {algos.WLP(g, inOrder)}")
 print(f"Brute Force MWLP = {algos.bruteForceMWLP(g)}")
 print(f"Nearest Neighbor MWLP = {algos.nearestNeighbor(g)}")

@@ -38,9 +38,7 @@ import numpy as np
 # print(graph.isComplete(incomplete))
 
 
-def main() -> None:
-    n: int = 7
-    rounds: int = 20
+def benchmark(n: int, rounds: int) -> None:
     inOrder: tuple[int, ...] = tuple(i for i in range(n))
     brute_forces: list[float] = []
     in_orders: list[float] = []
@@ -58,18 +56,16 @@ def main() -> None:
         greedy_orders.append(algos.greedy(g))
 
     print(
-        "%-20s %-20s %-20s %-20s"
-        % ("brute force", "in order", "nearest neighbor", "greedy")
+        f"{'brute force':22}{'in order':22}{'random order':22}{'nearest neighbor':22}{'greedy':22} "
     )
     for br, io, ro, nn, gr in zip(
         brute_forces, in_orders, random_orders, nearest_ns, greedy_orders
     ):
-        print("%-20f %-20f %-20f  %-20f %-20f" % (br, io, ro, nn, gr))
+        print(f"{br : <22}{io : <22}{ro : <22}{nn : <22}{gr : <22}")
 
     print()
     print(
-        "%-20s %-20s %-20s %-20s "
-        % ("in order % diff", "random % diff", "nearest n % diff", "greedy % diff")
+        f"{'' : <22}{'in order % diff' : <22}{'random % diff' : <22}{'nearest n % diff' : <22}{'greedy % diff' : <22}"
     )
 
     io_sum: float = 0.0
@@ -98,31 +94,19 @@ def main() -> None:
         greedy_sum += greedy_percent
 
         print(
-            "%-20s %-20s %-20s %-20s "
-            % (
-                str(in_order_percent) + "%",
-                str(random_percent) + "%",
-                str(nearest_n_percent) + "%",
-                str(greedy_percent) + "%",
-            )
+            f"{'' : <22}{str(in_order_percent) + '%' : <22}{str(random_percent) + '%' : <22}{str(nearest_n_percent) + '%' : <22}{str(greedy_percent) + '%' : <22}"
         )
 
     print()
-    print("Average of above % diffs")
+    print(" " * 22 + "Average of above % diffs")
     io_av = io_sum / rounds
     rand_av = rand_sum / rounds
     nn_av = nn_sum / rounds
     greedy_av = greedy_sum / rounds
     print(
-        "%-20s %-20s %-20s %-20s "
-        % (
-            str(io_av) + "%",
-            str(rand_av) + "%",
-            str(nn_av) + "%",
-            str(greedy_av) + "%",
-        )
+        f"{'' : <22}{str(io_av) + '%' : <22}{str(rand_av) + '%' : <22}{str(nn_av) + '%' : <22}{str(greedy_av) + '%' : <22}"
     )
 
 
 if __name__ == "__main__":
-    main()
+    benchmark(8, 20)

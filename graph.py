@@ -1,11 +1,15 @@
 from __future__ import annotations
+from typing_extensions import TypedDict
 import random
 
+
 class graph:
-    def __init__(self, numNodes=0):
+    def __init__(self, numNodes: int = 0):
         self.numNodes = numNodes
         self.adjacenList: list[list[int]] = [[] for _ in range(numNodes)]
-        self.edgeWeight: list[list[float]] = [[0.0 for _ in range(numNodes)] for _ in range(numNodes)]
+        self.edgeWeight: list[list[float]] = [
+            [0.0 for _ in range(numNodes)] for _ in range(numNodes)
+        ]
         self.nodeWeight: list[int] = [0 for _ in range(numNodes)]
 
     """
@@ -14,8 +18,17 @@ class graph:
         dict[nodeWeight] = list of correct length of nodeWeights
         dict[edges] = list of tuples of form (startingNode, endingNode, nodeWeight)
     """
+    graphDict = TypedDict(
+        "graphDict",
+        {
+            "numNodes": int,
+            "nodeWeight": list[int],
+            "edges": list[tuple[int, int, float]],
+        },
+    )
+
     @staticmethod
-    def FromDict(dictionary: dict) -> graph:
+    def FromDict(dictionary: graphDict) -> graph:
         g = graph(dictionary["numNodes"])
 
         assert len(dictionary["nodeWeight"]) == g.numNodes
@@ -29,16 +42,16 @@ class graph:
     @staticmethod
     def randomComplete(n: int) -> graph:
         g = graph(n)
-        
+
         g.nodeWeight = [random.randint(1, 100) for _ in range(n)]
-        
+
         for i in range(n):
             for j in range(i + 1, n):
                 weight: float = random.random()
                 g.addEdge(i, j, weight)
                 g.addEdge(j, i, weight)
 
-        assert(graph.isComplete(g))
+        assert graph.isComplete(g)
         return g
 
     def addNode(self, nodeWeight: int = 0) -> None:
@@ -66,7 +79,9 @@ class graph:
         assert node < self.numNodes
         self.nodeWeight[node] = weight
 
-    def setEdgeWeight(self, startingNode: int, endingNode: int, edgeWeight: float) -> None:
+    def setEdgeWeight(
+        self, startingNode: int, endingNode: int, edgeWeight: float
+    ) -> None:
         assert startingNode < self.numNodes
         assert endingNode < self.numNodes
         assert edgeWeight > 0.0
@@ -105,14 +120,3 @@ class graph:
             )
 
         return toPrint
-
-    # TODO: imo these should be removed. User can just access self.adjacenList and print themselves
-    # these are clutter
-    def printAdjacencyList(self):
-        print(self.adjacenList)
-
-    def printEdgeStrength(self):
-        print(self.edgeWeight)
-
-    def printNodeWeight(self):
-        print(self.nodeWeight)

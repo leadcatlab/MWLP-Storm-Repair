@@ -50,7 +50,9 @@ def main() -> None:
         g = graph.randomComplete(n)
         brute_forces.append(algos.bruteForceMWLP(g))
         in_orders.append(algos.WLP(g, inOrder))
-        random_orders.append(algos.WLP(g, [0] + list(np.random.permutation([i for i in range(1, n)]))))
+        random_orders.append(
+            algos.WLP(g, [0] + list(np.random.permutation([i for i in range(1, n)])))
+        )
         nearest_ns.append(algos.nearestNeighbor(g))
         greedy_orders.append(algos.greedy(g))
 
@@ -58,17 +60,18 @@ def main() -> None:
         "%-20s %-20s %-20s %-20s"
         % ("brute force", "in order", "nearest neighbor", "greedy")
     )
-    for br, io, ro,  nn, gr in zip(brute_forces, in_orders, random_orders, nearest_ns, greedy_orders):
+    for br, io, ro, nn, gr in zip(
+        brute_forces, in_orders, random_orders, nearest_ns, greedy_orders
+    ):
         print("%-20f %-20f %-20f  %-20f %-20f" % (br, io, ro, nn, gr))
 
     print()
     print(
-        "%-20s %-20s %-20s %-20s " % ("in order % diff", "random % diff", "nearest n % diff", "greedy % diff")
+        "%-20s %-20s %-20s %-20s "
+        % ("in order % diff", "random % diff", "nearest n % diff", "greedy % diff")
     )
     for i in range(20):
-        in_order_percent = (
-            100.0 * abs(in_orders[i] - brute_forces[i]) / brute_forces[i]
-        )
+        in_order_percent = 100.0 * abs(in_orders[i] - brute_forces[i]) / brute_forces[i]
         random_percent = (
             100.0 * abs(random_orders[i] - brute_forces[i]) / brute_forces[i]
         )

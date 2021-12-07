@@ -39,14 +39,15 @@ import numpy as np
 
 
 def main() -> None:
-    n: int = 5
+    n: int = 7
+    rounds: int = 20
     inOrder: tuple[int, ...] = tuple(i for i in range(n))
     brute_forces: list[float] = []
     in_orders: list[float] = []
     random_orders: list[float] = []
     nearest_ns: list[float] = []
     greedy_orders: list[float] = []
-    for _ in range(20):
+    for _ in range(rounds):
         g = graph.randomComplete(n)
         brute_forces.append(algos.bruteForceMWLP(g))
         in_orders.append(algos.WLP(g, inOrder))
@@ -70,18 +71,32 @@ def main() -> None:
         "%-20s %-20s %-20s %-20s "
         % ("in order % diff", "random % diff", "nearest n % diff", "greedy % diff")
     )
-    for i in range(20):
-        in_order_percent = 100.0 * abs(in_orders[i] - brute_forces[i]) / brute_forces[i]
-        random_percent = (
+
+    io_sum: float = 0.0
+    rand_sum: float = 0.0
+    nn_sum: float = 0.0
+    greedy_sum: float = 0.0
+    for i in range(rounds):
+        in_order_percent: float = (
+            100.0 * abs(in_orders[i] - brute_forces[i]) / brute_forces[i]
+        )
+        io_sum += in_order_percent
+
+        random_percent: float = (
             100.0 * abs(random_orders[i] - brute_forces[i]) / brute_forces[i]
         )
+        rand_sum += random_percent
 
-        nearest_n_percent = (
+        nearest_n_percent: float = (
             100.0 * abs(nearest_ns[i] - brute_forces[i]) / brute_forces[i]
         )
-        greedy_percent = (
+        nn_sum += nearest_n_percent
+
+        greedy_percent: float = (
             100.0 * abs(greedy_orders[i] - brute_forces[i]) / brute_forces[i]
         )
+        greedy_sum += greedy_percent
+
         print(
             "%-20s %-20s %-20s %-20s "
             % (
@@ -91,6 +106,22 @@ def main() -> None:
                 str(greedy_percent) + "%",
             )
         )
+
+    print()
+    print("Average of above % diffs")
+    io_av = io_sum / rounds
+    rand_av = rand_sum / rounds
+    nn_av = nn_sum / rounds
+    greedy_av = greedy_sum / rounds
+    print(
+        "%-20s %-20s %-20s %-20s "
+        % (
+            str(io_av) + "%",
+            str(rand_av) + "%",
+            str(nn_av) + "%",
+            str(greedy_av) + "%",
+        )
+    )
 
 
 if __name__ == "__main__":

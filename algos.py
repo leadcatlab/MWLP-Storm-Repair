@@ -2,14 +2,13 @@ from graph import graph
 from itertools import permutations
 from collections.abc import Sequence
 from collections import deque
-from typing import Deque
+from typing import Deque, Optional
 
 
-def WLP(g: graph, order: Sequence[int]) -> float:
-    # TODO: TEST
-    # TODO: ENSURE STARTING AT 0
+def WLP(g: graph, order: Optional[Sequence[int]]) -> float:
+    # TODO: Test WLP
 
-    if len(order) <= 1:
+    if order is None or len(order) <= 1:
         return 0.0
 
     # always start at 0
@@ -33,14 +32,14 @@ def WLP(g: graph, order: Sequence[int]) -> float:
 
 
 def bruteForceMWLP(g: graph) -> float:
-    # TODO: THIS RELIES ON WLP WORKING FULLY BUT I HAVE NOT TESTED WLP
-    # TODO: TEST
+    # TODO: Relies on WLP which has not been tested
+    # TODO: Test MWLP
 
     # for now assume complete
     assert graph.isComplete(g)
 
     mwlp = float("inf")
-    nodes = [i for i in range(1, g.numNodes)]
+    nodes: list[int] = [i for i in range(1, g.numNodes)]
     for order in permutations(nodes):
         # always start at 0
         full_order: list[int] = [0] + list(order)
@@ -50,8 +49,8 @@ def bruteForceMWLP(g: graph) -> float:
 
 
 def nearestNeighbor(g: graph) -> float:
-    # TODO: THIS RELIES ON WLP WORKING FULLY BUT I HAVE NOT TESTED WLP
-    # TODO: TEST
+    # TODO: Relies on WLP which has not been tested
+    # TODO: Test Nearest Neighbor
 
     # for now assume complete
     assert graph.isComplete(g)
@@ -79,8 +78,8 @@ def nearestNeighbor(g: graph) -> float:
 
 
 def greedy(g: graph) -> float:
-    # TODO: THIS RELIES ON WLP WORKING FULLY BUT I HAVE NOT TESTED WLP
-    # TODO: TEST
+    # TODO: Relies on WLP which has not been tested
+    # TODO: Test Greedy
 
     # for now assume complete
     assert graph.isComplete(g)
@@ -105,3 +104,27 @@ def greedy(g: graph) -> float:
             visited[heaviest] = True
 
     return WLP(g, order)
+
+
+def TSP(g: graph) -> Optional[Sequence[int]]:
+    # TODO: test TSP
+    # TODO: Use Held-Karp so that this isn't super slow
+
+    n: int = g.numNodes
+    if n <= 1:
+        return None
+
+    min_dist = float("inf")
+    nodes: list[int] = [i for i in range(1, n)]
+    best: Optional[Sequence[int]] = None
+    for order in permutations(nodes):
+        # always start at 0
+        full_order: list[int] = [0] + list(order)
+        dist = 0.0
+        for i in range(n - 1):
+            dist += g.edgeWeight[full_order[i]][full_order[i + 1]]
+        if dist < min_dist:
+            min_dist = dist
+            best = full_order
+
+    return best

@@ -98,4 +98,7 @@ def benchmark(n: int, rounds: int) -> None:
 
 
 if __name__ == "__main__":
-    benchmark(8, 20)
+    # benchmark(8, 20)
+    g = graph.randomComplete(10)
+    print(f"TSP approximation on g = {algos.WLP(g, algos.TSP(g))}")
+    print(f"MWLP on g = {algos.bruteForceMWLP(g)}")

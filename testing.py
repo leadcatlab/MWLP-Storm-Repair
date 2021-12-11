@@ -2,6 +2,8 @@ from graph import graph
 import algos
 import numpy as np
 
+# TODO: Add test cases and configure pytest
+# TODO: comments 
 
 def benchmark(n: int, rounds: int) -> None:
     brute_forces: list[float] = []

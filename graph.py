@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing_extensions import TypedDict
 import random
 
+# TODO: Comments
 
 class graph:
     def __init__(self, numNodes: int = 0):
@@ -53,6 +54,8 @@ class graph:
 
         assert graph.isComplete(g)
         return g
+
+    # TODO: Add constructor for random complete *metric* graph
 
     def addNode(self, nodeWeight: int = 0) -> None:
         self.numNodes += 1

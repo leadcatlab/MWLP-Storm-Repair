@@ -4,6 +4,13 @@ from collections.abc import Sequence
 from collections import deque
 from typing import Deque, Optional
 
+# TODO: Comments
+# TODO: Implement Floyd-Warshall
+# TODO: Implement Christofides' Algorithm
+# TODO: Implement Held-Karp for TSP
+# TODO: Try to implement MWLP DP Algorithm
+# TODO: Fix default return values to make types cleaner
+
 
 def WLP(g: graph, order: Optional[Sequence[int]]) -> float:
     # TODO: Test WLP
@@ -108,7 +115,6 @@ def greedy(g: graph) -> float:
 
 def TSP(g: graph) -> Optional[Sequence[int]]:
     # TODO: test TSP
-    # TODO: Use Held-Karp so that this isn't super slow
 
     n: int = g.numNodes
     if n <= 1:

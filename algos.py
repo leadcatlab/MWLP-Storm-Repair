@@ -4,7 +4,6 @@ from collections.abc import Sequence
 from collections import deque
 from typing import Deque
 
-# TODO: Comments
 # TODO: Implement Floyd-Warshall
 # TODO: Implement Christofides' Algorithm
 # TODO: Implement Held-Karp for TSP
@@ -12,6 +11,16 @@ from typing import Deque
 
 
 def WLP(g: graph, order: Sequence[int]) -> float:
+    """Calculate the weighted latency of a given path
+
+    Args:
+        g: input graph
+        order: sequence of nodes visited starting at 0
+
+    Returns:
+        float: the weighted latency
+    """
+
     # TODO: Test WLP
 
     if order is None or len(order) <= 1:
@@ -25,6 +34,8 @@ def WLP(g: graph, order: Sequence[int]) -> float:
     n = g.numNodes
     for node in order:
         assert node < n
+
+    # sum over sequence of w(i) * L(0, i)
     wlp = 0.0
     for i, node in enumerate(order[1:]):
         # find length of path
@@ -38,6 +49,17 @@ def WLP(g: graph, order: Sequence[int]) -> float:
 
 
 def bruteForceMWLP(g: graph) -> float:
+    """Calculate minumum weighted latency
+
+    Iterates over all possible paths
+
+    Args:
+        g: input graph
+
+    Returns:
+        float: the minumum weighted latency
+    """
+
     # TODO: Relies on WLP which has not been tested
     # TODO: Test MWLP
 
@@ -46,6 +68,7 @@ def bruteForceMWLP(g: graph) -> float:
 
     mwlp = float("inf")
     nodes: list[int] = [i for i in range(1, g.numNodes)]
+    # test every permutation
     for order in permutations(nodes):
         # always start at 0
         full_order: list[int] = [0] + list(order)
@@ -54,8 +77,19 @@ def bruteForceMWLP(g: graph) -> float:
     return mwlp
 
 
-def nearestNeighbor(g: graph) -> float:
-    # TODO: Relies on WLP which has not been tested
+def nearestNeighbor(g: graph) -> Sequence[int]:
+    """Approximates MWLP using nearest neighbor heuristic
+
+    Generates sequence starting from 0 going to the nearest node
+
+    Args:
+        g: input graph
+
+    Returns:
+        list[int]: nearest neighbor order
+
+    """
+
     # TODO: Test Nearest Neighbor
 
     # for now assume complete
@@ -67,6 +101,7 @@ def nearestNeighbor(g: graph) -> float:
     q.appendleft(0)
     visited[0] = True
 
+    # Use queue to remember current node
     while len(q) != 0:
         curr: int = q.pop()
         dist = float("inf")
@@ -80,11 +115,22 @@ def nearestNeighbor(g: graph) -> float:
             order.append(nearest)
             visited[nearest] = True
 
-    return WLP(g, order)
+    return order
 
 
-def greedy(g: graph) -> float:
-    # TODO: Relies on WLP which has not been tested
+def greedy(g: graph) -> Sequence[int]:
+    """Approximates MWLP using greedy heuristic
+
+    Generates sequence starting from 0 going to the node of greatest weight
+
+    Args:
+        g: input graph
+
+    Returns:
+        list[int]: greedy order
+
+    """
+
     # TODO: Test Greedy
 
     # for now assume complete
@@ -96,6 +142,7 @@ def greedy(g: graph) -> float:
     q.appendleft(0)
     visited[0] = True
 
+    # Use queue to remember current node
     while len(q) != 0:
         curr: int = q.pop()
         weight = float("-inf")
@@ -109,11 +156,23 @@ def greedy(g: graph) -> float:
             order.append(heaviest)
             visited[heaviest] = True
 
-    return WLP(g, order)
+    return order
 
 
 def TSP(g: graph) -> Sequence[int]:
-    # TODO: test TSP
+    """Approximates MWLP using Travelling Salesman heuristic
+
+    Generates sequence that solves travelling salesman
+
+    Args:
+        g: input graph
+
+    Returns:
+        lsti[int]: Solution to the Travelling Salesman Problem
+
+    """
+
+    # TODO: Test TSP
 
     n: int = g.numNodes
     if n <= 0:
@@ -124,6 +183,8 @@ def TSP(g: graph) -> Sequence[int]:
     min_dist = float("inf")
     nodes: list[int] = [i for i in range(1, n)]
     best: Sequence[int] = []
+
+    # test every permutation
     for order in permutations(nodes):
         # always start at 0
         full_order: list[int] = [0] + list(order)

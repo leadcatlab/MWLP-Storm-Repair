@@ -14,7 +14,7 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    testing.benchmark(8, 200, metric=True, upper=5)
+    testing.benchmark(8, 10, metric=True, upper=5)
 
 
 if __name__ == "__main__":

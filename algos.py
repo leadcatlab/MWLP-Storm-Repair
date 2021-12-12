@@ -2,17 +2,16 @@ from graph import graph
 from itertools import permutations
 from collections.abc import Sequence
 from collections import deque
-from typing import Deque, Optional
+from typing import Deque
 
 # TODO: Comments
 # TODO: Implement Floyd-Warshall
 # TODO: Implement Christofides' Algorithm
 # TODO: Implement Held-Karp for TSP
 # TODO: Try to implement MWLP DP Algorithm
-# TODO: Fix default return values to make types cleaner
 
 
-def WLP(g: graph, order: Optional[Sequence[int]]) -> float:
+def WLP(g: graph, order: Sequence[int]) -> float:
     # TODO: Test WLP
 
     if order is None or len(order) <= 1:
@@ -113,16 +112,18 @@ def greedy(g: graph) -> float:
     return WLP(g, order)
 
 
-def TSP(g: graph) -> Optional[Sequence[int]]:
+def TSP(g: graph) -> Sequence[int]:
     # TODO: test TSP
 
     n: int = g.numNodes
-    if n <= 1:
-        return None
+    if n <= 0:
+        return []
+    if n == 1:
+        return [0]
 
     min_dist = float("inf")
     nodes: list[int] = [i for i in range(1, n)]
-    best: Optional[Sequence[int]] = None
+    best: Sequence[int] = []
     for order in permutations(nodes):
         # always start at 0
         full_order: list[int] = [0] + list(order)

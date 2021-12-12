@@ -3,9 +3,28 @@ import algos
 import numpy as np
 
 # TODO: Add test cases and configure pytest
-# TODO: comments 
+# TODO: Comments
 
-def benchmark(n: int, rounds: int) -> None:
+
+def benchmark(
+    n: int,
+    rounds: int,
+    metric: bool = False,
+    interval: tuple[int, int] = (0, 1),
+    upper: float = 1,
+) -> None:
+    if n <= 0 or rounds <= 0:
+        return
+    assert interval[0] < interval[1]
+    assert upper >= 0
+
+    print(f"{n = }")
+    print(f"{rounds = }")
+    print(f"{metric = }")
+    print(f"{interval = }")
+    print(f"{upper = }")
+    print()
+
     brute_forces: list[float] = []
     tsp_orders: list[float] = []
     random_orders: list[float] = []
@@ -13,7 +32,11 @@ def benchmark(n: int, rounds: int) -> None:
     greedy_orders: list[float] = []
 
     for _ in range(rounds):
-        g = graph.randomComplete(n)
+        g = (
+            graph.randomCompleteMetric(n, upper)
+            if metric
+            else graph.randomComplete(n, interval)
+        )
         brute_forces.append(algos.bruteForceMWLP(g))
         tsp_orders.append(algos.WLP(g, algos.TSP(g)))
         random_orders.append(
@@ -41,9 +64,9 @@ def benchmark(n: int, rounds: int) -> None:
             + f"{gr : <22}"
         )
 
-    print()
     print(
-        f"{'' : <22}"
+        "\n"
+        + f"{'' : <22}"
         + f"{'tsp % diff' : <22}"
         + f"{'random % diff' : <22}"
         + f"{'nearest n % diff' : <22}"
@@ -83,16 +106,17 @@ def benchmark(n: int, rounds: int) -> None:
             + f"{str(greedy_percent) + '%' : <22}"
         )
 
-    print()
-    print(" " * 22 + "Average of above % diffs")
-    tsp_av = tsp_sum / rounds
-    rand_av = rand_sum / rounds
-    nn_av = nn_sum / rounds
-    greedy_av = greedy_sum / rounds
-    print(
-        f"{'' : <22}"
-        + f"{str(tsp_av) + '%' : <22}"
-        + f"{str(rand_av) + '%' : <22}"
-        + f"{str(nn_av) + '%' : <22}"
-        + f"{str(greedy_av) + '%' : <22}"
-    )
+    if rounds > 1:
+        print()
+        print(" " * 22 + "Average of above % diffs")
+        tsp_av = tsp_sum / rounds
+        rand_av = rand_sum / rounds
+        nn_av = nn_sum / rounds
+        greedy_av = greedy_sum / rounds
+        print(
+            f"{'' : <22}"
+            + f"{str(tsp_av) + '%' : <22}"
+            + f"{str(rand_av) + '%' : <22}"
+            + f"{str(nn_av) + '%' : <22}"
+            + f"{str(greedy_av) + '%' : <22}"
+        )

@@ -4,6 +4,7 @@ import random
 
 # TODO: Comments
 
+
 class graph:
     def __init__(self, numNodes: int = 0):
         self.numNodes = numNodes
@@ -41,21 +42,25 @@ class graph:
         return g
 
     @staticmethod
-    def randomComplete(n: int) -> graph:
+    def randomComplete(n: int, interval: tuple[float, float] = (0, 1)) -> graph:
         g = graph(n)
 
         g.nodeWeight = [random.randint(1, 100) for _ in range(n)]
 
         for i in range(n):
             for j in range(i + 1, n):
-                weight: float = random.random()
+                weight: float = random.uniform(interval[0], interval[1])
                 g.addEdge(i, j, weight)
                 g.addEdge(j, i, weight)
 
         assert graph.isComplete(g)
         return g
 
-    # TODO: Add constructor for random complete *metric* graph
+    @staticmethod
+    def randomCompleteMetric(n: int, upper: float = 1) -> graph:
+        g = graph.randomComplete(n, (upper / 2, upper))
+        assert graph.isMetric(g)
+        return g
 
     def addNode(self, nodeWeight: int = 0) -> None:
         self.numNodes += 1
@@ -97,9 +102,23 @@ class graph:
     def isComplete(cls: graph) -> bool:
         for u in range(cls.numNodes):
             for v in range(cls.numNodes):
-                if u != v:
-                    if v not in cls.adjacenList[u]:
-                        return False
+                if u != v and v not in cls.adjacenList[u]:
+                    return False
+
+        return True
+
+    @staticmethod
+    def isMetric(cls: graph) -> bool:
+        for u in range(cls.numNodes):
+            for v in range(cls.numNodes):
+                if u != v and v in cls.adjacenList[u]:
+                    for w in range(cls.numNodes):
+                        if w in cls.adjacenList[u] and v in cls.adjacenList[w]:
+                            if (
+                                cls.edgeWeight[u][w] + cls.edgeWeight[w][v]
+                                < cls.edgeWeight[u][v]
+                            ):
+                                return False
 
         return True
 

@@ -1,8 +1,6 @@
-from graph import graph
+from graph import Graph
 import algos
 import numpy as np
-
-# TODO: Add test cases and configure pytest
 
 
 def benchmark(
@@ -53,9 +51,9 @@ def benchmark(
     # Run heuristics
     for _ in range(rounds):
         g = (
-            graph.randomCompleteMetric(n, upper, nodeW=nodeW)
+            Graph.randomCompleteMetric(n, upper, nodeW=nodeW)
             if metric
-            else graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
+            else Graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
         )
         brute_forces.append(algos.bruteForceMWLP(g))
         tsp_orders.append(algos.WLP(g, algos.TSP(g)))
@@ -122,15 +120,17 @@ def benchmark(
             )
             greedy_sum += greedy_percent
 
+            print(
+                f"{'' : <22}"
+                + f"{str(tsp_order_percent) + '%' : <22}"
+                + f"{str(random_percent) + '%' : <22}"
+                + f"{str(nearest_n_percent) + '%' : <22}"
+                + f"{str(greedy_percent) + '%' : <22}"
+            )
+
+        print()
+
         # Find averages
-        print(
-            f"{'' : <22}"
-            + f"{str(tsp_order_percent) + '%' : <22}"
-            + f"{str(random_percent) + '%' : <22}"
-            + f"{str(nearest_n_percent) + '%' : <22}"
-            + f"{str(greedy_percent) + '%' : <22}"
-            + "\n"
-        )
         print(" " * 22 + "Average of above % diffs")
         tsp_av = tsp_sum / rounds
         rand_av = rand_sum / rounds

@@ -1,4 +1,4 @@
-from graph import graph
+from graph import Graph
 from itertools import permutations
 from collections.abc import Sequence
 from collections import deque
@@ -10,7 +10,7 @@ from typing import Deque
 # TODO: Try to implement MWLP DP Algorithm
 
 
-def WLP(g: graph, order: Sequence[int]) -> float:
+def WLP(g: Graph, order: Sequence[int]) -> float:
     """Calculate the weighted latency of a given path
 
     Args:
@@ -28,10 +28,10 @@ def WLP(g: graph, order: Sequence[int]) -> float:
 
     # always start at 0
     assert order[0] == 0
-
     assert len(order) == g.numNodes
 
     n = g.numNodes
+    # check nodes in order are actually valid nodes
     for node in order:
         assert node < n
 
@@ -48,7 +48,7 @@ def WLP(g: graph, order: Sequence[int]) -> float:
     return wlp
 
 
-def bruteForceMWLP(g: graph) -> float:
+def bruteForceMWLP(g: Graph) -> float:
     """Calculate minumum weighted latency
 
     Iterates over all possible paths
@@ -64,7 +64,7 @@ def bruteForceMWLP(g: graph) -> float:
     # TODO: Test MWLP
 
     # for now assume complete
-    assert graph.isComplete(g)
+    assert Graph.isComplete(g)
 
     mwlp = float("inf")
     nodes: list[int] = [i for i in range(1, g.numNodes)]
@@ -77,7 +77,7 @@ def bruteForceMWLP(g: graph) -> float:
     return mwlp
 
 
-def nearestNeighbor(g: graph) -> Sequence[int]:
+def nearestNeighbor(g: Graph) -> Sequence[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
@@ -93,7 +93,7 @@ def nearestNeighbor(g: graph) -> Sequence[int]:
     # TODO: Test Nearest Neighbor
 
     # for now assume complete
-    assert graph.isComplete(g)
+    assert Graph.isComplete(g)
 
     visited: list[bool] = [False] * g.numNodes
     order: list[int] = [0]
@@ -118,7 +118,7 @@ def nearestNeighbor(g: graph) -> Sequence[int]:
     return order
 
 
-def greedy(g: graph) -> Sequence[int]:
+def greedy(g: Graph) -> Sequence[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
@@ -134,7 +134,7 @@ def greedy(g: graph) -> Sequence[int]:
     # TODO: Test Greedy
 
     # for now assume complete
-    assert graph.isComplete(g)
+    assert Graph.isComplete(g)
 
     visited: list[bool] = [False] * g.numNodes
     order: list[int] = [0]
@@ -159,7 +159,7 @@ def greedy(g: graph) -> Sequence[int]:
     return order
 
 
-def TSP(g: graph) -> Sequence[int]:
+def TSP(g: Graph) -> Sequence[int]:
     """Approximates MWLP using Travelling Salesman heuristic
 
     Generates sequence that solves travelling salesman

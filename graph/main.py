@@ -1,7 +1,7 @@
 # from graph import graph
 # import algos
 from typing_extensions import TypedDict
-import testing
+import benchmark
 
 graphDict = TypedDict(
     "graphDict",
@@ -14,7 +14,7 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    testing.benchmark(8, 10, metric=True, upper=5)
+    benchmark.benchmark(7, 20, metric=True, upper=5)
 
 
 if __name__ == "__main__":

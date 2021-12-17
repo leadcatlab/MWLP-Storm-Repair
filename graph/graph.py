@@ -18,7 +18,7 @@ graphDict = TypedDict(
 )
 
 
-class graph:
+class Graph:
     """Directed graph class with weighted edges and nodes
 
     Attributes:
@@ -30,7 +30,7 @@ class graph:
     """
 
     def __init__(self, n: int = 0):
-        """Inits graph with n nodes
+        """Inits Graph with n nodes
 
         Args:
             n: number of nodes (by default graph is empty)
@@ -39,23 +39,29 @@ class graph:
 
         self.numNodes = n
         self.adjacenList: list[list[int]] = [[] for _ in range(n)]
-        self.edgeWeight: list[list[float]] = [[0.0 for _ in range(n)] for _ in range(n)]
+        self.edgeWeight: list[list[float]] = [
+            [-1.0 for _ in range(n)] for _ in range(n)
+        ]
         self.nodeWeight: list[int] = [0 for _ in range(n)]
 
     @staticmethod
-    def FromDict(dictionary: graphDict) -> graph:
+    def fromDict(dictionary: graphDict) -> Graph:
         """Alternate constructor using dictionary
 
         Args:
             graphDict: Dictionary containing the needed information for a graph
 
         Returns:
-            graph
+            Graph
         """
 
-        g = graph(dictionary["numNodes"])
+        g = Graph(dictionary["numNodes"])
 
-        assert len(dictionary["nodeWeight"]) == g.numNodes
+        if len(dictionary["nodeWeight"]) != g.numNodes:
+            raise ValueError(
+                f"nodeWeight list is incorrect length ({dictionary['nodeWeight']} vs {g.numNodes})"
+            )
+
         g.nodeWeight = dictionary["nodeWeight"]
 
         for (startingNode, endingNode, nodeWeight) in dictionary["edges"]:
@@ -66,7 +72,7 @@ class graph:
     @staticmethod
     def randomComplete(
         n: int, edgeW: tuple[float, float] = (0, 1), nodeW: tuple[int, int] = (1, 100)
-    ) -> graph:
+    ) -> Graph:
         """Create a randomly generated complete weighted undirected graph
 
         Creates a complete undirected graph with randomly weighted edges and nodes
@@ -77,10 +83,10 @@ class graph:
             nodeW: the interval that node weights can be in
 
         Returns:
-            graph
+            Graph
         """
 
-        g = graph(n)
+        g = Graph(n)
 
         g.nodeWeight = [random.randint(nodeW[0], nodeW[1]) for _ in range(n)]
 
@@ -90,13 +96,13 @@ class graph:
                 g.addEdge(i, j, weight)
                 g.addEdge(j, i, weight)
 
-        assert graph.isComplete(g)
+        assert Graph.isComplete(g)
         return g
 
     @staticmethod
     def randomCompleteMetric(
         n: int, upper: float = 1, nodeW: tuple[int, int] = (1, 100)
-    ) -> graph:
+    ) -> Graph:
         """Create a randomly generated complete weighted undirected metric graph
 
         Creates a complete undirected graph with randomly weighted edges and nodes
@@ -108,11 +114,11 @@ class graph:
             nodeW: the interval that node weights can be in
 
         Returns:
-            graph
+            Graph
         """
 
-        g = graph.randomComplete(n, edgeW=(upper / 2, upper))
-        assert graph.isMetric(g)
+        g = Graph.randomComplete(n, edgeW=(upper / 2, upper))
+        assert Graph.isMetric(g)
         return g
 
     def addNode(self, nodeWeight: int = 0) -> None:
@@ -181,7 +187,7 @@ class graph:
         self.edgeWeight[startingNode][endingNode] = edgeWeight
 
     @staticmethod
-    def isComplete(cls: graph) -> bool:
+    def isComplete(cls: Graph) -> bool:
         """Checks if a graph is complete
 
         Args:
@@ -199,7 +205,7 @@ class graph:
         return True
 
     @staticmethod
-    def isMetric(cls: graph) -> bool:
+    def isMetric(cls: Graph) -> bool:
         """Checks if a graph is complete
 
         Checks if for all u, v, w in the graph that the following inequality is maintained

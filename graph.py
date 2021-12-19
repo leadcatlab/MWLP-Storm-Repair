@@ -37,6 +37,9 @@ class Graph:
 
         """
 
+        if n < 0:
+            raise ValueError(f"Number of nodes passed in is negative: {n}")
+
         self.numNodes = n
         self.adjacenList: list[list[int]] = [[] for _ in range(n)]
         self.edgeWeight: list[list[float]] = [
@@ -55,6 +58,8 @@ class Graph:
             Graph
         """
 
+        if dictionary["numNodes"] < 0:
+            raise ValueError(f"Number of nodes is negative: {dictionary['numNodes']}")
         g = Graph(dictionary["numNodes"])
 
         if len(dictionary["nodeWeight"]) != g.numNodes:
@@ -62,16 +67,30 @@ class Graph:
                 f"nodeWeight list is incorrect length ({dictionary['nodeWeight']} vs {g.numNodes})"
             )
 
+        if min(dictionary["nodeWeight"]) < 0:
+            raise ValueError(
+                f"nodeWeight list has nodes of a negative weight: {dictionary['nodeWeight']}"
+            )
+
         g.nodeWeight = dictionary["nodeWeight"]
 
         for (startingNode, endingNode, nodeWeight) in dictionary["edges"]:
+            if startingNode >= g.numNodes:
+                raise ValueError(
+                    f"Starting node {startingNode} is out of range [0, {g.numNodes - 1}]"
+                )
+            if endingNode >= g.numNodes:
+                raise ValueError(
+                    f"Ending node {endingNode} is out of range [0, {g.numNodes - 1}]"
+                )
+
             g.addEdge(startingNode, endingNode, nodeWeight)
 
         return g
 
     @staticmethod
     def randomComplete(
-        n: int, edgeW: tuple[float, float] = (0, 1), nodeW: tuple[int, int] = (1, 100)
+        n: int, edgeW: tuple[float, float] = (0, 1), nodeW: tuple[int, int] = (0, 100)
     ) -> Graph:
         """Create a randomly generated complete weighted undirected graph
 
@@ -87,6 +106,19 @@ class Graph:
         """
 
         g = Graph(n)
+
+        if nodeW[0] < 0 or nodeW[1] < 0:
+            raise ValueError(
+                f"Passed node weight range contains negative values: {nodeW}"
+            )
+        if nodeW[1] < nodeW[0]:
+            raise ValueError(f"Passed node weight range is in wrong order: {nodeW}")
+        if edgeW[0] < 0.0 or nodeW[1] < 0.0:
+            raise ValueError(
+                f"Passed edge weight range contains negative values: {edgeW}"
+            )
+        if edgeW[1] < edgeW[0]:
+            raise ValueError(f"Passed edge weight range is in wrong order: {edgeW}")
 
         g.nodeWeight = [random.randint(nodeW[0], nodeW[1]) for _ in range(n)]
 
@@ -117,7 +149,7 @@ class Graph:
             Graph
         """
 
-        g = Graph.randomComplete(n, edgeW=(upper / 2, upper))
+        g = Graph.randomComplete(n, edgeW=(upper / 2, upper), nodeW=nodeW)
         assert Graph.isMetric(g)
         return g
 
@@ -128,16 +160,19 @@ class Graph:
             nodeWeight: weight of the new node
         """
 
+        if nodeWeight < 0:
+            raise ValueError(f"Passed nodeWeight is negative: {nodeWeight}")
+
         self.numNodes += 1
         self.adjacenList.append([])
         self.nodeWeight.append(nodeWeight)
 
         # need to add slot for new node to edge weight matrix
         for weightList in self.edgeWeight:
-            weightList.append(0.0)
+            weightList.append(-1.0)
 
         # add new row to edge weight matrix
-        self.edgeWeight.append([0.0 for _ in range(self.numNodes)])
+        self.edgeWeight.append([-1.0 for _ in range(self.numNodes)])
 
     def addEdge(self, startingNode: int, endingNode: int, weight: float = 0.0) -> None:
         """Adds a directed edge to the graph
@@ -148,15 +183,26 @@ class Graph:
             weight: l(u, v) = weight
         """
 
-        assert startingNode < self.numNodes
-        assert endingNode < self.numNodes
+        # ensure nodes exist
+        if startingNode >= self.numNodes:
+            raise ValueError(
+                f"Starting node {startingNode} is out of range [0, {self.numNodes - 1}]"
+            )
+        if endingNode >= self.numNodes:
+            raise ValueError(
+                f"Ending node {endingNode} is out of range [0, {self.numNodes - 1}]"
+            )
+
         # add edge only once
-        assert endingNode not in self.adjacenList[startingNode]
+        if endingNode in self.adjacenList[startingNode]:
+            raise ValueError(
+                f"Edge from {startingNode} to {endingNode} already exists with weight {self.edgeWeight[startingNode][endingNode]}"
+            )
 
         self.adjacenList[startingNode].append(endingNode)
         self.edgeWeight[startingNode][endingNode] = weight
 
-    def setNodeWeight(self, node: int, weight: int) -> None:
+    def setNodeWeight(self, node: int, nodeWeight: int) -> None:
         """Set the weight of a node in a graph
 
         Args:
@@ -164,8 +210,13 @@ class Graph:
             weight: the new weight
         """
 
-        assert node < self.numNodes
-        self.nodeWeight[node] = weight
+        if node >= self.numNodes:
+            raise ValueError(f"Node {node} is out of range [0, {self.numNodes - 1}]")
+
+        if nodeWeight < 0:
+            raise ValueError(f"Passed nodeWeight is negative: {nodeWeight}")
+
+        self.nodeWeight[node] = nodeWeight
 
     def setEdgeWeight(
         self, startingNode: int, endingNode: int, edgeWeight: float
@@ -178,11 +229,21 @@ class Graph:
             edgeWeight: l(u, v) = weight
         """
 
-        assert startingNode < self.numNodes
-        assert endingNode < self.numNodes
-        assert edgeWeight > 0.0
+        # ensure nodes exist
+        if startingNode >= self.numNodes:
+            raise ValueError(
+                f"Starting node {startingNode} is out of range [0, {self.numNodes - 1}]"
+            )
+        if endingNode >= self.numNodes:
+            raise ValueError(
+                f"Ending node {endingNode} is out of range [0, {self.numNodes - 1}]"
+            )
+
+        if edgeWeight < 0.0:
+            raise ValueError(f"Edge has negative weight {edgeWeight}")
         # add weight only if edge exists
-        assert endingNode in self.adjacenList[startingNode]
+        if endingNode not in self.adjacenList[startingNode]:
+            raise ValueError(f"{endingNode} is not a neighbor of {startingNode}")
 
         self.edgeWeight[startingNode][endingNode] = edgeWeight
 
@@ -231,7 +292,7 @@ class Graph:
 
         return True
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pragma: no cover
         """String representation of the graph"""
 
         toPrint: str = ""

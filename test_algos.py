@@ -1,0 +1,254 @@
+from graph import Graph
+import algos
+from typing_extensions import TypedDict
+import pytest
+
+graphDict = TypedDict(
+    "graphDict",
+    {
+        "numNodes": int,
+        "nodeWeight": list[int],
+        "edges": list[tuple[int, int, float]],
+    },
+)
+
+### Correctness Tests ###
+
+
+def test_WLP_small_orders() -> None:
+    g = Graph.randomComplete(4)
+    assert algos.WLP(g, []) == 0.0
+    assert algos.WLP(g, [0]) == 0.0
+
+
+def test_WLP() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
+        "nodeWeight": [10, 2, 6, 20],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.WLP(g, [0, 1, 2, 3]) == 206.0
+    assert algos.WLP(g, [0, 1]) == 2.0
+    assert algos.WLP(g, [0, 2]) == 12.0
+    assert algos.WLP(g, [0, 2, 3]) == 152.0
+
+
+def test_bruteForceMWLP() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.bruteForceMWLP(g) == 66.0
+
+
+def test_nearestNeighbor() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.nearestNeighbor(g) == [0, 1, 2, 3]
+
+
+def test_greedy() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.greedy(g) == [0, 2, 3, 1]
+
+
+def test_TSP() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.TSP(g) == [0, 1, 2, 3]
+
+
+### Error Tests ###
+
+
+def test_WLP_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+    with pytest.raises(ValueError):
+        algos.WLP(g, [1])
+
+
+def test_WLP_node_not_in_graph() -> None:
+    g = Graph.randomComplete(4)
+    with pytest.raises(ValueError):
+        algos.WLP(g, [0, 1, 2, 4])
+
+
+def test_WLP_missing_edge() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
+        "nodeWeight": [10, 2, 6, 20],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.WLP(g, [0, 1, 2, 3, 2])
+
+
+def test_bruteForceMWLP_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.bruteForceMWLP(g)
+
+
+def test_nearestNeighbor_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.nearestNeighbor(g)
+
+
+def test_greedy_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.greedy(g)
+
+
+def test_TSP_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.TSP(g)

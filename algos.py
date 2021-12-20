@@ -23,27 +23,30 @@ def WLP(g: Graph, order: Sequence[int]) -> float:
 
     # TODO: Test WLP
 
-    if order is None or len(order) <= 1:
+    if len(order) == 0 or (len(order) == 1 and order[0] == 0):
         return 0.0
 
     # always start at 0
-    assert order[0] == 0
-    assert len(order) == g.numNodes
+    if order[0] != 0:
+        raise ValueError(f"Passed order = {order} does not start with 0")
 
     n = g.numNodes
     # check nodes in order are actually valid nodes
     for node in order:
-        assert node < n
+        if node >= n:
+            raise ValueError(f"Node {node} is not in passed graph")
 
     # sum over sequence of w(i) * L(0, i)
     wlp = 0.0
-    for i, node in enumerate(order[1:]):
+    for i in range(0, len(order)):
         # find length of path
         path: float = 0.0
-        for j, before in enumerate(order[:i]):
-            path += g.edgeWeight[before][order[j + 1]]
+        for j in range(0, i):
+            if order[j + 1] not in g.adjacenList[order[j]]:
+                raise ValueError(f"Edge {order[j]} --> {order[j + 1]} does not exist")
+            path += g.edgeWeight[order[j]][order[j + 1]]
 
-        wlp += g.nodeWeight[node] * path
+        wlp += g.nodeWeight[order[i]] * path
 
     return wlp
 
@@ -64,7 +67,8 @@ def bruteForceMWLP(g: Graph) -> float:
     # TODO: Test MWLP
 
     # for now assume complete
-    assert Graph.isComplete(g)
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
 
     mwlp = float("inf")
     nodes: list[int] = [i for i in range(1, g.numNodes)]
@@ -93,7 +97,8 @@ def nearestNeighbor(g: Graph) -> Sequence[int]:
     # TODO: Test Nearest Neighbor
 
     # for now assume complete
-    assert Graph.isComplete(g)
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
 
     visited: list[bool] = [False] * g.numNodes
     order: list[int] = [0]
@@ -134,7 +139,8 @@ def greedy(g: Graph) -> Sequence[int]:
     # TODO: Test Greedy
 
     # for now assume complete
-    assert Graph.isComplete(g)
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
 
     visited: list[bool] = [False] * g.numNodes
     order: list[int] = [0]
@@ -148,7 +154,7 @@ def greedy(g: Graph) -> Sequence[int]:
         weight = float("-inf")
         heaviest: int = -1
         for n in g.adjacenList[curr]:
-            if visited[n] is False and g.nodeWeight[n] > weight:
+            if not visited[n] and g.nodeWeight[n] > weight:
                 weight = g.nodeWeight[n]
                 heaviest = n
         if heaviest != -1:
@@ -174,14 +180,12 @@ def TSP(g: Graph) -> Sequence[int]:
 
     # TODO: Test TSP
 
-    n: int = g.numNodes
-    if n <= 0:
-        return []
-    if n == 1:
-        return [0]
+    # for now assume complete
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
 
     min_dist = float("inf")
-    nodes: list[int] = [i for i in range(1, n)]
+    nodes: list[int] = [i for i in range(1, g.numNodes)]
     best: Sequence[int] = []
 
     # test every permutation
@@ -189,7 +193,7 @@ def TSP(g: Graph) -> Sequence[int]:
         # always start at 0
         full_order: list[int] = [0] + list(order)
         dist = 0.0
-        for i in range(n - 1):
+        for i in range(g.numNodes - 1):
             dist += g.edgeWeight[full_order[i]][full_order[i + 1]]
         if dist < min_dist:
             min_dist = dist

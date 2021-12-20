@@ -19,6 +19,7 @@ def test_WLP_small_orders() -> None:
     g = Graph.randomComplete(4)
     assert algos.WLP(g, []) == 0.0
     assert algos.WLP(g, [0]) == 0.0
+    assert algos.WLP(g, [1]) == 0.0
 
 
 def test_WLP() -> None:
@@ -33,6 +34,7 @@ def test_WLP() -> None:
     assert algos.WLP(g, [0, 1]) == 2.0
     assert algos.WLP(g, [0, 2]) == 12.0
     assert algos.WLP(g, [0, 2, 3]) == 152.0
+    assert algos.WLP(g, [1, 2, 3]) == 178.0
 
 
 def test_bruteForceMWLP() -> None:
@@ -57,6 +59,7 @@ def test_bruteForceMWLP() -> None:
     g = Graph.fromDict(gd)
 
     assert algos.bruteForceMWLP(g) == 66.0
+    assert algos.bruteForceMWLP(g, start=1) == 106.0
 
 
 def test_nearestNeighbor() -> None:
@@ -81,6 +84,7 @@ def test_nearestNeighbor() -> None:
     g = Graph.fromDict(gd)
 
     assert algos.nearestNeighbor(g) == [0, 1, 2, 3]
+    assert algos.nearestNeighbor(g, start=1) == [1, 2, 3, 0]
 
 
 def test_greedy() -> None:
@@ -105,6 +109,7 @@ def test_greedy() -> None:
     g = Graph.fromDict(gd)
 
     assert algos.greedy(g) == [0, 2, 3, 1]
+    assert algos.greedy(g, start=1) == [1, 2, 0, 3]
 
 
 def test_TSP() -> None:
@@ -129,15 +134,10 @@ def test_TSP() -> None:
     g = Graph.fromDict(gd)
 
     assert algos.TSP(g) == [0, 1, 2, 3]
+    assert algos.TSP(g, start=1) == [1, 2, 0, 3]
 
 
 ### Error Tests ###
-
-
-def test_WLP_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-    with pytest.raises(ValueError):
-        algos.WLP(g, [1])
 
 
 def test_WLP_node_not_in_graph() -> None:
@@ -182,6 +182,13 @@ def test_bruteForceMWLP_incomplete() -> None:
         algos.bruteForceMWLP(g)
 
 
+def test_bruteForceMWLP_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.bruteForceMWLP(g, start=4)
+
+
 def test_nearestNeighbor_incomplete() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -204,6 +211,13 @@ def test_nearestNeighbor_incomplete() -> None:
 
     with pytest.raises(ValueError):
         algos.nearestNeighbor(g)
+
+
+def test_nearestNeighbor_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.nearestNeighbor(g, start=4)
 
 
 def test_greedy_incomplete() -> None:
@@ -230,6 +244,13 @@ def test_greedy_incomplete() -> None:
         algos.greedy(g)
 
 
+def test_greedy_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.greedy(g, start=4)
+
+
 def test_TSP_incomplete() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -252,3 +273,10 @@ def test_TSP_incomplete() -> None:
 
     with pytest.raises(ValueError):
         algos.TSP(g)
+
+
+def test_TSP_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.TSP(g, start=4)

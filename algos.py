@@ -23,12 +23,8 @@ def WLP(g: Graph, order: Sequence[int]) -> float:
 
     # TODO: Test WLP
 
-    if len(order) == 0 or (len(order) == 1 and order[0] == 0):
+    if len(order) <= 1:
         return 0.0
-
-    # always start at 0
-    if order[0] != 0:
-        raise ValueError(f"Passed order = {order} does not start with 0")
 
     n = g.numNodes
     # check nodes in order are actually valid nodes
@@ -51,7 +47,7 @@ def WLP(g: Graph, order: Sequence[int]) -> float:
     return wlp
 
 
-def bruteForceMWLP(g: Graph) -> float:
+def bruteForceMWLP(g: Graph, start: int = 0) -> float:
     """Calculate minumum weighted latency
 
     Iterates over all possible paths
@@ -70,18 +66,21 @@ def bruteForceMWLP(g: Graph) -> float:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
     mwlp = float("inf")
-    nodes: list[int] = [i for i in range(1, g.numNodes)]
+    nodes: list[int] = [i for i in range(g.numNodes)]
+    nodes.remove(start)
     # test every permutation
     for order in permutations(nodes):
-        # always start at 0
-        full_order: list[int] = [0] + list(order)
+        full_order: list[int] = [start] + list(order)
         mwlp = min(mwlp, WLP(g, full_order))
 
     return mwlp
 
 
-def nearestNeighbor(g: Graph) -> Sequence[int]:
+def nearestNeighbor(g: Graph, start: int = 0) -> Sequence[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
@@ -100,11 +99,14 @@ def nearestNeighbor(g: Graph) -> Sequence[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
     visited: list[bool] = [False] * g.numNodes
-    order: list[int] = [0]
-    q: Deque[int] = deque()  # we assume start at 0
-    q.appendleft(0)
-    visited[0] = True
+    order: list[int] = [start]
+    q: Deque[int] = deque()
+    q.appendleft(start)
+    visited[start] = True
 
     # Use queue to remember current node
     while len(q) != 0:
@@ -123,7 +125,7 @@ def nearestNeighbor(g: Graph) -> Sequence[int]:
     return order
 
 
-def greedy(g: Graph) -> Sequence[int]:
+def greedy(g: Graph, start: int = 0) -> Sequence[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
@@ -142,11 +144,14 @@ def greedy(g: Graph) -> Sequence[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
     visited: list[bool] = [False] * g.numNodes
-    order: list[int] = [0]
-    q: Deque[int] = deque()  # we assume start at 0
-    q.appendleft(0)
-    visited[0] = True
+    order: list[int] = [start]
+    q: Deque[int] = deque()
+    q.appendleft(start)
+    visited[start] = True
 
     # Use queue to remember current node
     while len(q) != 0:
@@ -165,7 +170,7 @@ def greedy(g: Graph) -> Sequence[int]:
     return order
 
 
-def TSP(g: Graph) -> Sequence[int]:
+def TSP(g: Graph, start: int = 0) -> Sequence[int]:
     """Approximates MWLP using Travelling Salesman heuristic
 
     Generates sequence that solves travelling salesman
@@ -184,14 +189,17 @@ def TSP(g: Graph) -> Sequence[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
     min_dist = float("inf")
-    nodes: list[int] = [i for i in range(1, g.numNodes)]
+    nodes: list[int] = [i for i in range(g.numNodes)]
+    nodes.remove(start)
     best: Sequence[int] = []
 
     # test every permutation
     for order in permutations(nodes):
-        # always start at 0
-        full_order: list[int] = [0] + list(order)
+        full_order: list[int] = [start] + list(order)
         dist = 0.0
         for i in range(g.numNodes - 1):
             dist += g.edgeWeight[full_order[i]][full_order[i + 1]]

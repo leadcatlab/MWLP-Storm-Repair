@@ -153,6 +153,29 @@ class Graph:
         assert Graph.isMetric(g)
         return g
 
+    @staticmethod
+    def subgraph(
+        g: Graph, nodes: list[int]
+    ) -> tuple[Graph, dict[int, int], dict[int, int]]:
+
+        newNodeList = list(range(len(nodes)))
+
+        # mapping for original -> subgraph
+        ots: dict[int, int] = {o: s for (o, s) in zip(nodes, newNodeList)}
+        # mapping for subgraph -> original
+        sto: dict[int, int] = {s: o for (o, s) in zip(nodes, newNodeList)}
+
+        subg = Graph(len(nodes))
+        for n in newNodeList:
+            subg.setNodeWeight(n, g.nodeWeight[sto[n]])
+
+        for i in nodes:
+            for j in nodes:
+                if i != j and j in g.adjacenList[i]:
+                    subg.addEdge(ots[i], ots[j], g.edgeWeight[i][j])
+
+        return subg, sto, ots
+
     def addNode(self, nodeWeight: int = 0) -> None:
         """Adds a node to the graph
 

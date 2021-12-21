@@ -58,8 +58,8 @@ def test_bruteForceMWLP() -> None:
     }
     g = Graph.fromDict(gd)
 
-    assert algos.bruteForceMWLP(g) == 66.0
-    assert algos.bruteForceMWLP(g, start=1) == 106.0
+    assert algos.bruteForceMWLP(g) == [0, 1, 2, 3]
+    assert algos.bruteForceMWLP(g, start=1) == [1, 2, 0, 3]
 
 
 def test_nearestNeighbor() -> None:

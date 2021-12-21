@@ -119,6 +119,68 @@ def test_randomCompleteMetric_is_both() -> None:
     assert Graph.isComplete(g) and Graph.isMetric(g)
 
 
+def test_subgraph_one_to_one() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
+        "nodeWeight": [10, 2, 6, 20],
+    }
+    g = Graph.fromDict(gd)
+
+    sg, sto, ots = Graph.subgraph(g, [0, 1, 2])
+
+    assert sg.numNodes == 3
+
+    for i in range(3):
+        assert sto[i] == i
+        assert ots[i] == i
+        assert g.nodeWeight[i] == sg.nodeWeight[i]
+
+    for i in range(3):
+        for j in range(3):
+            if i != j and j in g.adjacenList[i]:
+                assert j in sg.adjacenList[i]
+                assert g.edgeWeight[i][j] == sg.edgeWeight[i][j]
+
+
+def test_subgraph() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
+        "nodeWeight": [10, 2, 6, 20],
+    }
+    g = Graph.fromDict(gd)
+
+    sg, sto, ots = Graph.subgraph(g, [0, 1, 3])
+
+    assert sg.numNodes == 3
+
+    assert ots[0] == 0
+    assert ots[1] == 1
+    assert ots[3] == 2
+    assert sto[0] == 0
+    assert sto[1] == 1
+    assert sto[2] == 3
+
+    for i in range(3):
+        assert sg.nodeWeight[i] == g.nodeWeight[sto[i]]
+
+    for i in range(3):
+        for j in range(3):
+            if i != j and j in sg.adjacenList[i]:
+                assert sto[j] in g.adjacenList[sto[i]]
+                assert sg.edgeWeight[i][j] == g.edgeWeight[sto[i]][sto[j]]
+
+
+def test_subgraph_maintains_properties() -> None:
+    g = Graph.randomCompleteMetric(6)
+
+    sg, sto, ots = Graph.subgraph(g, [0, 2, 4, 5])
+
+    assert Graph.isComplete(sg)
+    assert Graph.isMetric(sg)
+
+
 ### Failure Tests ###
 def test_isComplete_failure() -> None:
     gd: graphDict = {

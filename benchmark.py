@@ -55,7 +55,7 @@ def benchmark(
             if metric
             else Graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
         )
-        brute_forces.append(algos.bruteForceMWLP(g))
+        brute_forces.append(algos.WLP(g, algos.bruteForceMWLP(g)))
         tsp_orders.append(algos.WLP(g, algos.TSP(g)))
         random_orders.append(
             algos.WLP(g, [0] + list(np.random.permutation([i for i in range(1, n)])))

@@ -237,8 +237,14 @@ def partitionHeuristic(g: Graph, f, k: int) -> tuple[float, list[list[int]]]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
-    best: list[list[int]] = []
-    mwlp_m: float = float("inf")
+    if k <= 1:
+        raise ValueError(f"Multi-agent case must have two or more agents ({k})")
+
+    if k >= g.numNodes:
+        raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
+
+    best_order: list[list[int]] = []
+    minimum: float = float("inf")
     # assume start is at 0
     nodes = [i for i in range(1, g.numNodes)]
 
@@ -258,8 +264,8 @@ def partitionHeuristic(g: Graph, f, k: int) -> tuple[float, list[list[int]]]:
             original_order = [sto[n] for n in heuristic_order]
             part_order.append(original_order)
 
-        if curr < mwlp_m:
-            mwlp_m = curr
-            best = part_order
+        if curr < minimum:
+            minimum = curr
+            best_order = part_order
 
-    return mwlp_m, best
+    return minimum, best_order

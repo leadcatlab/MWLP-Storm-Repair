@@ -226,11 +226,10 @@ def partitionHeuristic(
 
     # for now assume complete
     if Graph.isComplete(g) is False:
-        print("made it")
         raise ValueError("Passed graph is not complete")
 
-    if k <= 1:
-        raise ValueError(f"Multi-agent case must have two or more agents ({k})")
+    if k <= 0:
+        raise ValueError(f"Multi-agent case must have non-zero agents ({k})")
 
     if k > g.numNodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
@@ -259,5 +258,38 @@ def partitionHeuristic(
         if curr < minimum:
             minimum = curr
             best_order = part_order
+
+    return minimum, best_order
+
+
+def optimalNumberOfAgents(
+    g: Graph, f: Callable[..., Sequence[int]], k_min: int, k_max: int
+) -> tuple[float, list[list[int]]]:
+
+    # for now assume complete
+    if Graph.isComplete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if k_max <= k_min:
+        raise ValueError(
+            "Minimum number of agents {k_min} must be less than maximum number of agents {k_max}"
+        )
+
+    if k_min <= 0:
+        raise ValueError(f"Multi-agent case must have non-zero agents ({k_min})")
+
+    if k_max > g.numNodes:
+        raise ValueError(
+            f"Multi-agent case cannot have more agents than nodes ({k_max})"
+        )
+
+    best_order: list[list[int]] = []
+    minimum = float("inf")
+
+    for k in range(k_min, k_max + 1):
+        min_for_k, order_for_k = partitionHeuristic(g, f, k)
+        if min_for_k < minimum:
+            minimum = min_for_k
+            best_order = order_for_k
 
     return minimum, best_order

@@ -1,5 +1,5 @@
-# from graph import Graph
-# import algos
+from graph import Graph
+import algos
 from typing_extensions import TypedDict
 import benchmark
 
@@ -14,23 +14,19 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    # benchmark.benchmarkSingle(7, 20, metric=True, upper=5)
+    g = Graph.randomComplete(10)
+    optimal_m, optimal_order = algos.optimalNumberOfAgents(
+        g, algos.bruteForceMWLP, 1, 9
+    )
+    print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
+    print(f"{optimal_order = }")
 
-    benchmark.benchmarkMulti(8, 2, 200, metric=True, upper=5)
-
-    # g = Graph.randomComplete(12)
-
-    # mwlp_m, mwlp_order = algos.partitionHeuristic(g, algos.bruteForceMWLP, 3)
-    # print(f"Brute Force: {mwlp_m} with {mwlp_order}")
-
-    # nn_m, nn_order = algos.partitionHeuristic(g, algos.nearestNeighbor, 3)
-    # print(f"Nearest Neighbor: {nn_m} with {nn_order}")
-
-    # g_m, g_order = algos.partitionHeuristic(g, algos.greedy, 3)
-    # print(f"Greedy: {g_m} with {g_order}")
-
-    # tsp_m, tsp_order = algos.partitionHeuristic(g, algos.TSP, 3)
-    # print(f"TSP Approx: {tsp_m} with {tsp_order}")
+    g = Graph.randomCompleteMetric(10)
+    optimal_m, optimal_order = algos.optimalNumberOfAgents(
+        g, algos.bruteForceMWLP, 1, 9
+    )
+    print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
+    print(f"{optimal_order = }")
 
 
 if __name__ == "__main__":

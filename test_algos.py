@@ -336,7 +336,7 @@ def test_partition_incomplete() -> None:
 def test_partition_too_few_agents() -> None:
     g = Graph.randomComplete(4)
     with pytest.raises(ValueError):
-        algos.partitionHeuristic(g, algos.TSP, 1)
+        algos.partitionHeuristic(g, algos.TSP, 0)
 
 
 def test_partition_too_many_agents() -> None:

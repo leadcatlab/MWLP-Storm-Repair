@@ -211,7 +211,6 @@ def benchmarkMulti(
         # arbitrarily pick first possible partition as "random"
         nodes: list[int] = list(range(n))
         rand: list[list[int]] = next(set_partitions(nodes, k))
-        print(rand)
         rand_total: float = 0.0
         for part in rand:
             rand_total += algos.WLP(g, part)

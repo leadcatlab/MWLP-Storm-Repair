@@ -3,7 +3,7 @@ from itertools import permutations
 from more_itertools import set_partitions
 from collections.abc import Sequence
 from collections import deque
-from typing import Deque
+from typing import Deque, Callable
 
 # TODO: Implement Floyd-Warshall
 # TODO: Implement Christofides' Algorithm
@@ -21,8 +21,6 @@ def WLP(g: Graph, order: Sequence[int]) -> float:
     Returns:
         float: the weighted latency
     """
-
-    # TODO: Test WLP
 
     if len(order) <= 1:
         return 0.0
@@ -60,9 +58,6 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> Sequence[int]:
         float: the minumum weighted latency
     """
 
-    # TODO: Relies on WLP which has not been tested
-    # TODO: Test MWLP
-
     # for now assume complete
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
@@ -99,8 +94,6 @@ def nearestNeighbor(g: Graph, start: int = 0) -> Sequence[int]:
         list[int]: nearest neighbor order
 
     """
-
-    # TODO: Test Nearest Neighbor
 
     # for now assume complete
     if not Graph.isComplete(g):
@@ -145,8 +138,6 @@ def greedy(g: Graph, start: int = 0) -> Sequence[int]:
 
     """
 
-    # TODO: Test Greedy
-
     # for now assume complete
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
@@ -190,8 +181,6 @@ def TSP(g: Graph, start: int = 0) -> Sequence[int]:
 
     """
 
-    # TODO: Test TSP
-
     # for now assume complete
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
@@ -217,7 +206,9 @@ def TSP(g: Graph, start: int = 0) -> Sequence[int]:
     return best
 
 
-def partitionHeuristic(g: Graph, f, k: int) -> tuple[float, list[list[int]]]:
+def partitionHeuristic(
+    g: Graph, f: Callable[..., Sequence[int]], k: int
+) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP
 
     Generates best partition according to passed heuristic f
@@ -234,17 +225,18 @@ def partitionHeuristic(g: Graph, f, k: int) -> tuple[float, list[list[int]]]:
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if Graph.isComplete(g) is False:
+        print("made it")
         raise ValueError("Passed graph is not complete")
 
     if k <= 1:
         raise ValueError(f"Multi-agent case must have two or more agents ({k})")
 
-    if k >= g.numNodes:
+    if k > g.numNodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
 
     best_order: list[list[int]] = []
-    minimum: float = float("inf")
+    minimum = float("inf")
     # assume start is at 0
     nodes = [i for i in range(1, g.numNodes)]
 

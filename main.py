@@ -16,7 +16,7 @@ graphDict = TypedDict(
 def main() -> None:
     # benchmark.benchmarkSingle(7, 20, metric=True, upper=5)
 
-    benchmark.benchmarkMulti(9, 3, 20, metric=True, upper=5)
+    benchmark.benchmarkMulti(8, 2, 200, metric=True, upper=5)
 
     # g = Graph.randomComplete(12)
 

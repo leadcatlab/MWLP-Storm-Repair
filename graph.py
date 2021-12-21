@@ -157,6 +157,26 @@ class Graph:
     def subgraph(
         g: Graph, nodes: list[int]
     ) -> tuple[Graph, dict[int, int], dict[int, int]]:
+        """Create a subgraph based on a graph and passed list of nodes
+
+        Creates a subgraph of the original graph plus a set of dictionaries
+        which relates the nodes from one graph with another
+
+        Args:
+            g: passed in graph to based subgraph off of
+            nodes: list of nodes to use in original graph for subgraph
+
+        Returns:
+            subgraph and two dictionaries:
+            sto is a dictionary mapping nodes from subgraph to original
+            ots is a dictionary mapping nodes from original to subgraph
+        """
+
+        for n in nodes:
+            if n >= g.numNodes:
+                raise ValueError(
+                    f"Passed in {nodes = } contains nodes not in passed in graph"
+                )
 
         newNodeList = list(range(len(nodes)))
 

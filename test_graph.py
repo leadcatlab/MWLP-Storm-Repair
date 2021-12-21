@@ -143,6 +143,18 @@ def test_subgraph_one_to_one() -> None:
                 assert g.edgeWeight[i][j] == sg.edgeWeight[i][j]
 
 
+def test_subgraph_empty() -> None:
+    g = Graph.randomComplete(4)
+    sg, sto, ots = Graph.subgraph(g, [])
+
+    assert sg.numNodes == 0
+    assert sg.adjacenList == []
+    assert sg.nodeWeight == []
+    assert sg.edgeWeight == []
+
+    assert len(sto) == len(ots) == 0
+
+
 def test_subgraph() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -364,3 +376,9 @@ def test_setEdgeWeight_nonexistant_edge() -> None:
         g = Graph(2)
         g.addEdge(0, 1, 1.0)
         g.setEdgeWeight(1, 0, 2.0)
+
+
+def test_subgraph_nonexistant_node() -> None:
+    with pytest.raises(ValueError):
+        g = Graph.randomComplete(4)
+        Graph.subgraph(g, [0, 2, 4])

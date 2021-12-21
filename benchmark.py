@@ -156,7 +156,7 @@ def benchmarkMulti(
     upper: float = 1,
 ) -> None:
 
-    """Benchmarks various heuristics against bruteforce MWLP
+    """Benchmarks various heuristics against bruteforce multi-agent MWLP
 
     Tests the following heuristics: Random order, nearest neighbor, greedy, TSP
     Creates random complete (metric) graphs and runs the heuristics and prints comparisons

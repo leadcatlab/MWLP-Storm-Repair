@@ -137,6 +137,33 @@ def test_TSP() -> None:
     assert algos.TSP(g, start=1) == [1, 2, 0, 3]
 
 
+def test_partitionHeuristic_MWLP_2_agents() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 1.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    result, partition = algos.partitionHeuristic(g, algos.bruteForceMWLP, 2)
+
+    assert result == 52.0
+    assert [0, 1, 2] in partition and [0, 3] in partition
+
+
 ### Error Tests ###
 
 
@@ -280,3 +307,39 @@ def test_TSP_invalid_start() -> None:
 
     with pytest.raises(ValueError):
         algos.TSP(g, start=4)
+
+
+def test_partition_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.partitionHeuristic(g, algos.TSP, 2)
+
+
+def test_partition_too_few_agents() -> None:
+    g = Graph.randomComplete(4)
+    with pytest.raises(ValueError):
+        algos.partitionHeuristic(g, algos.TSP, 1)
+
+
+def test_partition_too_many_agents() -> None:
+    g = Graph.randomComplete(4)
+    with pytest.raises(ValueError):
+        algos.partitionHeuristic(g, algos.TSP, 5)

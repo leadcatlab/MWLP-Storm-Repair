@@ -164,6 +164,36 @@ def test_partitionHeuristic_MWLP_2_agents() -> None:
     assert [0, 1, 2] in partition and [0, 3] in partition
 
 
+def test_optimalNumberOfAgentsMWLP() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 1.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    optimalMWLP, optimalOrder = algos.optimalNumberOfAgents(
+        g, algos.bruteForceMWLP, 1, 3
+    )
+
+    assert optimalMWLP == 52.0
+    assert len(optimalOrder) == 2
+    assert [0, 1, 2] in optimalOrder and [0, 3] in optimalOrder
+
+
 ### Error Tests ###
 
 
@@ -343,3 +373,45 @@ def test_partition_too_many_agents() -> None:
     g = Graph.randomComplete(4)
     with pytest.raises(ValueError):
         algos.partitionHeuristic(g, algos.TSP, 5)
+
+
+def test_optimalNumberOfAgents_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.optimalNumberOfAgents(g, algos.TSP, 1, 3)
+
+
+def test_optimalNumberOfAgents_invalid_order() -> None:
+    g = Graph.randomComplete(6)
+    with pytest.raises(ValueError):
+        algos.optimalNumberOfAgents(g, algos.TSP, 3, 1)
+
+
+def test_optimalNumberOfAgents_too_few() -> None:
+    g = Graph.randomComplete(6)
+    with pytest.raises(ValueError):
+        algos.optimalNumberOfAgents(g, algos.TSP, -1, 1)
+
+
+def test_optimalNumberOfAgents_too_many() -> None:
+    g = Graph.randomComplete(6)
+    with pytest.raises(ValueError):
+        algos.optimalNumberOfAgents(g, algos.TSP, 1, 6)

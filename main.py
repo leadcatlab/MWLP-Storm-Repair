@@ -1,7 +1,8 @@
 from graph import Graph
 import algos
 from typing_extensions import TypedDict
-import benchmark
+
+# import benchmark
 
 graphDict = TypedDict(
     "graphDict",

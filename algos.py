@@ -220,7 +220,8 @@ def partitionHeuristic(
         k: number of agents
 
     Returns:
-        list[list[int]: Best graph partition
+        float: optimal MWLP value according to heuristic
+        list[list[int]: Best graph partition and order
 
     """
 
@@ -265,6 +266,23 @@ def partitionHeuristic(
 def optimalNumberOfAgents(
     g: Graph, f: Callable[..., Sequence[int]], k_min: int, k_max: int
 ) -> tuple[float, list[list[int]]]:
+    """Bruteforce multi-agent MWLP for variable number of agents
+
+    Generates optimal number of agents along with best partition according to passed heuristic f
+    Returned partition is ordered in subgroups so the best order for each partition is returned
+    Length of optimal partition is number of agents used
+
+    Args:
+        g: input graph
+        f: heuristic
+        k_min: minumum number of agents (must be >= 1)
+        k_max: maximum number of agents (must be <= g.numNodes - 1 since we don't count start node of 0)
+
+    Returns:
+        float: optimal MWLP value according to heuristic
+        list[list[int]: Best graph partition and order for k agents where k_min <= k <= k_max
+
+    """
 
     # for now assume complete
     if Graph.isComplete(g) is False:
@@ -278,9 +296,9 @@ def optimalNumberOfAgents(
     if k_min <= 0:
         raise ValueError(f"Multi-agent case must have non-zero agents ({k_min})")
 
-    if k_max > g.numNodes:
+    if k_max >= g.numNodes:
         raise ValueError(
-            f"Multi-agent case cannot have more agents than nodes ({k_max})"
+            f"Multi-agent case cannot have more agents than non-start nodes ({k_max})"
         )
 
     best_order: list[list[int]] = []

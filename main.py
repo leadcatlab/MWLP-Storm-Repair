@@ -1,8 +1,7 @@
 from graph import Graph
 import algos
 from typing_extensions import TypedDict
-
-# import benchmark
+import benchmark
 
 graphDict = TypedDict(
     "graphDict",
@@ -15,19 +14,23 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    g = Graph.randomComplete(10)
+    n: int = 10
+
+    g = Graph.randomComplete(n)
     optimal_m, optimal_order = algos.optimalNumberOfAgents(
-        g, algos.bruteForceMWLP, 1, 9
+        g, algos.bruteForceMWLP, 1, n - 1
     )
     print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
     print(f"{optimal_order = }")
 
-    g = Graph.randomCompleteMetric(10)
+    g = Graph.randomCompleteMetric(n)
     optimal_m, optimal_order = algos.optimalNumberOfAgents(
-        g, algos.bruteForceMWLP, 1, 9
+        g, algos.bruteForceMWLP, 1, n - 1
     )
     print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
     print(f"{optimal_order = }")
+
+    # benchmark.benchmarkMulti(12, 3, 1, metric=True)
 
 
 if __name__ == "__main__":

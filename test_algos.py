@@ -15,6 +15,49 @@ graphDict = TypedDict(
 ### Correctness Tests ###
 
 
+def test_fW_empty() -> None:
+    g = Graph()
+    dist: list[list[float]] = algos.floydWarshall(g)
+
+    assert len(dist) == 0
+
+
+def test_fW_no_edges() -> None:
+    g = Graph(5)
+    dist: list[list[float]] = algos.floydWarshall(g)
+
+    assert len(dist) == len(dist[0]) == 5
+    for i in range(5):
+        assert dist[i][i] == 0.0
+        for j in range(5):
+            if i != j:
+                assert dist[i][j] == float("inf")
+
+
+def test_fW_complete() -> None:
+    g = Graph.randomCompleteMetric(5)
+    dist: list[list[float]] = algos.floydWarshall(g)
+
+    for i in range(g.numNodes):
+        for j in range(g.numNodes):
+            if i == j:
+                assert dist[i][j] == 0.0
+            else:
+                assert dist[i][j] != float("inf")
+
+
+def test_fW_metric_complete() -> None:
+    g = Graph.randomCompleteMetric(5)
+    dist: list[list[float]] = algos.floydWarshall(g)
+
+    for i in range(g.numNodes):
+        for j in range(g.numNodes):
+            if i == j:
+                assert dist[i][j] == 0.0
+            else:
+                assert dist[i][j] == g.edgeWeight[i][j]
+
+
 def test_WLP_small_orders() -> None:
     g = Graph.randomComplete(4)
     assert algos.WLP(g, []) == 0.0

@@ -1,7 +1,9 @@
 from graph import Graph
 import algos
+import random
 import numpy as np
 from more_itertools import set_partitions
+from typing import Iterator
 
 
 def benchmarkSingle(
@@ -37,9 +39,11 @@ def benchmarkSingle(
     print(f"{n = }")
     print(f"{rounds = }")
     print(f"{metric = }")
-    print(f"{edgeW = }")
+    if not metric:
+        print(f"{edgeW = }")
+    else:
+        print(f"{upper = }")
     print(f"{nodeW = }")
-    print(f"{upper = }")
     print()
 
     # Lists to store results
@@ -182,9 +186,11 @@ def benchmarkMulti(
     print(f"{k = }")
     print(f"{rounds = }")
     print(f"{metric = }")
-    print(f"{edgeW = }")
+    if not metric:
+        print(f"{edgeW = }")
+    else:
+        print(f"{upper = }")
     print(f"{nodeW = }")
-    print(f"{upper = }")
     print()
 
     # Lists to store results
@@ -208,9 +214,14 @@ def benchmarkMulti(
         tsp_m, tsp_order = algos.partitionHeuristic(g, algos.TSP, k)
         tsp_orders.append(tsp_m)
 
-        # arbitrarily pick first possible partition as "random"
         nodes: list[int] = list(range(n))
-        rand: list[list[int]] = next(set_partitions(nodes, k))
+        rand: list[list[int]] = []
+
+        # use appoximation for Stirling Numbers of the second kind
+        count: int = ((k ** 2 + k + 2) // 2) * (k ** (n - k - 1)) - 1
+        parts: Iterator[list[list[int]]] = set_partitions(nodes, k)
+        for _ in range(random.randint(1, count)):
+            rand = next(parts)
         rand_total: float = 0.0
         for part in rand:
             rand_total += algos.WLP(g, part)

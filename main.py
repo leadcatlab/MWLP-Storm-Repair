@@ -1,5 +1,5 @@
-from graph import Graph
-import algos
+# from graph import Graph
+# import algos
 from typing_extensions import TypedDict
 import benchmark
 
@@ -14,23 +14,23 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    n: int = 10
+    # n: int = 4
 
-    g = Graph.randomComplete(n)
-    optimal_m, optimal_order = algos.optimalNumberOfAgents(
-        g, algos.bruteForceMWLP, 1, n - 1
-    )
-    print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
-    print(f"{optimal_order = }")
+    # g = Graph.randomComplete(n)
+    # optimal_m, optimal_order = algos.optimalNumberOfAgents(
+    #     g, algos.bruteForceMWLP, 1, n - 1
+    # )
+    # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
+    # print(f"{optimal_order = }")
 
-    g = Graph.randomCompleteMetric(n)
-    optimal_m, optimal_order = algos.optimalNumberOfAgents(
-        g, algos.bruteForceMWLP, 1, n - 1
-    )
-    print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
-    print(f"{optimal_order = }")
+    # g = Graph.randomCompleteMetric(n)
+    # optimal_m, optimal_order = algos.optimalNumberOfAgents(
+    #     g, algos.bruteForceMWLP, 1, n - 1
+    # )
+    # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
+    # print(f"{optimal_order = }")
 
-    # benchmark.benchmarkMulti(12, 3, 1, metric=True)
+    benchmark.benchmarkMulti(10, 2, 5, metric=False)
 
 
 if __name__ == "__main__":

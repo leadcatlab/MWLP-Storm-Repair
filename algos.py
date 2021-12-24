@@ -1,7 +1,6 @@
 from graph import Graph
 from itertools import permutations, combinations
 from more_itertools import set_partitions
-from collections.abc import Sequence
 from collections import deque
 from typing import Deque, Callable
 
@@ -36,7 +35,7 @@ def floydWarshall(g: Graph) -> list[list[float]]:
     return dist
 
 
-def WLP(g: Graph, order: Sequence[int]) -> float:
+def WLP(g: Graph, order: list[int]) -> float:
     """Calculate the weighted latency of a given path
 
     Args:
@@ -71,7 +70,7 @@ def WLP(g: Graph, order: Sequence[int]) -> float:
     return wlp
 
 
-def bruteForceMWLP(g: Graph, start: int = 0) -> Sequence[int]:
+def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
     """Calculate minumum weighted latency
 
     Iterates over all possible paths
@@ -107,7 +106,7 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> Sequence[int]:
     return best
 
 
-def nearestNeighbor(g: Graph, start: int = 0) -> Sequence[int]:
+def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
@@ -150,7 +149,7 @@ def nearestNeighbor(g: Graph, start: int = 0) -> Sequence[int]:
     return order
 
 
-def greedy(g: Graph, start: int = 0) -> Sequence[int]:
+def greedy(g: Graph, start: int = 0) -> list[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
@@ -193,7 +192,7 @@ def greedy(g: Graph, start: int = 0) -> Sequence[int]:
     return order
 
 
-def TSP(g: Graph, start: int = 0) -> Sequence[int]:
+def TSP(g: Graph, start: int = 0) -> list[int]:
     """Brute Force TSP
 
     Generates sequence that solves travelling salesman. Solved via
@@ -217,7 +216,7 @@ def TSP(g: Graph, start: int = 0) -> Sequence[int]:
     min_dist = float("inf")
     nodes: list[int] = [i for i in range(g.numNodes)]
     nodes.remove(start)
-    best: Sequence[int] = []
+    best: list[int] = []
 
     # test every permutation
     for order in permutations(nodes):
@@ -232,13 +231,15 @@ def TSP(g: Graph, start: int = 0) -> Sequence[int]:
     return best
 
 
-def HeldKarp(g: Graph, start: int = 0) -> Sequence[int]:
+def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     """TSP via Held-Karp
 
     Generate the solution to TSP via dynamic programming using Held-Karp
+    Variable names closely follow wikipedia.org/wiki/Held-Karp_algorithm
 
     Args:
         g: input graph
+        start: start node
 
     Returns:
         list[int]: Solution to the Travelling Salesman Problem
@@ -254,23 +255,21 @@ def HeldKarp(g: Graph, start: int = 0) -> Sequence[int]:
 
     completed: dict[tuple[frozenset[int], int], tuple[float, list[int]]] = dict()
 
-    def solveTSP(
-        g: Graph, start: int, S: set[int], end: int
-    ) -> tuple[float, list[int]]:
+    def solveTour(g: Graph, S: set[int], e: int) -> tuple[float, list[int]]:
         if len(S) == 0:
-            return (g.edgeWeight[start][end], [start])
+            return (g.edgeWeight[start][e], [start])
 
         current_min = float("inf")
         best_order: list[int] = []
-        for t in S:
-            subtour: set[int] = set(S)
-            subtour.remove(t)
-            completed_length, completed_order = completed[(frozenset(subtour), t)]
-            subtour_length: float = completed_length + g.edgeWeight[t][end]
+        for s_i in S:
+            S_i: set[int] = set(S)
+            S_i.remove(s_i)
+            completed_length, completed_order = completed[(frozenset(S_i), s_i)]
+            subtour_length: float = completed_length + g.edgeWeight[s_i][e]
             if subtour_length < current_min:
                 current_min = subtour_length
                 subtour_order: list[int] = list(completed_order)
-                subtour_order.append(t)
+                subtour_order.append(s_i)
                 best_order = subtour_order
 
         return current_min, best_order
@@ -279,33 +278,25 @@ def HeldKarp(g: Graph, start: int = 0) -> Sequence[int]:
     targets.remove(start)
     for k in range(1, len(targets) + 1):
         for subset in combinations(targets, k):
-            for end in subset:
-                subtour: set[int] = set(subset)
-                subtour.remove(end)
-                completed[(frozenset(subtour), end)] = solveTSP(g, start, subtour, end)
+            for e in subset:
+                S: set[int] = set(subset)
+                S.remove(e)
+                completed[(frozenset(S), e)] = solveTour(g, S, e)
 
     tsp_sol = float("inf")
     best_order: list[int] = []
-    for end in targets:
-        S: set[int] = set(targets)
-        S.remove(end)
-        if completed[(frozenset(S), end)][0] < tsp_sol:
-            tsp_sol = completed[(frozenset(S), end)][0]
-            best_order = completed[(frozenset(S), end)][1] + [end]
-
-    # sanity check#
-    # tsp_order = TSP(g)
-    # valid_tsp_sol = 0.0
-    # for i in range(len(tsp_order) - 1):
-    #     valid_tsp_sol += g.edgeWeight[tsp_order[i]][tsp_order[i + 1]]
-
-    # assert tsp_sol == valid_tsp_sol
+    for s_i in targets:
+        S_i = set(targets)
+        S_i.remove(s_i)
+        if completed[(frozenset(S_i), s_i)][0] < tsp_sol:
+            tsp_sol = completed[(frozenset(S_i), s_i)][0]
+            best_order = completed[(frozenset(S_i), s_i)][1] + [s_i]
 
     return best_order
 
 
 def partitionHeuristic(
-    g: Graph, f: Callable[..., Sequence[int]], k: int
+    g: Graph, f: Callable[..., list[int]], k: int
 ) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP
 
@@ -362,7 +353,7 @@ def partitionHeuristic(
 
 
 def optimalNumberOfAgents(
-    g: Graph, f: Callable[..., Sequence[int]], k_min: int, k_max: int
+    g: Graph, f: Callable[..., list[int]], k_min: int, k_max: int
 ) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP for variable number of agents
 

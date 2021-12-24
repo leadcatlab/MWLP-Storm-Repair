@@ -180,6 +180,37 @@ def test_TSP() -> None:
     assert algos.TSP(g, start=1) == [1, 2, 0, 3]
 
 
+def test_HeldKarp() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    assert algos.HeldKarp(g, start=0) == [0, 1, 2, 3]
+
+
+def test_TSP_correctness() -> None:
+    for _ in range(10):
+        g = Graph.randomComplete(7)
+
+        assert algos.HeldKarp(g) == algos.TSP(g)
+
+
 def test_partitionHeuristic_MWLP_2_agents() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -380,6 +411,37 @@ def test_TSP_invalid_start() -> None:
 
     with pytest.raises(ValueError):
         algos.TSP(g, start=4)
+
+
+def test_HK_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.HeldKarp(g)
+
+
+def test_HK_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.HeldKarp(g, start=4)
 
 
 def test_partition_incomplete() -> None:

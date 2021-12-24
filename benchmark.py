@@ -61,7 +61,7 @@ def benchmarkSingle(
             else Graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
         )
         brute_forces.append(algos.WLP(g, algos.bruteForceMWLP(g)))
-        tsp_orders.append(algos.WLP(g, algos.TSP(g)))
+        tsp_orders.append(algos.WLP(g, algos.HeldKarp(g)))
         random_orders.append(
             algos.WLP(g, [0] + list(np.random.permutation([i for i in range(1, n)])))
         )
@@ -211,7 +211,7 @@ def benchmarkMulti(
         brute_m, brute_order = algos.partitionHeuristic(g, algos.bruteForceMWLP, k)
         brute_forces.append(brute_m)
 
-        tsp_m, tsp_order = algos.partitionHeuristic(g, algos.TSP, k)
+        tsp_m, tsp_order = algos.partitionHeuristic(g, algos.HeldKarp, k)
         tsp_orders.append(tsp_m)
 
         nodes: list[int] = list(range(n))

@@ -1,12 +1,11 @@
 from graph import Graph
-from itertools import permutations
+from itertools import permutations, combinations
 from more_itertools import set_partitions
 from collections.abc import Sequence
 from collections import deque
 from typing import Deque, Callable
 
 # TODO: Implement Christofides' Algorithm
-# TODO: Implement Held-Karp for TSP
 # TODO: Try to implement MWLP DP Algorithm
 
 
@@ -195,9 +194,10 @@ def greedy(g: Graph, start: int = 0) -> Sequence[int]:
 
 
 def TSP(g: Graph, start: int = 0) -> Sequence[int]:
-    """Approximates MWLP using Travelling Salesman heuristic
+    """Brute Force TSP
 
-    Generates sequence that solves travelling salesman
+    Generates sequence that solves travelling salesman. Solved via
+    pure brute force of all possible orders.
 
     Args:
         g: input graph
@@ -230,6 +230,78 @@ def TSP(g: Graph, start: int = 0) -> Sequence[int]:
             best = full_order
 
     return best
+
+
+def HeldKarp(g: Graph, start: int = 0) -> Sequence[int]:
+    """TSP via Held-Karp
+
+    Generate the solution to TSP via dynamic programming using Held-Karp
+
+    Args:
+        g: input graph
+
+    Returns:
+        list[int]: Solution to the Travelling Salesman Problem
+
+    """
+
+    # for now assume complete
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
+
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
+    completed: dict[tuple[frozenset[int], int], tuple[float, list[int]]] = dict()
+
+    def solveTSP(
+        g: Graph, start: int, S: set[int], end: int
+    ) -> tuple[float, list[int]]:
+        if len(S) == 0:
+            return (g.edgeWeight[start][end], [start])
+
+        current_min = float("inf")
+        best_order: list[int] = []
+        for t in S:
+            subtour: set[int] = set(S)
+            subtour.remove(t)
+            completed_length, completed_order = completed[(frozenset(subtour), t)]
+            subtour_length: float = completed_length + g.edgeWeight[t][end]
+            if subtour_length < current_min:
+                current_min = subtour_length
+                subtour_order: list[int] = list(completed_order)
+                subtour_order.append(t)
+                best_order = subtour_order
+
+        return current_min, best_order
+
+    targets: set[int] = set(i for i in range(g.numNodes))
+    targets.remove(start)
+    for k in range(1, len(targets) + 1):
+        for subset in combinations(targets, k):
+            for end in subset:
+                subtour: set[int] = set(subset)
+                subtour.remove(end)
+                completed[(frozenset(subtour), end)] = solveTSP(g, start, subtour, end)
+
+    tsp_sol = float("inf")
+    best_order: list[int] = []
+    for end in targets:
+        S: set[int] = set(targets)
+        S.remove(end)
+        if completed[(frozenset(S), end)][0] < tsp_sol:
+            tsp_sol = completed[(frozenset(S), end)][0]
+            best_order = completed[(frozenset(S), end)][1] + [end]
+
+    # sanity check#
+    # tsp_order = TSP(g)
+    # valid_tsp_sol = 0.0
+    # for i in range(len(tsp_order) - 1):
+    #     valid_tsp_sol += g.edgeWeight[tsp_order[i]][tsp_order[i + 1]]
+
+    # assert tsp_sol == valid_tsp_sol
+
+    return best_order
 
 
 def partitionHeuristic(

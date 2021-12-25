@@ -5,11 +5,14 @@ from collections import deque
 from typing import Deque, Callable
 
 # TODO: Implement Christofides' Algorithm
-# TODO: Try to implement MWLP DP Algorithm
+# TODO: MWLP_DP does not return correct order 100% of the time
 
 
-def floydWarshall(g: Graph) -> list[list[float]]:
+def FloydWarshall(g: Graph) -> list[list[float]]:
     """Use Floyd-Warshall algorithm to solve all pairs shortest path
+
+    Args:
+        g: input graph
 
     Returns:
         2D array of distances
@@ -21,12 +24,14 @@ def floydWarshall(g: Graph) -> list[list[float]]:
     n: int = g.numNodes
     dist: list[list[float]] = [[float("inf") for _ in range(n)] for _ in range(n)]
 
+    # initialize dist-table
     for i in range(n):
         dist[i][i] = 0.0
         for j in range(n):
             if i != j and j in g.adjacenList[i]:
                 dist[i][j] = g.edgeWeight[i][j]
 
+    # if dist[i][k] + dist[k][j] < dist[i][j]: update
     for k in range(n):
         for i in range(n):
             for j in range(n):
@@ -46,17 +51,17 @@ def WLP(g: Graph, order: list[int]) -> float:
         float: the weighted latency
     """
 
-    if len(order) <= 1:
-        return 0.0
-
-    n = g.numNodes
+    n: int = g.numNodes
     # check nodes in order are actually valid nodes
     for node in order:
         if node >= n:
             raise ValueError(f"Node {node} is not in passed graph")
 
-    # sum over sequence of w(i) * L(0, i)
-    wlp = 0.0
+    if len(order) <= 1:
+        return 0.0
+
+    # sum over sequence [v_0, v_1, ...] of w(v_i) * L(0, v_i)
+    wlp: float = 0.0
     for i in range(0, len(order)):
         # find length of path
         path: float = 0.0
@@ -86,15 +91,17 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
 
-    mwlp = float("inf")
+    # valid nodes to visit
     nodes: list[int] = [i for i in range(g.numNodes)]
     nodes.remove(start)
 
     best = []
     mwlp = float("inf")
+
     # test every permutation
     for order in permutations(nodes):
         full_order: list[int] = [start] + list(order)
@@ -104,6 +111,80 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
             best = full_order
 
     return best
+
+
+def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
+    """Solve MWLP using DP
+
+    Solves MWLP using an algorithm very similar to Held-Karp for DP
+
+    Args:
+        g: Graph to solve over
+        start: optional start node
+
+    Returns:
+        order: MWLP solution order
+    """
+
+    # for now assume complete
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
+
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+
+    # key: tuple(set[int]: nodes, int: end)
+    # value: tuple(float: mwlp, float: path length, list[int]: order of nodes)
+    completed = dict()  # type: ignore # typing this would be too verbose
+
+    # recursive solver
+    def solveTour(g: Graph, S: set[int], e: int) -> tuple[float, float, list[int]]:
+        # base case: if no in-between nodes must take edge from start -> e
+        if len(S) == 0:
+            path_len: float = g.edgeWeight[start][e]
+            return (path_len * g.nodeWeight[e], path_len, [start])
+
+        current_mwlp = float("inf")
+        current_length = float("inf")
+        best_order: list[int] = []
+        # otherwise iterate over S all possible second-t-last nodes
+        for s_i in S:
+            S_i: set[int] = set(S)
+            S_i.remove(s_i)
+            sub_mwlp, sublength, order = completed[(frozenset(S_i), s_i)]
+            subtour_length: float = sublength + g.edgeWeight[s_i][e]
+            mwlp = (g.nodeWeight[e] * subtour_length) + sub_mwlp
+            if mwlp < current_mwlp:
+                current_mwlp = mwlp
+                current_length = subtour_length
+                subtour_order: list[int] = list(order)
+                subtour_order.append(s_i)
+                best_order = subtour_order
+
+        return current_mwlp, current_length, best_order
+
+    # solve MWLP over all subsets of nodes, smallest to largest
+    targets: set[int] = set(i for i in range(g.numNodes))
+    targets.remove(start)
+    for k in range(1, len(targets) + 1):
+        for subset in combinations(targets, k):
+            for e in subset:
+                S: set[int] = set(subset)
+                S.remove(e)
+                completed[(frozenset(S), e)] = solveTour(g, S, e)
+
+    # Find best MWLP over all nodes (essentially solving last case again)
+    mwlp_sol = float("inf")
+    best_order: list[int] = []
+    for s_i in targets:
+        S_i: set[int] = set(targets)
+        S_i.remove(s_i)
+        mwlp, length, order = completed[(frozenset(S_i), s_i)]
+        if mwlp < mwlp_sol:
+            mwlp_sol = mwlp
+            best_order = order + [s_i]
+
+    return best_order
 
 
 def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
@@ -123,16 +204,19 @@ def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
 
+    # keep track of visited nodes
     visited: list[bool] = [False] * g.numNodes
-    order: list[int] = [start]
-    q: Deque[int] = deque()
-    q.appendleft(start)
     visited[start] = True
 
     # Use queue to remember current node
+    order: list[int] = [start]
+    q: Deque[int] = deque()
+    q.appendleft(start)
+
     while len(q) != 0:
         curr: int = q.pop()
         dist = float("inf")
@@ -166,16 +250,19 @@ def greedy(g: Graph, start: int = 0) -> list[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
 
+    # keep track of visited nodes
     visited: list[bool] = [False] * g.numNodes
-    order: list[int] = [start]
-    q: Deque[int] = deque()
-    q.appendleft(start)
     visited[start] = True
 
     # Use queue to remember current node
+    order: list[int] = [start]
+    q: Deque[int] = deque()
+    q.appendleft(start)
+
     while len(q) != 0:
         curr: int = q.pop()
         weight = float("-inf")
@@ -210,12 +297,15 @@ def TSP(g: Graph, start: int = 0) -> list[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
 
-    min_dist = float("inf")
+    # valid nodes to visit
     nodes: list[int] = [i for i in range(g.numNodes)]
     nodes.remove(start)
+
+    min_dist = float("inf")
     best: list[int] = []
 
     # test every permutation
@@ -250,21 +340,27 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     if not Graph.isComplete(g):
         raise ValueError("Passed graph is not complete")
 
+    # assert validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
 
-    completed: dict[tuple[frozenset[int], int], tuple[float, list[int]]] = dict()
+    # key: tuple(set[int]: nodes, int: end)
+    # value: tuple(float: path length, list[int]:  order of nodes)
+    completed = dict()  # type: ignore # typing this would be too verbose
 
+    # recursive solver
     def solveTour(g: Graph, S: set[int], e: int) -> tuple[float, list[int]]:
+        # base case: if no in-between nodes must take edge from start -> e
         if len(S) == 0:
             return (g.edgeWeight[start][e], [start])
 
         current_min = float("inf")
         best_order: list[int] = []
+        # otherwise iterate over S all possible second-t-last nodes
         for s_i in S:
             S_i: set[int] = set(S)
             S_i.remove(s_i)
-            completed_length, completed_order = completed[(frozenset(S_i), s_i)]
+            completed_length, completed_order = completed[frozenset(S_i), s_i]
             subtour_length: float = completed_length + g.edgeWeight[s_i][e]
             if subtour_length < current_min:
                 current_min = subtour_length
@@ -274,6 +370,7 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
 
         return current_min, best_order
 
+    # solve TSP over all subsets of nodes, smallest to largest
     targets: set[int] = set(i for i in range(g.numNodes))
     targets.remove(start)
     for k in range(1, len(targets) + 1):
@@ -281,16 +378,17 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
             for e in subset:
                 S: set[int] = set(subset)
                 S.remove(e)
-                completed[(frozenset(S), e)] = solveTour(g, S, e)
+                completed[frozenset(S), e] = solveTour(g, S, e)
 
+    # Find best TSP over all nodes (essentially solving last case again)
     tsp_sol = float("inf")
     best_order: list[int] = []
     for s_i in targets:
         S_i = set(targets)
         S_i.remove(s_i)
-        if completed[(frozenset(S_i), s_i)][0] < tsp_sol:
-            tsp_sol = completed[(frozenset(S_i), s_i)][0]
-            best_order = completed[(frozenset(S_i), s_i)][1] + [s_i]
+        if completed[frozenset(S_i), s_i][0] < tsp_sol:
+            tsp_sol = completed[frozenset(S_i), s_i][0]
+            best_order = completed[frozenset(S_i), s_i][1] + [s_i]
 
     return best_order
 
@@ -324,24 +422,28 @@ def partitionHeuristic(
     if k > g.numNodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
 
-    best_order: list[list[int]] = []
-    minimum = float("inf")
     # assume start is at 0
     nodes = [i for i in range(1, g.numNodes)]
+
+    best_order: list[list[int]] = []
+    minimum = float("inf")
 
     # iterate through each partition
     for part in set_partitions(nodes, k):
         curr: float = 0.0
         part_order: list[list[int]] = []
+
         # iterate through each group in partition
         for nodes in part:
             # assume starting at 0
             full_order: list[int] = [0] + list(nodes)
             sg, sto, ots = Graph.subgraph(g, full_order)
 
-            heuristic_order = f(sg)
+            # calculuate heuristic
+            heuristic_order: list[int] = f(sg)
             curr += WLP(sg, heuristic_order)
 
+            # collect orders
             original_order = [sto[n] for n in heuristic_order]
             part_order.append(original_order)
 
@@ -393,6 +495,7 @@ def optimalNumberOfAgents(
     best_order: list[list[int]] = []
     minimum = float("inf")
 
+    # iterate through all possible numbers of agents
     for k in range(k_min, k_max + 1):
         min_for_k, order_for_k = partitionHeuristic(g, f, k)
         if min_for_k < minimum:

@@ -17,14 +17,14 @@ graphDict = TypedDict(
 
 def test_fW_empty() -> None:
     g = Graph()
-    dist: list[list[float]] = algos.floydWarshall(g)
+    dist: list[list[float]] = algos.FloydWarshall(g)
 
     assert len(dist) == 0
 
 
 def test_fW_no_edges() -> None:
     g = Graph(5)
-    dist: list[list[float]] = algos.floydWarshall(g)
+    dist: list[list[float]] = algos.FloydWarshall(g)
 
     assert len(dist) == len(dist[0]) == 5
     for i in range(5):
@@ -36,7 +36,7 @@ def test_fW_no_edges() -> None:
 
 def test_fW_complete() -> None:
     g = Graph.randomCompleteMetric(5)
-    dist: list[list[float]] = algos.floydWarshall(g)
+    dist: list[list[float]] = algos.FloydWarshall(g)
 
     for i in range(g.numNodes):
         for j in range(g.numNodes):
@@ -48,7 +48,7 @@ def test_fW_complete() -> None:
 
 def test_fW_metric_complete() -> None:
     g = Graph.randomCompleteMetric(5)
-    dist: list[list[float]] = algos.floydWarshall(g)
+    dist: list[list[float]] = algos.FloydWarshall(g)
 
     for i in range(g.numNodes):
         for j in range(g.numNodes):
@@ -103,6 +103,12 @@ def test_bruteForceMWLP() -> None:
 
     assert algos.bruteForceMWLP(g) == [0, 1, 2, 3]
     assert algos.bruteForceMWLP(g, start=1) == [1, 2, 0, 3]
+
+
+def test_MWLP_correctness() -> None:
+    for _ in range(100):
+        g = Graph.randomComplete(7)
+        assert algos.bruteForceMWLP(g) == algos.MWLP_DP(g)
 
 
 def test_nearestNeighbor() -> None:
@@ -205,9 +211,8 @@ def test_HeldKarp() -> None:
 
 
 def test_TSP_correctness() -> None:
-    for _ in range(10):
+    for _ in range(100):
         g = Graph.randomComplete(7)
-
         assert algos.HeldKarp(g) == algos.TSP(g)
 
 
@@ -442,6 +447,37 @@ def test_HK_invalid_start() -> None:
 
     with pytest.raises(ValueError):
         algos.HeldKarp(g, start=4)
+
+
+def test_MWLP_DP_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.MWLP_DP(g)
+
+
+def test_MWLP_DP_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.MWLP_DP(g, start=4)
 
 
 def test_partition_incomplete() -> None:

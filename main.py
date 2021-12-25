@@ -1,5 +1,5 @@
-# from graph import Graph
-# import algos
+from graph import Graph
+import algos
 from typing_extensions import TypedDict
 import benchmark
 
@@ -30,7 +30,13 @@ def main() -> None:
     # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
     # print(f"{optimal_order = }")
 
-    benchmark.benchmarkMulti(10, 2, 5, metric=False)
+    # benchmark.benchmarkMulti(10, 2, 5, metric=False)
+
+    g = Graph.randomCompleteMetric(5)
+    mwlp_brute = algos.bruteForceMWLP(g)
+    mwlp_dp = algos.MWLP_DP(g)
+    print(mwlp_brute)
+    print(mwlp_dp)
 
 
 if __name__ == "__main__":

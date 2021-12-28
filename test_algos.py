@@ -106,9 +106,12 @@ def test_bruteForceMWLP() -> None:
 
 
 def test_MWLP_correctness() -> None:
+    # TODO: This does not work 100% of the time and I have no idea why
     for _ in range(100):
         g = Graph.randomComplete(7)
-        assert algos.bruteForceMWLP(g) == algos.MWLP_DP(g)
+        brute: list[int] = algos.bruteForceMWLP(g)
+        DP: list[int] = algos.MWLP_DP(g)
+        assert algos.WLP(g, brute) == algos.WLP(g, DP)
 
 
 def test_nearestNeighbor() -> None:
@@ -211,7 +214,7 @@ def test_HeldKarp() -> None:
 
 
 def test_TSP_correctness() -> None:
-    for _ in range(100):
+    for _ in range(10):
         g = Graph.randomComplete(7)
         assert algos.HeldKarp(g) == algos.TSP(g)
 

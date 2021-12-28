@@ -99,7 +99,7 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
     nodes: list[int] = [i for i in range(g.numNodes)]
     nodes.remove(start)
 
-    best = []
+    best: list[int] = []
     mwlp = float("inf")
 
     # test every permutation
@@ -138,7 +138,7 @@ def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
     completed = dict()  # type: ignore # typing this would be too verbose
 
     # recursive solver
-    def solveTour(g: Graph, S: set[int], e: int) -> tuple[float, float, list[int]]:
+    def solveMWLP(S: set[int], e: int) -> tuple[float, float, list[int]]:
         # base case: if no in-between nodes must take edge from start -> e
         if len(S) == 0:
             path_len: float = g.edgeWeight[start][e]
@@ -147,19 +147,18 @@ def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
         current_mwlp = float("inf")
         current_length = float("inf")
         best_order: list[int] = []
-        # otherwise iterate over S all possible second-t-last nodes
+        # otherwise iterate over S all possible second-to-last nodes
         for s_i in S:
             S_i: set[int] = set(S)
             S_i.remove(s_i)
-            sub_mwlp, sublength, order = completed[(frozenset(S_i), s_i)]
-            subtour_length: float = sublength + g.edgeWeight[s_i][e]
-            mwlp = (g.nodeWeight[e] * subtour_length) + sub_mwlp
+            sub_mwlp, sublength, suborder = completed[frozenset(S_i), s_i]
+            length: float = sublength + g.edgeWeight[s_i][e]
+            mwlp: float = (g.nodeWeight[e] * length) + sub_mwlp
             if mwlp < current_mwlp:
                 current_mwlp = mwlp
-                current_length = subtour_length
-                subtour_order: list[int] = list(order)
-                subtour_order.append(s_i)
-                best_order = subtour_order
+                current_length = length
+                order: list[int] = suborder + [s_i]
+                best_order = order
 
         return current_mwlp, current_length, best_order
 
@@ -171,15 +170,15 @@ def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
             for e in subset:
                 S: set[int] = set(subset)
                 S.remove(e)
-                completed[(frozenset(S), e)] = solveTour(g, S, e)
+                completed[frozenset(S), e] = solveMWLP(S, e)
 
     # Find best MWLP over all nodes (essentially solving last case again)
     mwlp_sol = float("inf")
     best_order: list[int] = []
     for s_i in targets:
-        S_i: set[int] = set(targets)
+        S_i = set(targets)
         S_i.remove(s_i)
-        mwlp, length, order = completed[(frozenset(S_i), s_i)]
+        mwlp, _, order = completed[frozenset(S_i), s_i]
         if mwlp < mwlp_sol:
             mwlp_sol = mwlp
             best_order = order + [s_i]
@@ -349,26 +348,24 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     completed = dict()  # type: ignore # typing this would be too verbose
 
     # recursive solver
-    def solveTour(g: Graph, S: set[int], e: int) -> tuple[float, list[int]]:
+    def solveTour(S: set[int], e: int) -> tuple[float, list[int]]:
         # base case: if no in-between nodes must take edge from start -> e
         if len(S) == 0:
             return (g.edgeWeight[start][e], [start])
 
-        current_min = float("inf")
+        min_length = float("inf")
         best_order: list[int] = []
         # otherwise iterate over S all possible second-t-last nodes
         for s_i in S:
             S_i: set[int] = set(S)
             S_i.remove(s_i)
-            completed_length, completed_order = completed[frozenset(S_i), s_i]
-            subtour_length: float = completed_length + g.edgeWeight[s_i][e]
-            if subtour_length < current_min:
-                current_min = subtour_length
-                subtour_order: list[int] = list(completed_order)
-                subtour_order.append(s_i)
-                best_order = subtour_order
+            sublength, suborder = completed[frozenset(S_i), s_i]
+            length: float = sublength + g.edgeWeight[s_i][e]
+            if length < min_length:
+                min_length = length
+                best_order = list(suborder) + [s_i]
 
-        return current_min, best_order
+        return min_length, best_order
 
     # solve TSP over all subsets of nodes, smallest to largest
     targets: set[int] = set(i for i in range(g.numNodes))
@@ -378,7 +375,7 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
             for e in subset:
                 S: set[int] = set(subset)
                 S.remove(e)
-                completed[frozenset(S), e] = solveTour(g, S, e)
+                completed[frozenset(S), e] = solveTour(S, e)
 
     # Find best TSP over all nodes (essentially solving last case again)
     tsp_sol = float("inf")
@@ -386,9 +383,10 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     for s_i in targets:
         S_i = set(targets)
         S_i.remove(s_i)
-        if completed[frozenset(S_i), s_i][0] < tsp_sol:
-            tsp_sol = completed[frozenset(S_i), s_i][0]
-            best_order = completed[frozenset(S_i), s_i][1] + [s_i]
+        tsp, order = completed[frozenset(S_i), s_i]
+        if tsp < tsp_sol:
+            tsp_sol = tsp
+            best_order = order + [s_i]
 
     return best_order
 

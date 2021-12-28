@@ -32,11 +32,13 @@ def main() -> None:
 
     # benchmark.benchmarkMulti(10, 2, 5, metric=False)
 
-    g = Graph.randomCompleteMetric(5)
+    g = Graph.randomCompleteMetric(8)
     mwlp_brute = algos.bruteForceMWLP(g)
     mwlp_dp = algos.MWLP_DP(g)
     print(mwlp_brute)
+    print(algos.WLP(g, mwlp_brute))
     print(mwlp_dp)
+    print(algos.WLP(g, mwlp_dp))
 
 
 if __name__ == "__main__":

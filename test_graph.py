@@ -76,6 +76,20 @@ def test_fromDict() -> None:
     assert g.nodeWeight == [0, 0, 0]
 
 
+def test_dictFromGraph() -> None:
+    g = Graph.randomComplete(5)
+    gd = Graph.dictFromGraph(g)
+    assert gd["numNodes"] == 5
+    assert len(gd["edges"]) == 20
+    assert len(gd["nodeWeight"]) == 5
+
+    g_again = Graph.fromDict(gd)
+    assert g.numNodes == g_again.numNodes
+    assert g.nodeWeight == g_again.nodeWeight
+    assert g.adjacenList == g_again.adjacenList
+    assert g.edgeWeight == g_again.edgeWeight
+
+
 def test_isComplete() -> None:
     g = Graph(4)
     for i in range(4):

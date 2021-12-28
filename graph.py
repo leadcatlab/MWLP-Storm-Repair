@@ -89,6 +89,25 @@ class Graph:
         return g
 
     @staticmethod
+    def dictFromGraph(g: Graph) -> graphDict:
+        numNodes: int = g.numNodes
+        nodeWeight: list[int] = g.nodeWeight
+
+        edges: list[tuple[int, int, float]] = []
+        for i in range(numNodes):
+            for j in range(numNodes):
+                if i != j and j in g.adjacenList[i]:
+                    edges.append((i, j, g.edgeWeight[i][j]))
+
+        gd: graphDict = {
+            "numNodes": numNodes,
+            "edges": edges,
+            "nodeWeight": nodeWeight,
+        }
+
+        return gd
+
+    @staticmethod
     def randomComplete(
         n: int, edgeW: tuple[float, float] = (0, 1), nodeW: tuple[int, int] = (0, 100)
     ) -> Graph:
@@ -345,7 +364,13 @@ class Graph:
             nodes: str = ""
 
             for j in currentList:
-                nodes += " "*4 + str(j) + " with distance " + str(self.edgeWeight[i][j]) + "\n"
+                nodes += (
+                    " " * 4
+                    + str(j)
+                    + " with distance "
+                    + str(self.edgeWeight[i][j])
+                    + "\n"
+                )
 
             toPrint += "Node " + str(i) + " is connected to: \n" + nodes + "\n"
 

@@ -51,21 +51,20 @@ def WLP(g: Graph, order: list[int]) -> float:
         float: the weighted latency
     """
 
-    n: int = g.numNodes
     # check nodes in order are actually valid nodes
     for node in order:
-        if node >= n:
+        if node >= g.numNodes:
             raise ValueError(f"Node {node} is not in passed graph")
 
     if len(order) <= 1:
         return 0.0
 
-    # sum over sequence [v_0, v_1, ...] of w(v_i) * L(0, v_i)
+    # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
     wlp: float = 0.0
-    for i in range(0, len(order)):
+    for i in range(0, len(order)):  # i = 0 to n
         # find length of path
         path: float = 0.0
-        for j in range(0, i):
+        for j in range(0, i):  # j = 0 to i - 1
             if order[j + 1] not in g.adjacenList[order[j]]:
                 raise ValueError(f"Edge {order[j]} --> {order[j + 1]} does not exist")
             path += g.edgeWeight[order[j]][order[j + 1]]
@@ -172,6 +171,9 @@ def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
                 S.remove(e)
                 completed[frozenset(S), e] = solveMWLP(S, e)
 
+    # sanity check
+    sol = bruteForceMWLP(g)
+
     # Find best MWLP over all nodes (essentially solving last case again)
     mwlp_sol = float("inf")
     best_order: list[int] = []
@@ -182,7 +184,11 @@ def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
         if mwlp < mwlp_sol:
             mwlp_sol = mwlp
             best_order = order + [s_i]
+            assert mwlp == WLP(g, best_order)
 
+    if sol != best_order:
+        print(f"{sol =        }")
+        print(f"{best_order = }")
     return best_order
 
 

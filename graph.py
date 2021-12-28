@@ -345,9 +345,9 @@ class Graph:
             nodes: str = ""
 
             for j in currentList:
-                nodes += str(j) + " with distance " + str(self.edgeWeight[i][j]) + " "
+                nodes += " "*4 + str(j) + " with distance " + str(self.edgeWeight[i][j]) + "\n"
 
-            toPrint += "Node " + str(i) + " is connected to " + nodes + "\n"
+            toPrint += "Node " + str(i) + " is connected to: \n" + nodes + "\n"
 
         toPrint += "\n"
 

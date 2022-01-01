@@ -112,86 +112,6 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
     return best
 
 
-def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
-    """Solve MWLP using DP
-
-    Solves MWLP using an algorithm very similar to Held-Karp for DP
-
-    Args:
-        g: Graph to solve over
-        start: optional start node
-
-    Returns:
-        order: MWLP solution order
-    """
-
-    # for now assume complete
-    if not Graph.isComplete(g):
-        raise ValueError("Passed graph is not complete")
-
-    if start >= g.numNodes:
-        raise ValueError(f"{start = } is not in passed graph")
-
-    # key: tuple(set[int]: nodes, int: end)
-    # value: tuple(float: mwlp, float: path length, list[int]: order of nodes)
-    completed = dict()  # type: ignore # typing this would be too verbose
-
-    # recursive solver
-    def solveMWLP(S: set[int], e: int) -> tuple[float, float, list[int]]:
-        # base case: if no in-between nodes must take edge from start -> e
-        if len(S) == 0:
-            path_len: float = g.edgeWeight[start][e]
-            return (path_len * g.nodeWeight[e], path_len, [start])
-
-        current_mwlp = float("inf")
-        current_length = float("inf")
-        best_order: list[int] = []
-        # otherwise iterate over S all possible second-to-last nodes
-        for s_i in S:
-            S_i: set[int] = set(S)
-            S_i.remove(s_i)
-            sub_mwlp, sublength, suborder = completed[frozenset(S_i), s_i]
-            length: float = sublength + g.edgeWeight[s_i][e]
-            mwlp: float = (g.nodeWeight[e] * length) + sub_mwlp
-            if mwlp < current_mwlp:
-                current_mwlp = mwlp
-                current_length = length
-                order: list[int] = suborder + [s_i]
-                best_order = order
-
-        return current_mwlp, current_length, best_order
-
-    # solve MWLP over all subsets of nodes, smallest to largest
-    targets: set[int] = set(i for i in range(g.numNodes))
-    targets.remove(start)
-    for k in range(1, len(targets) + 1):
-        for subset in combinations(targets, k):
-            for e in subset:
-                S: set[int] = set(subset)
-                S.remove(e)
-                completed[frozenset(S), e] = solveMWLP(S, e)
-
-    # sanity check
-    sol = bruteForceMWLP(g)
-
-    # Find best MWLP over all nodes (essentially solving last case again)
-    mwlp_sol = float("inf")
-    best_order: list[int] = []
-    for s_i in targets:
-        S_i = set(targets)
-        S_i.remove(s_i)
-        mwlp, _, order = completed[frozenset(S_i), s_i]
-        if mwlp < mwlp_sol:
-            mwlp_sol = mwlp
-            best_order = order + [s_i]
-            assert mwlp == WLP(g, best_order)
-
-    if sol != best_order:
-        print(f"{sol =        }")
-        print(f"{best_order = }")
-    return best_order
-
-
 def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
@@ -507,3 +427,85 @@ def optimalNumberOfAgents(
             best_order = order_for_k
 
     return minimum, best_order
+
+
+# Depreciated MWLP_DP function. Does not work
+# TODO: Elaborate on weakness
+# def MWLP_DP(g: Graph, start: int = 0) -> list[int]:
+#     """Solve MWLP using DP
+#
+#     Solves MWLP using an algorithm very similar to Held-Karp for DP
+#
+#     Args:
+#         g: Graph to solve over
+#         start: optional start node
+#
+#     Returns:
+#         order: MWLP solution order
+#     """
+#
+#     # for now assume complete
+#     if not Graph.isComplete(g):
+#         raise ValueError("Passed graph is not complete")
+#
+#     if start >= g.numNodes:
+#         raise ValueError(f"{start = } is not in passed graph")
+#
+#     # key: tuple(set[int]: nodes, int: end)
+#     # value: tuple(float: mwlp, float: path length, list[int]: order of nodes)
+#     completed = dict()  # type: ignore # typing this would be too verbose
+#
+#     # recursive solver
+#     def solveMWLP(S: set[int], e: int) -> tuple[float, float, list[int]]:
+#         # base case: if no in-between nodes must take edge from start -> e
+#         if len(S) == 0:
+#             path_len: float = g.edgeWeight[start][e]
+#             return (path_len * g.nodeWeight[e], path_len, [start])
+#
+#         current_mwlp = float("inf")
+#         current_length = float("inf")
+#         best_order: list[int] = []
+#         # otherwise iterate over S all possible second-to-last nodes
+#         for s_i in S:
+#             S_i: set[int] = set(S)
+#             S_i.remove(s_i)
+#             sub_mwlp, sublength, suborder = completed[frozenset(S_i), s_i]
+#             length: float = sublength + g.edgeWeight[s_i][e]
+#             mwlp: float = (g.nodeWeight[e] * length) + sub_mwlp
+#             if mwlp < current_mwlp:
+#                 current_mwlp = mwlp
+#                 current_length = length
+#                 order: list[int] = suborder + [s_i]
+#                 best_order = order
+#
+#         return current_mwlp, current_length, best_order
+#
+#     # solve MWLP over all subsets of nodes, smallest to largest
+#     targets: set[int] = set(i for i in range(g.numNodes))
+#     targets.remove(start)
+#     for k in range(1, len(targets) + 1):
+#         for subset in combinations(targets, k):
+#             for e in subset:
+#                 S: set[int] = set(subset)
+#                 S.remove(e)
+#                 completed[frozenset(S), e] = solveMWLP(S, e)
+#
+#     # sanity check
+#     sol = bruteForceMWLP(g)
+#
+#     # Find best MWLP over all nodes (essentially solving last case again)
+#     mwlp_sol = float("inf")
+#     best_order: list[int] = []
+#     for s_i in targets:
+#         S_i = set(targets)
+#         S_i.remove(s_i)
+#         mwlp, _, order = completed[frozenset(S_i), s_i]
+#         if mwlp < mwlp_sol:
+#             mwlp_sol = mwlp
+#             best_order = order + [s_i]
+#             assert mwlp == WLP(g, best_order)
+#
+#     if sol != best_order:
+#         print(f"{sol =        }")
+#         print(f"{best_order = }")
+#     return best_order

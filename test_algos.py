@@ -105,49 +105,6 @@ def test_bruteForceMWLP() -> None:
     assert algos.bruteForceMWLP(g, start=1) == [1, 2, 0, 3]
 
 
-def test_MWLP_failure() -> None:
-    gd: graphDict = {
-        "numNodes": 5,
-        "edges": [
-            (0, 1, 0.08460),
-            (0, 2, 0.18341),
-            (0, 3, 0.88504),
-            (0, 4, 0.14662),
-            (1, 0, 0.08460),
-            (1, 2, 0.12179),
-            (1, 3, 0.69681),
-            (1, 4, 0.12064),
-            (2, 0, 0.18341),
-            (2, 1, 0.12179),
-            (2, 3, 0.89715),
-            (2, 4, 0.45557),
-            (3, 0, 0.88504),
-            (3, 1, 0.69681),
-            (3, 2, 0.89715),
-            (3, 4, 0.60908),
-            (4, 0, 0.14662),
-            (4, 1, 0.12064),
-            (4, 2, 0.45557),
-            (4, 3, 0.60908),
-        ],
-        "nodeWeight": [86, 62, 27, 63, 11],
-    }
-
-    g = Graph.fromDict(gd)
-    brute: list[int] = algos.bruteForceMWLP(g)
-    DP: list[int] = algos.MWLP_DP(g)
-    assert algos.WLP(g, brute) == algos.WLP(g, DP)
-
-
-def test_MWLP_correctness() -> None:
-    # TODO: This does not work 100% of the time and I have no idea why
-    for _ in range(100):
-        g = Graph.randomComplete(5)
-        brute: list[int] = algos.bruteForceMWLP(g)
-        DP: list[int] = algos.MWLP_DP(g)
-        assert algos.WLP(g, brute) == algos.WLP(g, DP)
-
-
 def test_nearestNeighbor() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -486,37 +443,6 @@ def test_HK_invalid_start() -> None:
         algos.HeldKarp(g, start=4)
 
 
-def test_MWLP_DP_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
-    with pytest.raises(ValueError):
-        algos.MWLP_DP(g)
-
-
-def test_MWLP_DP_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
-    with pytest.raises(ValueError):
-        algos.MWLP_DP(g, start=4)
-
-
 def test_partition_incomplete() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -593,3 +519,78 @@ def test_optimalNumberOfAgents_too_many() -> None:
     g = Graph.randomComplete(6)
     with pytest.raises(ValueError):
         algos.optimalNumberOfAgents(g, algos.TSP, 1, 6)
+
+
+### DEPRECIATED MWLP_DP TESTS
+
+# def test_MWLP_failure() -> None:
+#     gd: graphDict = {
+#         "numNodes": 5,
+#         "edges": [
+#             (0, 1, 0.08460),
+#             (0, 2, 0.18341),
+#             (0, 3, 0.88504),
+#             (0, 4, 0.14662),
+#             (1, 0, 0.08460),
+#             (1, 2, 0.12179),
+#             (1, 3, 0.69681),
+#             (1, 4, 0.12064),
+#             (2, 0, 0.18341),
+#             (2, 1, 0.12179),
+#             (2, 3, 0.89715),
+#             (2, 4, 0.45557),
+#             (3, 0, 0.88504),
+#             (3, 1, 0.69681),
+#             (3, 2, 0.89715),
+#             (3, 4, 0.60908),
+#             (4, 0, 0.14662),
+#             (4, 1, 0.12064),
+#             (4, 2, 0.45557),
+#             (4, 3, 0.60908),
+#         ],
+#         "nodeWeight": [86, 62, 27, 63, 11],
+#     }
+#
+#     g = Graph.fromDict(gd)
+#     brute: list[int] = algos.bruteForceMWLP(g)
+#     DP: list[int] = algos.MWLP_DP(g)
+#     assert algos.WLP(g, brute) == algos.WLP(g, DP)
+#
+#
+# def test_MWLP_correctness() -> None:
+#     # TODO: This does not work 100% of the time and I have no idea why
+#     for _ in range(100):
+#         g = Graph.randomComplete(5)
+#         brute: list[int] = algos.bruteForceMWLP(g)
+#         DP: list[int] = algos.MWLP_DP(g)
+#         assert algos.WLP(g, brute) == algos.WLP(g, DP)
+#
+# def test_MWLP_DP_incomplete() -> None:
+#     gd: graphDict = {
+#         "numNodes": 4,
+#         "edges": [
+#             (0, 1, 1.0),
+#             (0, 2, 3.0),
+#             (0, 3, 5.0),
+#             (1, 2, 1.0),
+#             (1, 3, 50.0),
+#             (2, 0, 2.0),
+#             (2, 1, 7.0),
+#             (2, 3, 1.0),
+#             (3, 0, 8.0),
+#             (3, 1, 100.0),
+#             (3, 2, 2.0),
+#         ],
+#         "nodeWeight": [10, 5, 20, 7],
+#     }
+#     g = Graph.fromDict(gd)
+#
+#     with pytest.raises(ValueError):
+#         algos.MWLP_DP(g)
+#
+#
+# def test_MWLP_DP_invalid_start() -> None:
+#     g = Graph.randomComplete(4)
+#
+#     with pytest.raises(ValueError):
+#         algos.MWLP_DP(g, start=4)

@@ -59,17 +59,14 @@ def WLP(g: Graph, order: list[int]) -> float:
     if len(order) <= 1:
         return 0.0
 
-    # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
-    wlp: float = 0.0
-    for i in range(0, len(order)):  # i = 0 to n
-        # find length of path
-        path: float = 0.0
-        for j in range(0, i):  # j = 0 to i - 1
-            if order[j + 1] not in g.adjacenList[order[j]]:
-                raise ValueError(f"Edge {order[j]} --> {order[j + 1]} does not exist")
-            path += g.edgeWeight[order[j]][order[j + 1]]
+    pathLen: list[float] = [0.0] * len(order)
+    for i in range(1, len(order)):
+        if order[i] not in g.adjacenList[order[i - 1]]:
+            raise ValueError(f"Edge {order[i - 1]} --> {order[i]} does not exist")
+        pathLen[i] = pathLen[i - 1] + g.edgeWeight[order[i - 1]][order[i]]
 
-        wlp += g.nodeWeight[order[i]] * path
+    # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
+    wlp: float = sum(g.nodeWeight[order[i]] * pathLen[i] for i in range(len(order)))
 
     return wlp
 

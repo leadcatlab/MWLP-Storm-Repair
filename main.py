@@ -14,7 +14,7 @@ graphDict = TypedDict(
 
 
 def main() -> None:
-    n: int = 4
+    n: int = 7
 
     g = Graph.randomComplete(n)
     optimal_m, optimal_order = algos.optimalNumberOfAgents(
@@ -23,14 +23,14 @@ def main() -> None:
     print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
     print(f"{optimal_order = }")
 
-    g = Graph.randomCompleteMetric(n)
-    optimal_m, optimal_order = algos.optimalNumberOfAgents(
-        g, algos.bruteForceMWLP, 1, n - 1
-    )
-    print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
-    print(f"{optimal_order = }")
+    # g = Graph.randomCompleteMetric(n)
+    # optimal_m, optimal_order = algos.optimalNumberOfAgents(
+    #     g, algos.bruteForceMWLP, 1, n - 1
+    # )
+    # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
+    # print(f"{optimal_order = }")
 
-    benchmark.benchmarkMulti(10, 2, 5, metric=False)
+    # benchmark.benchmarkMulti(8, 2, 5, metric=False)
 
 
 if __name__ == "__main__":

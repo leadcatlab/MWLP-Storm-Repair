@@ -3,13 +3,14 @@ from itertools import permutations, combinations
 from more_itertools import set_partitions
 from collections import deque
 from typing import Deque, Callable
+import numpy as np
 
+# TODO: Implement MWLP_DP from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.101.7189&rep=rep1&type=pdf
 # TODO: Implement Christofides' Algorithm
-# TODO: MWLP_DP does not return correct order 100% of the time
 
 
 def FloydWarshall(g: Graph) -> list[list[float]]:
-    """Use Floyd-Warshall algorithm to solve all pairs shortest path
+    """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
     Args:
         g: input graph
@@ -38,6 +39,38 @@ def FloydWarshall(g: Graph) -> list[list[float]]:
                 dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
 
     return dist
+
+
+def createMetricFromGraph(g: Graph) -> Graph:
+    """Create metric graph from input graph
+    Using Floyd-Warshall we can solve the APSP problem.
+    This gives edge weights that satisfy the triangle inequality
+
+    Args:
+        g: input graph
+
+    Returns:
+        Graph satisfying the triangle inequality (Metric Graph)
+
+    """
+
+    n: int = g.numNodes
+
+    metric = Graph(n)
+    metric.nodeWeight = g.nodeWeight
+    metric.adjacenList = g.adjacenList
+
+    metricWeights: list[list[float]] = FloydWarshall(g)
+    for i in range(n):
+        for j in range(n):
+            if (
+                i != j
+                and g.edgeWeight[i][j] != -1
+                and metricWeights[i][j] != float("inf")
+            ):
+                metric.edgeWeight[i][j] = metricWeights[i][j]
+
+    return metric
 
 
 def WLP(g: Graph, order: list[int]) -> float:
@@ -109,13 +142,15 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
     return best
 
 
-def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
+def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
 
     Args:
         g: input graph
+        start: start node after seqStart
+        seqStart: list of nodes already visited
 
     Returns:
         list[int]: nearest neighbor order
@@ -129,13 +164,24 @@ def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
     # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
+    if start in seqStart:
+        raise ValueError(
+            f"Cannot start ({start}) at node already visited in {seqStart = }"
+        )
+
+    # check validity of seqStart:
+    for n in seqStart:
+        if n >= g.numNodes:
+            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.numNodes
+    for n in seqStart:
+        visited[n] = True
     visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = [start]
+    order: list[int] = seqStart + [start]
     q: Deque[int] = deque()
     q.appendleft(start)
 
@@ -144,7 +190,7 @@ def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
         dist = float("inf")
         nearest: int = -1
         for n in g.adjacenList[curr]:
-            if visited[n] is False and g.edgeWeight[curr][n] < dist:
+            if not visited[n] and g.edgeWeight[curr][n] < dist:
                 dist = g.edgeWeight[curr][n]
                 nearest = n
         if nearest != -1:
@@ -155,13 +201,15 @@ def nearestNeighbor(g: Graph, start: int = 0) -> list[int]:
     return order
 
 
-def greedy(g: Graph, start: int = 0) -> list[int]:
+def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
 
     Args:
         g: input graph
+        start: start node after seqStart
+        seqStart: list of nodes already visited
 
     Returns:
         list[int]: greedy order
@@ -175,13 +223,24 @@ def greedy(g: Graph, start: int = 0) -> list[int]:
     # check validity of start
     if start >= g.numNodes:
         raise ValueError(f"{start = } is not in passed graph")
+    if start in seqStart:
+        raise ValueError(
+            f"Cannot start ({start}) at node already visited in {seqStart = }"
+        )
+
+    # check validity of seqStart:
+    for n in seqStart:
+        if n >= g.numNodes:
+            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.numNodes
+    for n in seqStart:
+        visited[n] = True
     visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = [start]
+    order: list[int] = seqStart + [start]
     q: Deque[int] = deque()
     q.appendleft(start)
 
@@ -199,6 +258,50 @@ def greedy(g: Graph, start: int = 0) -> list[int]:
             visited[heaviest] = True
 
     return order
+
+
+def randomOrder(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
+    """Random order generator
+
+    Generates random sequence starting from start or starting from seqStart -> start
+    Essentially a wrapper around np.random.permutation
+
+    Args:
+        g: input graph
+        start: start node after seqStart
+        seqStart: list of nodes already visited
+
+    Returns:
+        list[int]: greedy order
+
+    """
+
+    # for now assume complete
+    if not Graph.isComplete(g):
+        raise ValueError("Passed graph is not complete")
+
+    # check validity of start
+    if start >= g.numNodes:
+        raise ValueError(f"{start = } is not in passed graph")
+    if start in seqStart:
+        raise ValueError(
+            f"Cannot start ({start}) at node already visited in {seqStart = }"
+        )
+
+    # check validity of seqStart:
+    for n in seqStart:
+        if n >= g.numNodes:
+            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+
+    # keep track of visited nodes
+    visited: list[bool] = [False] * g.numNodes
+    for n in seqStart:
+        visited[n] = True
+    visited[start] = True
+
+    toVisit: list[int] = [i for i in range(g.numNodes) if visited[i] is False]
+
+    return seqStart + [start] + list(np.random.permutation(toVisit))
 
 
 def TSP(g: Graph, start: int = 0) -> list[int]:

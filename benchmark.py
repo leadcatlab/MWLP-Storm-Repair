@@ -1,7 +1,6 @@
 from graph import Graph
 import algos
 import random
-import numpy as np
 from more_itertools import set_partitions
 from typing import Iterator
 
@@ -62,9 +61,7 @@ def benchmarkSingle(
         )
         brute_forces.append(algos.WLP(g, algos.bruteForceMWLP(g)))
         tsp_orders.append(algos.WLP(g, algos.HeldKarp(g)))
-        random_orders.append(
-            algos.WLP(g, [0] + list(np.random.permutation([i for i in range(1, n)])))
-        )
+        random_orders.append(algos.WLP(g, algos.randomOrder(g)))
         nearest_ns.append(algos.WLP(g, algos.nearestNeighbor(g)))
         greedy_orders.append(algos.WLP(g, algos.greedy(g)))
 

@@ -58,6 +58,24 @@ def test_fW_metric_complete() -> None:
                 assert dist[i][j] == g.edgeWeight[i][j]
 
 
+def test_createMetricFromGraph_Complete() -> None:
+    g = Graph.randomComplete(5)
+    metric: Graph = algos.createMetricFromGraph(g)
+
+    assert Graph.isComplete(metric)
+    assert Graph.isMetric(metric)
+
+
+def test_createMetricFromGraph_metric_is_same() -> None:
+    g = Graph.randomCompleteMetric(5)
+    metric: Graph = algos.createMetricFromGraph(g)
+
+    for i in range(g.numNodes):
+        for j in range(g.numNodes):
+            if i != j:
+                assert g.edgeWeight[i][j] == metric.edgeWeight[i][j]
+
+
 def test_WLP_small_orders() -> None:
     g = Graph.randomComplete(4)
     assert algos.WLP(g, []) == 0.0
@@ -130,6 +148,14 @@ def test_nearestNeighbor() -> None:
     assert algos.nearestNeighbor(g, start=1) == [1, 2, 3, 0]
 
 
+def test_nearestNeighbor_seqStart() -> None:
+    g = Graph.randomComplete(5)
+    order: list[int] = algos.nearestNeighbor(g)
+
+    for i in range(len(order)):
+        assert algos.nearestNeighbor(g, start=order[i], seqStart=order[:i]) == order
+
+
 def test_greedy() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -153,6 +179,35 @@ def test_greedy() -> None:
 
     assert algos.greedy(g) == [0, 2, 3, 1]
     assert algos.greedy(g, start=1) == [1, 2, 0, 3]
+
+
+def test_greedy_seqStart() -> None:
+    g = Graph.randomComplete(5)
+    order: list[int] = algos.greedy(g)
+
+    for i in range(len(order)):
+        assert algos.greedy(g, start=order[i], seqStart=order[:i]) == order
+
+
+def test_randomOrder() -> None:
+    g = Graph.randomComplete(5)
+    rand: list[int] = algos.randomOrder(g)
+    assert rand[0] == 0
+    for i in range(g.numNodes):
+        assert i in rand
+
+    randStartAtOne: list[int] = algos.randomOrder(g, start=1)
+    assert randStartAtOne[0] == 1
+    for i in range(g.numNodes):
+        assert i in randStartAtOne
+
+
+def test_randomOrder_seqStart() -> None:
+    g = Graph.randomComplete(5)
+    rand: list[int] = algos.randomOrder(g, start=2, seqStart=[0])
+    assert rand[0:2] == [0, 2]
+    for i in range(g.numNodes):
+        assert i in rand
 
 
 def test_TSP() -> None:
@@ -350,6 +405,20 @@ def test_nearestNeighbor_invalid_start() -> None:
         algos.nearestNeighbor(g, start=4)
 
 
+def test_nearestNeighbor_start_already_visited() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.nearestNeighbor(g, start=0, seqStart=[0, 1])
+
+
+def test_nearestNeighbor_invalid_seqStart() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.nearestNeighbor(g, start=0, seqStart=[4])
+
+
 def test_greedy_incomplete() -> None:
     gd: graphDict = {
         "numNodes": 4,
@@ -379,6 +448,65 @@ def test_greedy_invalid_start() -> None:
 
     with pytest.raises(ValueError):
         algos.greedy(g, start=4)
+
+
+def test_greedy_start_already_visited() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.greedy(g, start=0, seqStart=[0, 1])
+
+
+def test_greedy_invalid_seqStart() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.greedy(g, start=0, seqStart=[4])
+
+
+def test_randomOrder_incomplete() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.randomOrder(g)
+
+
+def test_randomOrder_invalid_start() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.randomOrder(g, start=4)
+
+
+def test_randomOrder_start_already_visited() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.randomOrder(g, start=0, seqStart=[0, 1])
+
+
+def test_randomOrder_invalid_seqStart() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.randomOrder(g, start=0, seqStart=[4])
 
 
 def test_TSP_incomplete() -> None:

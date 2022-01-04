@@ -236,33 +236,33 @@ class Graph:
         # add new row to edge weight matrix
         self.edgeWeight.append([-1.0 for _ in range(self.numNodes)])
 
-    def addEdge(self, startingNode: int, endingNode: int, weight: float = 0.0) -> None:
+    def addEdge(self, start: int, end: int, weight: float = 0.0) -> None:
         """Adds a directed edge to the graph
 
         Args:
-            startingNode: u
-            endingNode: v
-            weight: l(u, v) = weight
+            start
+            end
+            weight: l(start, end) = weight
         """
 
         # ensure nodes exist
-        if startingNode >= self.numNodes:
+        if start >= self.numNodes:
             raise ValueError(
-                f"Starting node {startingNode} is out of range [0, {self.numNodes - 1}]"
+                f"Starting node {start} is out of range [0, {self.numNodes - 1}]"
             )
-        if endingNode >= self.numNodes:
+        if end >= self.numNodes:
             raise ValueError(
-                f"Ending node {endingNode} is out of range [0, {self.numNodes - 1}]"
+                f"Ending node {end} is out of range [0, {self.numNodes - 1}]"
             )
 
         # add edge only once
-        if endingNode in self.adjacenList[startingNode]:
+        if end in self.adjacenList[start]:
             raise ValueError(
-                f"Edge from {startingNode} to {endingNode} already exists with weight {self.edgeWeight[startingNode][endingNode]}"
+                f"Edge from {start} to {end} already exists with weight {self.edgeWeight[start][end]}"
             )
 
-        self.adjacenList[startingNode].append(endingNode)
-        self.edgeWeight[startingNode][endingNode] = weight
+        self.adjacenList[start].append(end)
+        self.edgeWeight[start][end] = weight
 
     def setNodeWeight(self, node: int, nodeWeight: int) -> None:
         """Set the weight of a node in a graph

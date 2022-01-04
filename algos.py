@@ -12,6 +12,8 @@ import numpy as np
 def FloydWarshall(g: Graph) -> list[list[float]]:
     """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
+    Runtime: O(n^3)
+
     Args:
         g: input graph
 
@@ -46,6 +48,8 @@ def createMetricFromGraph(g: Graph) -> Graph:
     Using Floyd-Warshall we can solve the APSP problem.
     This gives edge weights that satisfy the triangle inequality
 
+    Runtime: O(n^3)
+
     Args:
         g: input graph
 
@@ -76,6 +80,8 @@ def createMetricFromGraph(g: Graph) -> Graph:
 def WLP(g: Graph, order: list[int]) -> float:
     """Calculate the weighted latency of a given path
 
+    Runtime: O(n)
+
     Args:
         g: input graph
         order: sequence of nodes visited starting at 0
@@ -86,7 +92,7 @@ def WLP(g: Graph, order: list[int]) -> float:
 
     # check nodes in order are actually valid nodes
     for node in order:
-        if node >= g.numNodes:
+        if node >= g.numNodes or node < 0:
             raise ValueError(f"Node {node} is not in passed graph")
 
     if len(order) <= 1:
@@ -104,16 +110,18 @@ def WLP(g: Graph, order: list[int]) -> float:
     return wlp
 
 
-def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
+def bruteForceMWLP(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
     """Calculate minumum weighted latency
 
-    Iterates over all possible paths
+    Iterates over all possible paths and solves in brute force manner
+
+    Runtime: O(n!)
 
     Args:
         g: input graph
 
     Returns:
-        float: the minumum weighted latency
+        list[int[: Path order for the minumum weighted latency
     """
 
     # for now assume complete
@@ -121,25 +129,70 @@ def bruteForceMWLP(g: Graph, start: int = 0) -> list[int]:
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes:
+    if start >= g.numNodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
+    if start in seqStart:
+        raise ValueError(
+            f"Cannot start ({start}) at node already visited in {seqStart = }"
+        )
+
+    # check validity of seqStart:
+    for n in seqStart:
+        if n >= g.numNodes or n < 0:
+            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+
+    # keep track of visited nodes
+    visited: list[bool] = [False] * g.numNodes
+    for n in seqStart:
+        visited[n] = True
+    visited[start] = True
 
     # valid nodes to visit
-    nodes: list[int] = [i for i in range(g.numNodes)]
-    nodes.remove(start)
+    nodes: list[int] = [i for i in range(g.numNodes) if visited[i] is False]
 
     best: list[int] = []
     mwlp = float("inf")
 
     # test every permutation
     for order in permutations(nodes):
-        full_order: list[int] = [start] + list(order)
+        full_order: list[int] = seqStart + [start] + list(order)
         curr: float = WLP(g, full_order)
         if curr < mwlp:
             mwlp = curr
             best = full_order
 
     return best
+
+
+def cost(g: Graph, order: list[int]) -> float:
+    """cost function from "Polynomial time algorithms for some minimum latency problems" (Wu)
+
+    c(order) = Latency(order) + (w(g) + w(order))*Length(order)
+    This is the cost function used for MWLP_DP algorithm
+
+    Runtime: O(n)
+
+    Args:
+        g: input graph
+        order: list of nodes in subtour
+
+    Return:
+        float: output of cost function c(order)
+    """
+
+    # check nodes in order are actually valid nodes
+    for node in order:
+        if node >= g.numNodes:
+            raise ValueError(f"Node {node} is not in passed graph")
+
+    latency: float = WLP(g, order)
+    length: float = 0.0
+    for i in range(len(order) - 1):
+        # Note we do not need to check if edges exist since prior call to WLP checks for us
+        length += g.edgeWeight[order[i]][order[i + 1]]
+
+    weightOrder: int = sum(g.nodeWeight[n] for n in order)
+    return latency + (sum(g.nodeWeight) - weightOrder) * length
 
 
 def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
@@ -162,7 +215,7 @@ def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes:
+    if start >= g.numNodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
     if start in seqStart:
         raise ValueError(
@@ -171,7 +224,7 @@ def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[
 
     # check validity of seqStart:
     for n in seqStart:
-        if n >= g.numNodes:
+        if n >= g.numNodes or n < 0:
             raise ValueError(f"Passed {seqStart = } contains nodes not in g")
 
     # keep track of visited nodes
@@ -221,7 +274,7 @@ def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes:
+    if start >= g.numNodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
     if start in seqStart:
         raise ValueError(
@@ -230,7 +283,7 @@ def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
 
     # check validity of seqStart:
     for n in seqStart:
-        if n >= g.numNodes:
+        if n >= g.numNodes or n < 0:
             raise ValueError(f"Passed {seqStart = } contains nodes not in g")
 
     # keep track of visited nodes
@@ -281,7 +334,7 @@ def randomOrder(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes:
+    if start >= g.numNodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
     if start in seqStart:
         raise ValueError(
@@ -290,7 +343,7 @@ def randomOrder(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]
 
     # check validity of seqStart:
     for n in seqStart:
-        if n >= g.numNodes:
+        if n >= g.numNodes or n < 0:
             raise ValueError(f"Passed {seqStart = } contains nodes not in g")
 
     # keep track of visited nodes

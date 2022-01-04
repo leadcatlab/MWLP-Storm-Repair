@@ -3,6 +3,8 @@ import algos
 from typing_extensions import TypedDict
 import pytest
 
+# TODO: Needs major refactor. So much duplicate code
+
 graphDict = TypedDict(
     "graphDict",
     {
@@ -121,6 +123,50 @@ def test_bruteForceMWLP() -> None:
 
     assert algos.bruteForceMWLP(g) == [0, 1, 2, 3]
     assert algos.bruteForceMWLP(g, start=1) == [1, 2, 0, 3]
+
+
+def test_bruteForceMWLP_seqStart() -> None:
+    g = Graph.randomComplete(5)
+    order: list[int] = algos.bruteForceMWLP(g)
+
+    for i in range(len(order)):
+        assert algos.bruteForceMWLP(g, start=order[i], seqStart=order[:i]) == order
+
+
+def test_cost() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 0, 6.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+    assert algos.cost(g, [0, 1, 2]) == 59.0
+
+    rand: list[int] = algos.randomOrder(g)
+    assert algos.cost(g, rand) == algos.WLP(g, rand)
+
+    g = Graph.randomComplete(5)
+    rand = algos.randomOrder(g)
+    assert algos.cost(g, rand) == algos.WLP(g, rand)
+
+
+def test_cost_small_orders() -> None:
+    g = Graph.randomComplete(4)
+    assert algos.cost(g, []) == 0.0
+    assert algos.cost(g, [0]) == 0.0
 
 
 def test_nearestNeighbor() -> None:
@@ -372,6 +418,51 @@ def test_bruteForceMWLP_invalid_start() -> None:
 
     with pytest.raises(ValueError):
         algos.bruteForceMWLP(g, start=4)
+
+
+def test_bruteForceMWLP_start_already_visited() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.bruteForceMWLP(g, start=0, seqStart=[0, 1])
+
+
+def test_bruteForceMWLP_invalid_seqStart() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.bruteForceMWLP(g, start=0, seqStart=[4])
+
+
+def test_cost_invalidNodes() -> None:
+    g = Graph.randomComplete(4)
+
+    with pytest.raises(ValueError):
+        algos.cost(g, [0, 4])
+
+
+def test_cost_invalidEdges() -> None:
+    gd: graphDict = {
+        "numNodes": 4,
+        "edges": [
+            (0, 1, 1.0),
+            (0, 2, 3.0),
+            (0, 3, 5.0),
+            (1, 2, 1.0),
+            (1, 3, 50.0),
+            (2, 0, 2.0),
+            (2, 1, 7.0),
+            (2, 3, 1.0),
+            (3, 0, 8.0),
+            (3, 1, 100.0),
+            (3, 2, 2.0),
+        ],
+        "nodeWeight": [10, 5, 20, 7],
+    }
+    g = Graph.fromDict(gd)
+
+    with pytest.raises(ValueError):
+        algos.cost(g, [2, 1, 0])
 
 
 def test_nearestNeighbor_incomplete() -> None:
@@ -686,7 +777,6 @@ def test_optimalNumberOfAgents_too_many() -> None:
 #
 #
 # def test_MWLP_correctness() -> None:
-#     # TODO: This does not work 100% of the time and I have no idea why
 #     for _ in range(100):
 #         g = Graph.randomComplete(5)
 #         brute: list[int] = algos.bruteForceMWLP(g)

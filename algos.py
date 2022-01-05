@@ -419,7 +419,7 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
         raise ValueError("Passed graph is not complete")
 
     # assert validity of start
-    if start >= g.numNodes:
+    if start >= g.numNodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
 
     # key: tuple(set[int]: nodes, int: end)
@@ -580,6 +580,250 @@ def optimalNumberOfAgents(
             best_order = order_for_k
 
     return minimum, best_order
+
+
+def totalEdgeWeight(g: Graph, subgraph: set[int]) -> float:
+    """W(G_i) from Balanced Task Allocation by Partitioning the
+       Multiple Traveling Salesperson Problem (Vandermeulen et al,)
+
+    This is the sum of w(e) for all edges in the subgraph
+    w(u -> v)  = 1/2 * (w(u) + w(v)) + l(u -> v)
+
+    Passed subgraph can be represented as a set since we know g is complete
+
+    Used for transfers and swaps algorithm
+
+    Runtime:
+
+    Args:
+        g: input graph
+        subgraph: set of nodes that induce a subgraph of g
+
+    Returns:
+        float: total edge weight of subgraph
+    """
+
+    if Graph.isComplete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    for n in subgraph:
+        if n >= g.numNodes or n < 0:
+            raise ValueError(f"Passed {subgraph = } contains nodes not in g")
+
+    total: float = 0.0
+    for u in subgraph:
+        for v in subgraph:
+            if u != v:
+                total += (g.nodeWeight[u] + g.nodeWeight[v]) / 2 + g.edgeWeight[u][v]
+
+    return total
+
+
+def marginalEdgeWeight(g: Graph, subgraph: set[int], v: int) -> float:
+    """∆W(G_i, v) from Balanced Task Allocation by Partitioning the
+       Multiple Traveling Salesperson Problem (Vandermeulen et al,)
+
+    This is the sum of w(v, v') for all node v' in the subgraph
+    w(v -> v')  = 1/2 * (w(v) + w(v')) + l(v -> v')
+
+    Passed subgraph can be represented as a set since we know g is complete
+
+    Used for transfers and swaps algorithm
+
+    Runtime:
+
+    Args:
+        g: input graph
+        subgraph: set of nodes that induce a subgraph of g
+        v: node being transferred out of the subgraph
+
+    Returns:
+        float: total edge weight of subgraph
+    """
+
+    if Graph.isComplete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if v >= g.numNodes or v < 0:
+        raise ValueError(f"{v = } is not in passed graph")
+
+    for n in subgraph:
+        if n >= g.numNodes or n < 0:
+            raise ValueError(f"Passed {subgraph = } contains nodes not in g")
+
+    total: float = 0.0
+    for u in subgraph:
+        if u != v:
+            total += (g.nodeWeight[u] + g.nodeWeight[v]) / 2 + g.edgeWeight[v][u]
+
+    return total
+
+
+def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
+    """Algorithm 1: Improve Partition from Balanced Task Allocation by Partitioning the
+       Multiple Traveling Salesperson Problem (Vandermeulen et al,)
+
+    Uses transfers and swaps inorder to find a local minimum best partition
+
+    Runtime:
+
+    Args:
+        g: input graph
+        partition: partiton of g representing nodes that make up subgraphs
+
+    Returns:
+        list[set[int]]: better partition of nodes such that average cost of partition is lower
+
+    """
+    # TODO: Deal with potential divide by zero errors from size heuristic
+
+    if Graph.isComplete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    # Validate partition
+    nodes: list[bool] = [False] * g.numNodes
+    for subset in partition:
+        if len(subset) == 0:
+            raise ValueError("Passed partition contains empty subset")
+        for n in subset:
+            if n >= g.numNodes or n < 0:
+                raise ValueError(f"Passed {subset = } contains nodes not in g")
+            if nodes[n] is True:
+                raise ValueError(f"{n = } is in multiple subsets")
+            nodes[n] = True
+
+    for n in range(g.numNodes):
+        if nodes[n] is False:
+            raise ValueError(f"Node {n = } is not in any subset in partition")
+
+    # number of subsets in partition
+    m: int = len(partition)
+
+    transfers: set[tuple[int, int]] = {
+        (i, j) for i in range(m) for j in range(m) if i != j
+    }
+    swaps: set[tuple[int, int]] = {(i, j) for i in range(m) for j in range(m) if i != j}
+
+    totals: list[float] = [totalEdgeWeight(g, partition[i]) for i in range(m)]
+    marginals: list[list[float]] = [[0.0 for _ in range(g.numNodes)] for _ in range(m)]
+    for i, subset in enumerate(partition):
+        for n in range(g.numNodes):
+            marginals[i][n] = marginalEdgeWeight(g, subset, n)
+    size: list[float] = [(2 / (len(partition[i]) - 1)) * totals[i] for i in range(m)]
+
+    while len(transfers) > 0 or len(swaps) > 0:
+        if len(transfers) > 0:
+            i, j = transfers.pop()
+            g_i, g_j = partition[i], partition[j]
+            size_max = max(size[i], size[j])
+            v_star = None
+            for v in g_i:
+                size_i = (2 / (len(g_i) - 2)) * (totals[i] - marginals[i][v])
+                size_j = (2 / (len(g_j))) * (totals[j] + marginals[j][v])
+                if curr_max := max(size_i, size_j) < size_max:
+                    size_max = curr_max
+                    v_star = v
+
+            if v_star is not None:
+                # update partitions`
+                g_i.remove(v_star)
+                partition[i] = g_i
+                g_j.add(v_star)
+                partition[j] = g_j
+
+                # update sizes
+                if len(g_i) <= 2:
+                    print(partition)
+                size[i] = (2 / (len(g_i) - 2)) * (totals[i] - marginals[i][v])
+                size[j] = (2 / (len(g_j))) * (totals[j] + marginals[j][v])
+
+                # update marginals
+                for v in range(g.numNodes):
+                    weight = (
+                        g.nodeWeight[v_star] + g.nodeWeight[v]
+                    ) / 2 + g.edgeWeight[v][v_star]
+                    marginals[i][v] -= weight
+                    marginals[j][v] += weight
+
+                # update totals
+                totals[i] = size[i] * (len(partition[i]) - 1) / 2
+                totals[j] = size[j] * (len(partition[j]) - 1) / 2
+
+                # update check pairs
+                for k in range(m):
+                    if k != i:
+                        transfers.add((i, k))
+                        transfers.add((k, i))
+                    if k != j:
+                        transfers.add((j, k))
+                        transfers.add((k, j))
+            else:
+                print("No Transfer")
+        elif len(swaps) > 0:
+            i, j = swaps.pop()
+            g_i, g_j = partition[i], partition[j]
+            size_max = max(size[i], size[j])
+            v_i_star, v_j_star = None, None
+            for v in g_i:
+                for v_prime in g_j:
+                    # no need to check for equality between i and j, partitions are disjoint
+                    weight = (
+                        g.nodeWeight[v] + g.nodeWeight[v_prime]
+                    ) / 2 + g.edgeWeight[v][v_prime]
+                    weight_i = (
+                        totals[i] - marginals[i][v] + marginals[i][v_prime] - weight
+                    )
+                    weight_j = (
+                        totals[j] + marginals[j][v] - marginals[j][v_prime] - weight
+                    )
+                    size_i = (2 / (len(g_i) - 1)) * weight_i
+                    size_j = (2 / (len(g_j) - 1)) * weight_j
+                    if curr_max := max(size_i, size_j) < size_max:
+                        size_max = curr_max
+                        v_i_star, v_j_star = v, v_prime
+
+            if v_i_star is not None and v_j_star is not None:
+                # update partitions`
+                g_i.remove(v_i_star)
+                g_i.add(v_j_star)
+                partition[i] = g_i
+                g_j.remove(v_j_star)
+                g_j.add(v_i_star)
+                partition[j] = g_j
+
+                # update totals
+                totals[i] = totals[i] - marginals[i][v] + marginals[i][v_prime] - weight
+                totals[j] = totals[j] + marginals[j][v] - marginals[j][v_prime] - weight
+
+                # update sizes
+                size[i] = (2 / (len(g_i) - 1)) * totals[i]
+                size[j] = (2 / (len(g_j) - 1)) * totals[i]
+
+                # update marginals
+                for v in range(g.numNodes):
+                    weight = (
+                        g.nodeWeight[v_i_star] + g.nodeWeight[v]
+                    ) / 2 + g.edgeWeight[v][v_i_star]
+                    marginals[i][v] -= weight
+                    marginals[j][v] += weight
+                for v in range(g.numNodes):
+                    weight = (
+                        g.nodeWeight[v_j_star] + g.nodeWeight[v]
+                    ) / 2 + g.edgeWeight[v][v_j_star]
+                    marginals[i][v] += weight
+                    marginals[j][v] -= weight
+
+                # update check pairs
+                for k in range(m):
+                    if k != i:
+                        swaps.add((i, k))
+                        swaps.add((k, i))
+                    if k != j:
+                        swaps.add((j, k))
+                        swaps.add((k, j))
+            else:
+                print("No Swap")
+    return partition
 
 
 # Depreciated MWLP_DP function. Does not work

@@ -14,30 +14,101 @@ graphDict = TypedDict(
     },
 )
 
+# Bank of graphs
+empty = Graph()
+noEdges = Graph(6)
+randomComplete = Graph.randomComplete(6)
+randomCompleteMetric = Graph.randomCompleteMetric(6)
+
+smallGraphDict: graphDict = {
+    "numNodes": 4,
+    "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
+    "nodeWeight": [10, 2, 6, 20],
+}
+smallGraph = Graph.fromDict(smallGraphDict)
+
+completeGraphDict: graphDict = {
+    "numNodes": 4,
+    "edges": [
+        (0, 1, 1.0),
+        (0, 2, 3.0),
+        (0, 3, 5.0),
+        (1, 0, 6.0),
+        (1, 2, 1.0),
+        (1, 3, 50.0),
+        (2, 0, 2.0),
+        (2, 1, 7.0),
+        (2, 3, 1.0),
+        (3, 0, 8.0),
+        (3, 1, 100.0),
+        (3, 2, 2.0),
+    ],
+    "nodeWeight": [10, 5, 20, 7],
+}
+complete = Graph.fromDict(completeGraphDict)
+
+almostCompleteGraphDict: graphDict = {
+    "numNodes": 4,
+    "edges": [
+        (0, 1, 1.0),
+        (0, 2, 3.0),
+        (0, 3, 5.0),
+        (1, 2, 1.0),
+        (1, 3, 50.0),
+        (2, 0, 2.0),
+        (2, 1, 7.0),
+        (2, 3, 1.0),
+        (3, 0, 8.0),
+        (3, 1, 100.0),
+        (3, 2, 2.0),
+    ],
+    "nodeWeight": [10, 5, 20, 7],
+}
+almostComplete = Graph.fromDict(almostCompleteGraphDict)
+
+completeTwoGraphDict: graphDict = {
+    "numNodes": 4,
+    "edges": [
+        (0, 1, 1.0),
+        (0, 2, 3.0),
+        (0, 3, 1.0),
+        (1, 0, 6.0),
+        (1, 2, 1.0),
+        (1, 3, 50.0),
+        (2, 0, 2.0),
+        (2, 1, 7.0),
+        (2, 3, 1.0),
+        (3, 0, 8.0),
+        (3, 1, 100.0),
+        (3, 2, 2.0),
+    ],
+    "nodeWeight": [10, 5, 20, 7],
+}
+completeTwo = Graph.fromDict(completeTwoGraphDict)
+
 ### Correctness Tests ###
 
 
 def test_fW_empty() -> None:
-    g = Graph()
-    dist: list[list[float]] = algos.FloydWarshall(g)
+    dist: list[list[float]] = algos.FloydWarshall(empty)
 
     assert len(dist) == 0
 
 
 def test_fW_no_edges() -> None:
-    g = Graph(5)
+    g = noEdges
     dist: list[list[float]] = algos.FloydWarshall(g)
 
-    assert len(dist) == len(dist[0]) == 5
-    for i in range(5):
+    assert len(dist) == len(dist[0]) == g.numNodes
+    for i in range(g.numNodes):
         assert dist[i][i] == 0.0
-        for j in range(5):
+        for j in range(g.numNodes):
             if i != j:
                 assert dist[i][j] == float("inf")
 
 
 def test_fW_complete() -> None:
-    g = Graph.randomCompleteMetric(5)
+    g = randomCompleteMetric
     dist: list[list[float]] = algos.FloydWarshall(g)
 
     for i in range(g.numNodes):
@@ -49,7 +120,7 @@ def test_fW_complete() -> None:
 
 
 def test_fW_metric_complete() -> None:
-    g = Graph.randomCompleteMetric(5)
+    g = randomCompleteMetric
     dist: list[list[float]] = algos.FloydWarshall(g)
 
     for i in range(g.numNodes):
@@ -61,7 +132,7 @@ def test_fW_metric_complete() -> None:
 
 
 def test_createMetricFromGraph_Complete() -> None:
-    g = Graph.randomComplete(5)
+    g = randomComplete
     metric: Graph = algos.createMetricFromGraph(g)
 
     assert Graph.isComplete(metric)
@@ -69,7 +140,7 @@ def test_createMetricFromGraph_Complete() -> None:
 
 
 def test_createMetricFromGraph_metric_is_same() -> None:
-    g = Graph.randomCompleteMetric(5)
+    g = randomCompleteMetric
     metric: Graph = algos.createMetricFromGraph(g)
 
     for i in range(g.numNodes):
@@ -79,20 +150,14 @@ def test_createMetricFromGraph_metric_is_same() -> None:
 
 
 def test_WLP_small_orders() -> None:
-    g = Graph.randomComplete(4)
+    g = randomComplete
     assert algos.WLP(g, []) == 0.0
     assert algos.WLP(g, [0]) == 0.0
     assert algos.WLP(g, [1]) == 0.0
 
 
 def test_WLP() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
-        "nodeWeight": [10, 2, 6, 20],
-    }
-    g = Graph.fromDict(gd)
-
+    g = smallGraph
     assert algos.WLP(g, [0, 1, 2, 3]) == 206.0
     assert algos.WLP(g, [0, 1]) == 2.0
     assert algos.WLP(g, [0, 2]) == 12.0
@@ -101,26 +166,7 @@ def test_WLP() -> None:
 
 
 def test_bruteForceMWLP() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = complete
     assert algos.bruteForceMWLP(g) == [0, 1, 2, 3]
     assert algos.bruteForceMWLP(g, start=1) == [1, 2, 0, 3]
 
@@ -134,68 +180,31 @@ def test_bruteForceMWLP_seqStart() -> None:
 
 
 def test_cost() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
+    g = complete
     assert algos.cost(g, [0, 1, 2]) == 59.0
 
     rand: list[int] = algos.randomOrder(g)
     assert algos.cost(g, rand) == algos.WLP(g, rand)
 
-    g = Graph.randomComplete(5)
+    g = randomComplete
     rand = algos.randomOrder(g)
     assert algos.cost(g, rand) == algos.WLP(g, rand)
 
 
 def test_cost_small_orders() -> None:
-    g = Graph.randomComplete(4)
+    g = randomComplete
     assert algos.cost(g, []) == 0.0
     assert algos.cost(g, [0]) == 0.0
 
 
 def test_nearestNeighbor() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = complete
     assert algos.nearestNeighbor(g) == [0, 1, 2, 3]
     assert algos.nearestNeighbor(g, start=1) == [1, 2, 3, 0]
 
 
 def test_nearestNeighbor_seqStart() -> None:
-    g = Graph.randomComplete(5)
+    g = randomComplete
     order: list[int] = algos.nearestNeighbor(g)
 
     for i in range(len(order)):
@@ -203,32 +212,13 @@ def test_nearestNeighbor_seqStart() -> None:
 
 
 def test_greedy() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = complete
     assert algos.greedy(g) == [0, 2, 3, 1]
     assert algos.greedy(g, start=1) == [1, 2, 0, 3]
 
 
 def test_greedy_seqStart() -> None:
-    g = Graph.randomComplete(5)
+    g = randomComplete
     order: list[int] = algos.greedy(g)
 
     for i in range(len(order)):
@@ -236,7 +226,7 @@ def test_greedy_seqStart() -> None:
 
 
 def test_randomOrder() -> None:
-    g = Graph.randomComplete(5)
+    g = randomComplete
     rand: list[int] = algos.randomOrder(g)
     assert rand[0] == 0
     for i in range(g.numNodes):
@@ -249,7 +239,7 @@ def test_randomOrder() -> None:
 
 
 def test_randomOrder_seqStart() -> None:
-    g = Graph.randomComplete(5)
+    g = randomComplete
     rand: list[int] = algos.randomOrder(g, start=2, seqStart=[0])
     assert rand[0:2] == [0, 2]
     for i in range(g.numNodes):
@@ -257,51 +247,13 @@ def test_randomOrder_seqStart() -> None:
 
 
 def test_TSP() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = complete
     assert algos.TSP(g) == [0, 1, 2, 3]
     assert algos.TSP(g, start=1) == [1, 2, 0, 3]
 
 
 def test_HeldKarp() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = complete
     assert algos.HeldKarp(g, start=0) == [0, 1, 2, 3]
 
 
@@ -312,26 +264,7 @@ def test_TSP_correctness() -> None:
 
 
 def test_partitionHeuristic_MWLP_2_agents() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 1.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = completeTwo
     result, partition = algos.partitionHeuristic(g, algos.bruteForceMWLP, 2)
 
     assert result == 52.0
@@ -339,26 +272,7 @@ def test_partitionHeuristic_MWLP_2_agents() -> None:
 
 
 def test_optimalNumberOfAgentsMWLP() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 1.0),
-            (1, 0, 6.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = completeTwo
     optimalMWLP, optimalOrder = algos.optimalNumberOfAgents(
         g, algos.bruteForceMWLP, 1, 3
     )
@@ -372,372 +286,190 @@ def test_optimalNumberOfAgentsMWLP() -> None:
 
 
 def test_WLP_node_not_in_graph() -> None:
-    g = Graph.randomComplete(4)
+    g = randomComplete
+    n: int = g.numNodes
     with pytest.raises(ValueError):
-        algos.WLP(g, [0, 1, 2, 4])
+        algos.WLP(g, [0, 1, 2, n])
 
 
 def test_WLP_missing_edge() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
-        "nodeWeight": [10, 2, 6, 20],
-    }
-    g = Graph.fromDict(gd)
-
+    g = smallGraph
     with pytest.raises(ValueError):
         algos.WLP(g, [0, 1, 2, 3, 2])
 
 
 def test_bruteForceMWLP_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.bruteForceMWLP(g)
 
 
 def test_bruteForceMWLP_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.bruteForceMWLP(g, start=4)
+        algos.bruteForceMWLP(g, start=g.numNodes)
 
 
 def test_bruteForceMWLP_start_already_visited() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.bruteForceMWLP(g, start=0, seqStart=[0, 1])
 
 
 def test_bruteForceMWLP_invalid_seqStart() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.bruteForceMWLP(g, start=0, seqStart=[4])
+        algos.bruteForceMWLP(g, start=0, seqStart=[g.numNodes])
 
 
 def test_cost_invalidNodes() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.cost(g, [0, 4])
+        algos.cost(g, [0, g.numNodes])
 
 
 def test_cost_invalidEdges() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.cost(g, [2, 1, 0])
 
 
 def test_nearestNeighbor_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.nearestNeighbor(g)
 
 
 def test_nearestNeighbor_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.nearestNeighbor(g, start=4)
+        algos.nearestNeighbor(g, start=g.numNodes)
 
 
 def test_nearestNeighbor_start_already_visited() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.nearestNeighbor(g, start=0, seqStart=[0, 1])
 
 
 def test_nearestNeighbor_invalid_seqStart() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.nearestNeighbor(g, start=0, seqStart=[4])
+        algos.nearestNeighbor(g, start=0, seqStart=[g.numNodes])
 
 
 def test_greedy_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.greedy(g)
 
 
 def test_greedy_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.greedy(g, start=4)
+        algos.greedy(g, start=g.numNodes)
 
 
 def test_greedy_start_already_visited() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.greedy(g, start=0, seqStart=[0, 1])
 
 
 def test_greedy_invalid_seqStart() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.greedy(g, start=0, seqStart=[4])
+        algos.greedy(g, start=0, seqStart=[g.numNodes])
 
 
 def test_randomOrder_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.randomOrder(g)
 
 
 def test_randomOrder_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.randomOrder(g, start=4)
+        algos.randomOrder(g, start=g.numNodes)
 
 
 def test_randomOrder_start_already_visited() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.randomOrder(g, start=0, seqStart=[0, 1])
 
 
 def test_randomOrder_invalid_seqStart() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.randomOrder(g, start=0, seqStart=[4])
+        algos.randomOrder(g, start=0, seqStart=[g.numNodes])
 
 
 def test_TSP_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.TSP(g)
 
 
 def test_TSP_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.TSP(g, start=4)
+        algos.TSP(g, start=g.numNodes)
 
 
 def test_HK_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.HeldKarp(g)
 
 
 def test_HK_invalid_start() -> None:
-    g = Graph.randomComplete(4)
-
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.HeldKarp(g, start=4)
+        algos.HeldKarp(g, start=g.numNodes)
 
 
 def test_partition_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.partitionHeuristic(g, algos.TSP, 2)
 
 
 def test_partition_too_few_agents() -> None:
-    g = Graph.randomComplete(4)
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.partitionHeuristic(g, algos.TSP, 0)
 
 
 def test_partition_too_many_agents() -> None:
-    g = Graph.randomComplete(4)
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.partitionHeuristic(g, algos.TSP, 5)
+        algos.partitionHeuristic(g, algos.TSP, g.numNodes + 1)
 
 
 def test_optimalNumberOfAgents_incomplete() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
-        "edges": [
-            (0, 1, 1.0),
-            (0, 2, 3.0),
-            (0, 3, 5.0),
-            (1, 2, 1.0),
-            (1, 3, 50.0),
-            (2, 0, 2.0),
-            (2, 1, 7.0),
-            (2, 3, 1.0),
-            (3, 0, 8.0),
-            (3, 1, 100.0),
-            (3, 2, 2.0),
-        ],
-        "nodeWeight": [10, 5, 20, 7],
-    }
-    g = Graph.fromDict(gd)
-
+    g = almostComplete
     with pytest.raises(ValueError):
         algos.optimalNumberOfAgents(g, algos.TSP, 1, 3)
 
 
 def test_optimalNumberOfAgents_invalid_order() -> None:
-    g = Graph.randomComplete(6)
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.optimalNumberOfAgents(g, algos.TSP, 3, 1)
 
 
 def test_optimalNumberOfAgents_too_few() -> None:
-    g = Graph.randomComplete(6)
+    g = randomComplete
     with pytest.raises(ValueError):
         algos.optimalNumberOfAgents(g, algos.TSP, -1, 1)
 
 
 def test_optimalNumberOfAgents_too_many() -> None:
-    g = Graph.randomComplete(6)
+    g = randomComplete
     with pytest.raises(ValueError):
-        algos.optimalNumberOfAgents(g, algos.TSP, 1, 6)
+        algos.optimalNumberOfAgents(g, algos.TSP, 1, g.numNodes)
 
 
 ### DEPRECIATED MWLP_DP TESTS

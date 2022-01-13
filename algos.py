@@ -1,15 +1,16 @@
-from graph import Graph
 from itertools import permutations, combinations
-from more_itertools import set_partitions
 from collections import deque
 from typing import Deque, Callable
+from more_itertools import set_partitions
 import numpy as np
+from graph import Graph
 
 # TODO: Implement MWLP_DP from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.101.7189&rep=rep1&type=pdf
 # TODO: Implement Christofides' Algorithm
+# TODO: docstring
 
 
-def FloydWarshall(g: Graph) -> list[list[float]]:
+def floyd_warshall(g: Graph) -> list[list[float]]:
     """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
     Runtime: O(n^3)
@@ -24,15 +25,15 @@ def FloydWarshall(g: Graph) -> list[list[float]]:
 
     """
 
-    n: int = g.numNodes
+    n: int = g.num_nodes
     dist: list[list[float]] = [[float("inf") for _ in range(n)] for _ in range(n)]
 
     # initialize dist-table
     for i in range(n):
         dist[i][i] = 0.0
         for j in range(n):
-            if i != j and j in g.adjacenList[i]:
-                dist[i][j] = g.edgeWeight[i][j]
+            if i != j and j in g.adjacen_list[i]:
+                dist[i][j] = g.edge_weight[i][j]
 
     # if dist[i][k] + dist[k][j] < dist[i][j]: update
     for k in range(n):
@@ -43,7 +44,7 @@ def FloydWarshall(g: Graph) -> list[list[float]]:
     return dist
 
 
-def createMetricFromGraph(g: Graph) -> Graph:
+def create_metric_from_graph(g: Graph) -> Graph:
     """Create metric graph from input graph
     Using Floyd-Warshall we can solve the APSP problem.
     This gives edge weights that satisfy the triangle inequality
@@ -58,21 +59,21 @@ def createMetricFromGraph(g: Graph) -> Graph:
 
     """
 
-    n: int = g.numNodes
+    n: int = g.num_nodes
 
     metric = Graph(n)
-    metric.nodeWeight = g.nodeWeight
-    metric.adjacenList = g.adjacenList
+    metric.node_weight = g.node_weight
+    metric.adjacen_list = g.adjacen_list
 
-    metricWeights: list[list[float]] = FloydWarshall(g)
+    metric_weights: list[list[float]] = floyd_warshall(g)
     for i in range(n):
         for j in range(n):
             if (
                 i != j
-                and g.edgeWeight[i][j] != -1
-                and metricWeights[i][j] != float("inf")
+                and g.edge_weight[i][j] != -1
+                and metric_weights[i][j] != float("inf")
             ):
-                metric.edgeWeight[i][j] = metricWeights[i][j]
+                metric.edge_weight[i][j] = metric_weights[i][j]
 
     return metric
 
@@ -92,25 +93,25 @@ def WLP(g: Graph, order: list[int]) -> float:
 
     # check nodes in order are actually valid nodes
     for node in order:
-        if node >= g.numNodes or node < 0:
+        if node >= g.num_nodes or node < 0:
             raise ValueError(f"Node {node} is not in passed graph")
 
     if len(order) <= 1:
         return 0.0
 
-    pathLen: list[float] = [0.0] * len(order)
+    path_len: list[float] = [0.0] * len(order)
     for i in range(1, len(order)):
-        if order[i] not in g.adjacenList[order[i - 1]]:
+        if order[i] not in g.adjacen_list[order[i - 1]]:
             raise ValueError(f"Edge {order[i - 1]} --> {order[i]} does not exist")
-        pathLen[i] = pathLen[i - 1] + g.edgeWeight[order[i - 1]][order[i]]
+        path_len[i] = path_len[i - 1] + g.edge_weight[order[i - 1]][order[i]]
 
     # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
-    wlp: float = sum(g.nodeWeight[order[i]] * pathLen[i] for i in range(len(order)))
+    wlp: float = sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
 
     return wlp
 
 
-def bruteForceMWLP(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
+def brute_force_MWLP(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     """Calculate minumum weighted latency
 
     Iterates over all possible paths and solves in brute force manner
@@ -125,37 +126,37 @@ def bruteForceMWLP(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[i
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes or start < 0:
+    if start >= g.num_nodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
-    if start in seqStart:
+    if start in seq_start:
         raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seqStart = }"
+            f"Cannot start ({start}) at node already visited in {seq_start = }"
         )
 
-    # check validity of seqStart:
-    for n in seqStart:
-        if n >= g.numNodes or n < 0:
-            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+    # check validity of seq_start:
+    for n in seq_start:
+        if n >= g.num_nodes or n < 0:
+            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
 
     # keep track of visited nodes
-    visited: list[bool] = [False] * g.numNodes
-    for n in seqStart:
+    visited: list[bool] = [False] * g.num_nodes
+    for n in seq_start:
         visited[n] = True
     visited[start] = True
 
     # valid nodes to visit
-    nodes: list[int] = [i for i in range(g.numNodes) if visited[i] is False]
+    nodes: list[int] = [i for i in range(g.num_nodes) if visited[i] is False]
 
     best: list[int] = []
     mwlp = float("inf")
 
     # test every permutation
     for order in permutations(nodes):
-        full_order: list[int] = seqStart + [start] + list(order)
+        full_order: list[int] = seq_start + [start] + list(order)
         curr: float = WLP(g, full_order)
         if curr < mwlp:
             mwlp = curr
@@ -182,28 +183,28 @@ def cost(g: Graph, order: list[int]) -> float:
 
     # check nodes in order are actually valid nodes
     for node in order:
-        if node >= g.numNodes:
+        if node >= g.num_nodes:
             raise ValueError(f"Node {node} is not in passed graph")
 
     latency: float = WLP(g, order)
     length: float = 0.0
     for i in range(len(order) - 1):
         # Note we do not need to check if edges exist since prior call to WLP checks for us
-        length += g.edgeWeight[order[i]][order[i + 1]]
+        length += g.edge_weight[order[i]][order[i + 1]]
 
-    weightOrder: int = sum(g.nodeWeight[n] for n in order)
-    return latency + (sum(g.nodeWeight) - weightOrder) * length
+    weight_order: int = sum(g.node_weight[n] for n in order)
+    return latency + (sum(g.node_weight) - weight_order) * length
 
 
-def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
+def nearest_neighbor(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
 
     Args:
         g: input graph
-        start: start node after seqStart
-        seqStart: list of nodes already visited
+        start: start node after seq_start
+        seq_start: list of nodes already visited
 
     Returns:
         list[int]: nearest neighbor order
@@ -211,30 +212,30 @@ def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes or start < 0:
+    if start >= g.num_nodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
-    if start in seqStart:
+    if start in seq_start:
         raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seqStart = }"
+            f"Cannot start ({start}) at node already visited in {seq_start = }"
         )
 
-    # check validity of seqStart:
-    for n in seqStart:
-        if n >= g.numNodes or n < 0:
-            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+    # check validity of seq_start:
+    for n in seq_start:
+        if n >= g.num_nodes or n < 0:
+            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
 
     # keep track of visited nodes
-    visited: list[bool] = [False] * g.numNodes
-    for n in seqStart:
+    visited: list[bool] = [False] * g.num_nodes
+    for n in seq_start:
         visited[n] = True
     visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = seqStart + [start]
+    order: list[int] = seq_start + [start]
     q: Deque[int] = deque()
     q.appendleft(start)
 
@@ -242,9 +243,9 @@ def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[
         curr: int = q.pop()
         dist = float("inf")
         nearest: int = -1
-        for n in g.adjacenList[curr]:
-            if not visited[n] and g.edgeWeight[curr][n] < dist:
-                dist = g.edgeWeight[curr][n]
+        for n in g.adjacen_list[curr]:
+            if not visited[n] and g.edge_weight[curr][n] < dist:
+                dist = g.edge_weight[curr][n]
                 nearest = n
         if nearest != -1:
             q.appendleft(nearest)
@@ -254,15 +255,15 @@ def nearestNeighbor(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[
     return order
 
 
-def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
+def greedy(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
 
     Args:
         g: input graph
-        start: start node after seqStart
-        seqStart: list of nodes already visited
+        start: start node after seq_start
+        seq_start: list of nodes already visited
 
     Returns:
         list[int]: greedy order
@@ -270,30 +271,30 @@ def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes or start < 0:
+    if start >= g.num_nodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
-    if start in seqStart:
+    if start in seq_start:
         raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seqStart = }"
+            f"Cannot start ({start}) at node already visited in {seq_start = }"
         )
 
-    # check validity of seqStart:
-    for n in seqStart:
-        if n >= g.numNodes or n < 0:
-            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+    # check validity of seq_start:
+    for n in seq_start:
+        if n >= g.num_nodes or n < 0:
+            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
 
     # keep track of visited nodes
-    visited: list[bool] = [False] * g.numNodes
-    for n in seqStart:
+    visited: list[bool] = [False] * g.num_nodes
+    for n in seq_start:
         visited[n] = True
     visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = seqStart + [start]
+    order: list[int] = seq_start + [start]
     q: Deque[int] = deque()
     q.appendleft(start)
 
@@ -301,9 +302,9 @@ def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
         curr: int = q.pop()
         weight = float("-inf")
         heaviest: int = -1
-        for n in g.adjacenList[curr]:
-            if not visited[n] and g.nodeWeight[n] > weight:
-                weight = g.nodeWeight[n]
+        for n in g.adjacen_list[curr]:
+            if not visited[n] and g.node_weight[n] > weight:
+                weight = g.node_weight[n]
                 heaviest = n
         if heaviest != -1:
             q.appendleft(heaviest)
@@ -313,16 +314,16 @@ def greedy(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
     return order
 
 
-def randomOrder(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]:
+def random_order(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     """Random order generator
 
-    Generates random sequence starting from start or starting from seqStart -> start
+    Generates random sequence starting from start or starting from seq_start -> start
     Essentially a wrapper around np.random.permutation
 
     Args:
         g: input graph
-        start: start node after seqStart
-        seqStart: list of nodes already visited
+        start: start node after seq_start
+        seq_start: list of nodes already visited
 
     Returns:
         list[int]: greedy order
@@ -330,31 +331,31 @@ def randomOrder(g: Graph, start: int = 0, seqStart: list[int] = []) -> list[int]
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes or start < 0:
+    if start >= g.num_nodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
-    if start in seqStart:
+    if start in seq_start:
         raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seqStart = }"
+            f"Cannot start ({start}) at node already visited in {seq_start = }"
         )
 
-    # check validity of seqStart:
-    for n in seqStart:
-        if n >= g.numNodes or n < 0:
-            raise ValueError(f"Passed {seqStart = } contains nodes not in g")
+    # check validity of seq_start:
+    for n in seq_start:
+        if n >= g.num_nodes or n < 0:
+            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
 
     # keep track of visited nodes
-    visited: list[bool] = [False] * g.numNodes
-    for n in seqStart:
+    visited: list[bool] = [False] * g.num_nodes
+    for n in seq_start:
         visited[n] = True
     visited[start] = True
 
-    toVisit: list[int] = [i for i in range(g.numNodes) if visited[i] is False]
+    to_visit: list[int] = [i for i in range(g.num_nodes) if visited[i] is False]
 
-    return seqStart + [start] + list(np.random.permutation(toVisit))
+    return seq_start + [start] + list(np.random.permutation(to_visit))
 
 
 def TSP(g: Graph, start: int = 0) -> list[int]:
@@ -372,15 +373,15 @@ def TSP(g: Graph, start: int = 0) -> list[int]:
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # check validity of start
-    if start >= g.numNodes:
+    if start >= g.num_nodes:
         raise ValueError(f"{start = } is not in passed graph")
 
     # valid nodes to visit
-    nodes: list[int] = [i for i in range(g.numNodes)]
+    nodes = list(range(g.num_nodes))
     nodes.remove(start)
 
     min_dist = float("inf")
@@ -390,8 +391,8 @@ def TSP(g: Graph, start: int = 0) -> list[int]:
     for order in permutations(nodes):
         full_order: list[int] = [start] + list(order)
         dist = 0.0
-        for i in range(g.numNodes - 1):
-            dist += g.edgeWeight[full_order[i]][full_order[i + 1]]
+        for i in range(g.num_nodes - 1):
+            dist += g.edge_weight[full_order[i]][full_order[i + 1]]
         if dist < min_dist:
             min_dist = dist
             best = full_order
@@ -399,7 +400,7 @@ def TSP(g: Graph, start: int = 0) -> list[int]:
     return best
 
 
-def HeldKarp(g: Graph, start: int = 0) -> list[int]:
+def held_karp(g: Graph, start: int = 0) -> list[int]:
     """TSP via Held-Karp
 
     Generate the solution to TSP via dynamic programming using Held-Karp
@@ -415,22 +416,22 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     """
 
     # for now assume complete
-    if not Graph.isComplete(g):
+    if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
     # assert validity of start
-    if start >= g.numNodes or start < 0:
+    if start >= g.num_nodes or start < 0:
         raise ValueError(f"{start = } is not in passed graph")
 
     # key: tuple(set[int]: nodes, int: end)
     # value: tuple(float: path length, list[int]:  order of nodes)
-    completed = dict()  # type: ignore # typing this would be too verbose
+    completed = {}  # type: ignore # typing this would be too verbose
 
     # recursive solver
-    def solveTour(S: set[int], e: int) -> tuple[float, list[int]]:
+    def solve_tour(S: set[int], e: int) -> tuple[float, list[int]]:
         # base case: if no in-between nodes must take edge from start -> e
         if len(S) == 0:
-            return (g.edgeWeight[start][e], [start])
+            return (g.edge_weight[start][e], [start])
 
         min_length = float("inf")
         best_order: list[int] = []
@@ -439,7 +440,7 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
             S_i: set[int] = set(S)
             S_i.remove(s_i)
             sublength, suborder = completed[frozenset(S_i), s_i]
-            length: float = sublength + g.edgeWeight[s_i][e]
+            length: float = sublength + g.edge_weight[s_i][e]
             if length < min_length:
                 min_length = length
                 best_order = list(suborder) + [s_i]
@@ -447,14 +448,14 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
         return min_length, best_order
 
     # solve TSP over all subsets of nodes, smallest to largest
-    targets: set[int] = set(i for i in range(g.numNodes))
+    targets: set[int] = set(i for i in range(g.num_nodes))
     targets.remove(start)
     for k in range(1, len(targets) + 1):
         for subset in combinations(targets, k):
             for e in subset:
                 S: set[int] = set(subset)
                 S.remove(e)
-                completed[frozenset(S), e] = solveTour(S, e)
+                completed[frozenset(S), e] = solve_tour(S, e)
 
     # Find best TSP over all nodes (essentially solving last case again)
     tsp_sol = float("inf")
@@ -470,7 +471,7 @@ def HeldKarp(g: Graph, start: int = 0) -> list[int]:
     return best_order
 
 
-def partitionHeuristic(
+def partition_heuristic(
     g: Graph, f: Callable[..., list[int]], k: int
 ) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP
@@ -490,17 +491,17 @@ def partitionHeuristic(
     """
 
     # for now assume complete
-    if Graph.isComplete(g) is False:
+    if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if k <= 0:
         raise ValueError(f"Multi-agent case must have non-zero agents ({k})")
 
-    if k > g.numNodes:
+    if k > g.num_nodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
 
     # assume start is at 0
-    nodes = [i for i in range(1, g.numNodes)]
+    nodes = list(range(1, g.num_nodes))
 
     best_order: list[list[int]] = []
     minimum = float("inf")
@@ -514,7 +515,7 @@ def partitionHeuristic(
         for nodes in part:
             # assume starting at 0
             full_order: list[int] = [0] + list(nodes)
-            sg, sto, ots = Graph.subgraph(g, full_order)
+            sg, sto, _ = Graph.subgraph(g, full_order)
 
             # calculuate heuristic
             heuristic_order: list[int] = f(sg)
@@ -531,7 +532,7 @@ def partitionHeuristic(
     return minimum, best_order
 
 
-def optimalNumberOfAgents(
+def optimal_number_of_agents(
     g: Graph, f: Callable[..., list[int]], k_min: int, k_max: int
 ) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP for variable number of agents
@@ -543,8 +544,10 @@ def optimalNumberOfAgents(
     Args:
         g: input graph
         f: heuristic
-        k_min: minumum number of agents (must be >= 1)
-        k_max: maximum number of agents (must be <= g.numNodes - 1 since we don't count start node of 0)
+        k_min: minumum number of agents
+            (must be >= 1)
+        k_max: maximum number of agents
+            (k_max <= g.num_nodes - 1 since we don't count start node of 0)
 
     Returns:
         float: optimal MWLP value according to heuristic
@@ -553,7 +556,7 @@ def optimalNumberOfAgents(
     """
 
     # for now assume complete
-    if Graph.isComplete(g) is False:
+    if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if k_max <= k_min:
@@ -564,7 +567,7 @@ def optimalNumberOfAgents(
     if k_min <= 0:
         raise ValueError(f"Multi-agent case must have non-zero agents ({k_min})")
 
-    if k_max >= g.numNodes:
+    if k_max >= g.num_nodes:
         raise ValueError(
             f"Multi-agent case cannot have more agents than non-start nodes ({k_max})"
         )
@@ -574,7 +577,7 @@ def optimalNumberOfAgents(
 
     # iterate through all possible numbers of agents
     for k in range(k_min, k_max + 1):
-        min_for_k, order_for_k = partitionHeuristic(g, f, k)
+        min_for_k, order_for_k = partition_heuristic(g, f, k)
         if min_for_k < minimum:
             minimum = min_for_k
             best_order = order_for_k
@@ -582,7 +585,7 @@ def optimalNumberOfAgents(
     return minimum, best_order
 
 
-def totalEdgeWeight(g: Graph, subgraph: set[int]) -> float:
+def total_edge_weight(g: Graph, subgraph: set[int]) -> float:
     """W(G_i) from Balanced Task Allocation by Partitioning the
        Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
@@ -603,28 +606,29 @@ def totalEdgeWeight(g: Graph, subgraph: set[int]) -> float:
         float: total edge weight of subgraph
     """
 
-    if Graph.isComplete(g) is False:
+    if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     for n in subgraph:
-        if n >= g.numNodes or n < 0:
+        if n >= g.num_nodes or n < 0:
             raise ValueError(f"Passed {subgraph = } contains nodes not in g")
 
     total: float = 0.0
     for u in subgraph:
         for v in subgraph:
             if u != v:
-                total += (g.nodeWeight[u] + g.nodeWeight[v]) / 2 + g.edgeWeight[u][v]
+                total += (g.node_weight[u] + g.node_weight[v]) / 2 + g.edge_weight[u][v]
 
     return total
 
 
-def marginalEdgeWeight(g: Graph, subgraph: set[int], v: int) -> float:
+def marginal_edge_weight(g: Graph, subgraph: set[int], v: int) -> float:
     """∆W(G_i, v) from Balanced Task Allocation by Partitioning the
        Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
     This is the sum of w(v, v') for all node v' in the subgraph
     w(v -> v')  = 1/2 * (w(v) + w(v')) + l(v -> v')
+    This amounts to the "contribution" of v to W(G_i)
 
     Passed subgraph can be represented as a set since we know g is complete
 
@@ -641,25 +645,70 @@ def marginalEdgeWeight(g: Graph, subgraph: set[int], v: int) -> float:
         float: total edge weight of subgraph
     """
 
-    if Graph.isComplete(g) is False:
+    if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    if v >= g.numNodes or v < 0:
+    if v >= g.num_nodes or v < 0:
         raise ValueError(f"{v = } is not in passed graph")
 
     for n in subgraph:
-        if n >= g.numNodes or n < 0:
+        if n >= g.num_nodes or n < 0:
             raise ValueError(f"Passed {subgraph = } contains nodes not in g")
 
     total: float = 0.0
-    for u in subgraph:
-        if u != v:
-            total += (g.nodeWeight[u] + g.nodeWeight[v]) / 2 + g.edgeWeight[v][u]
+    for v_prime in subgraph:
+        if v_prime != v:
+            total += (
+                0.5 * (g.node_weight[v] + g.node_weight[v_prime])
+                + g.edge_weight[v][v_prime]
+            )
 
     return total
 
 
-def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
+def max_average_cycle_length(g: Graph, partition: list[set[int]]) -> float:
+    """Finds maximum average length of a cycle over a given partition of a graph
+
+    C_i(P) = max over G_i in P of S_a(G_i)
+    S_a(G_i) = (2 / (n_i - 1)) * W(G_i)
+
+    Runtime:
+
+    Args:
+        g: input graph
+        partition: valid partition of g
+
+    Returns:
+        float: maximum average cycle length
+    """
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    # Validate partition
+    nodes: list[bool] = [False] * g.num_nodes
+    for subset in partition:
+        if len(subset) == 0:
+            raise ValueError("Passed partition contains empty subset")
+        for n in subset:
+            if n >= g.num_nodes or n < 0:
+                raise ValueError(f"Passed {subset = } contains nodes not in g")
+            if nodes[n] is True:
+                raise ValueError(f"{n = } is in multiple subsets")
+            nodes[n] = True
+
+    for n in range(g.num_nodes):
+        if nodes[n] is False:
+            raise ValueError(f"Node {n = } is not in any subset in partition")
+
+    C_a = float("-inf")
+    for subset in partition:
+        n_i: float = len(subset)
+        C_a = max(C_a, (2 / (n_i - 1)) * total_edge_weight(g, subset))
+
+    return C_a
+
+
+def transfers_and_swaps(g: Graph, P: list[set[int]]) -> list[set[int]]:
     """Algorithm 1: Improve Partition from Balanced Task Allocation by Partitioning the
        Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
@@ -669,161 +718,277 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 
     Args:
         g: input graph
-        partition: partiton of g representing nodes that make up subgraphs
+        P: partiton of g representing nodes that make up subgraphs
 
     Returns:
         list[set[int]]: better partition of nodes such that average cost of partition is lower
 
     """
     # TODO: Deal with potential divide by zero errors from size heuristic
+    # TODO: Determine how to measure >> for transfers
+    # TODO: Determine why C_a after improvement is sometimes worse
+    # TODO: Determine why infinite loops occur sometimes
 
-    if Graph.isComplete(g) is False:
+    if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     # Validate partition
-    nodes: list[bool] = [False] * g.numNodes
+    if Graph.is_partition(g, P) is False:
+        raise ValueError("Passed partition is not valid")
+
+    partition: list[set[int]] = list(P)
+    m: int = len(partition)
+
+    # initialize with all possible transfers / swaps
+    transfers: set[tuple[int, int]] = {
+        (i, j) for i in range(m) for j in range(m) if i != j
+    }
+    swaps = set(transfers)
+
+    while len(transfers) > 0 or len(swaps) > 0:
+        # assert(Graph.is_partition(g, partition))
+        # print([len(part) for part in partition])
+
+        # check transfers
+        if len(transfers) > 0:
+            i, j = transfers.pop()
+            g_i, g_j = partition[i], partition[j]
+
+            n_i, n_j = len(g_i), len(g_j)
+
+            total_i = total_edge_weight(g, g_i)
+            total_j = total_edge_weight(g, g_j)
+
+            size_i_init: float = (2 / (n_i - 1)) * total_i
+            size_j_init: float = (2 / (n_j - 1)) * total_j
+
+            if size_i_init <= size_j_init:
+                continue
+
+            size_max = max(size_i_init, size_j_init)
+            v_star: int = -1
+            # Try all potential transfers, transfer if max is improved
+            for v in g_i:
+                size_i = (2 / (n_i - 2)) * (total_i - marginal_edge_weight(g, g_i, v))
+                size_j = (2 / n_j) * (total_j - marginal_edge_weight(g, g_j, v))
+                if curr_max := max(size_i, size_j) < size_max:
+                    size_max = curr_max
+                    v_star = v
+
+            # transfer v_star from g_i to g_j if needed
+            if v_star != -1:
+                # print(f"Transferring {v_star} from g_{i} to g_{j}")
+                # update partitions`
+                g_i.remove(v_star)
+                g_j.add(v_star)
+
+                # update list of transfers:
+                for k in range(m):
+                    if k not in {i, j}:
+                        transfers.add((j, k))
+                        transfers.add((k, i))
+
+        # check swaps
+        elif len(swaps) > 0:
+            i, j = swaps.pop()
+            g_i, g_j = partition[i], partition[j]
+
+            n_i, n_j = len(g_i), len(g_j)
+
+            total_i = total_edge_weight(g, g_i)
+            total_j = total_edge_weight(g, g_j)
+
+            size_i_init = (2 / (n_i - 1)) * total_i
+            size_j_init = (2 / (n_j - 1)) * total_j
+
+            size_max = max(size_i_init, size_j_init)
+            # v_i_star swapped from g_i to g_j
+            # v_j_star swapped from g_j to g_i
+            v_i_star, v_j_star = -1, -1
+
+            # try to swap v and v_prime
+            # v      : g_i -> g_j
+            # v_prime: g_j -> g_i
+            for v in g_i:
+                for v_prime in g_j:
+                    # no need to check for equality between i and j, partitions are disjoint
+                    weight = (0.5) * (
+                        g.node_weight[v] + g.node_weight[v_prime]
+                    ) + g.edge_weight[v][v_prime]
+
+                    weight_i = (
+                        total_i
+                        - marginal_edge_weight(g, g_i, v)
+                        + marginal_edge_weight(g, g_i, v_prime)
+                        - weight
+                    )
+                    weight_j = (
+                        total_j
+                        + marginal_edge_weight(g, g_j, v)
+                        - marginal_edge_weight(g, g_j, v_prime)
+                        - weight
+                    )
+
+                    size_i = (2 / (n_i - 1)) * weight_i
+                    size_j = (2 / (n_j - 1)) * weight_j
+
+                    # swap is advantageous if worst case is improved
+                    if curr_max := max(size_i, size_j) < size_max:
+                        size_max = curr_max
+                        v_i_star, v_j_star = v, v_prime
+
+            if v_i_star != -1 and v_j_star != -1:
+                # print(f"Swapping {v_i_star} to g_{j} and {v_j_star} to g_{i}")
+
+                # update partitions`
+                g_i.remove(v_i_star)
+                g_i.add(v_j_star)
+                g_j.remove(v_j_star)
+                g_j.add(v_i_star)
+
+                # update list of transfers:
+                for k in range(m):
+                    if k not in {i, j}:
+                        swaps.add((i, k))
+                        swaps.add((j, k))
+
+    return partition
+
+
+def transfer_outliers(
+    g: Graph, partition: list[set[int]], alpha: float = 1.5
+) -> list[set[int]]:
+    """Algorithm 2: Transfer Outliers from Balanced Task Allocation by Partitioning the
+       Multiple Traveling Salesperson Problem (Vandermeulen et al,)
+
+    Identify outliers in subgraphs to transfer
+
+    Runtime:
+
+    Args:
+        g: input graph
+        partition: partiton of g representing nodes that make up subgraphs
+        alpha: float >= 1 that affects sensitivity(?) of making a transfer
+
+    Returns:
+        list[set[int]]: better partition of nodes with outliers moved as needed
+
+    """
+    if alpha < 1.0:
+        raise ValueError(f"Passed {alpha = } is too small")
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    # Validate partition
+    nodes: list[bool] = [False] * g.num_nodes
     for subset in partition:
         if len(subset) == 0:
             raise ValueError("Passed partition contains empty subset")
         for n in subset:
-            if n >= g.numNodes or n < 0:
+            if n >= g.num_nodes or n < 0:
                 raise ValueError(f"Passed {subset = } contains nodes not in g")
             if nodes[n] is True:
                 raise ValueError(f"{n = } is in multiple subsets")
             nodes[n] = True
 
-    for n in range(g.numNodes):
+    for n in range(g.num_nodes):
         if nodes[n] is False:
             raise ValueError(f"Node {n = } is not in any subset in partition")
 
-    # number of subsets in partition
     m: int = len(partition)
+    outliers: set[int] = set()
+    new: list[int] = [-1] * g.num_nodes
+    old: list[int] = [0] * g.num_nodes
+    for i in range(m):
+        for v in partition[i]:
+            old[v] = i
+    for i, g_i in enumerate(partition):
+        criterion: float = alpha * (2 / len(g_i)) * total_edge_weight(g, g_i)
+        for v in g_i:
+            if marginal_edge_weight(g, g_i, v) > criterion:
+                j: int = -1
+                curr_min = float("inf")
+                for i_prime in range(m):
+                    if (
+                        curr := marginal_edge_weight(g, partition[i_prime], v)
+                        < curr_min
+                    ):
+                        curr_min = curr
+                        j = i_prime
 
-    transfers: set[tuple[int, int]] = {
-        (i, j) for i in range(m) for j in range(m) if i != j
-    }
-    swaps: set[tuple[int, int]] = {(i, j) for i in range(m) for j in range(m) if i != j}
+                if j != -1 and j != i:
+                    outliers.add(v)
+                    new[v] = j
 
-    totals: list[float] = [totalEdgeWeight(g, partition[i]) for i in range(m)]
-    marginals: list[list[float]] = [[0.0 for _ in range(g.numNodes)] for _ in range(m)]
-    for i, subset in enumerate(partition):
-        for n in range(g.numNodes):
-            marginals[i][n] = marginalEdgeWeight(g, subset, n)
-    size: list[float] = [(2 / (len(partition[i]) - 1)) * totals[i] for i in range(m)]
+    improved: list[set[int]] = list(partition)
+    for v in outliers:
+        if new[v] != -1:
+            improved[old[v]].remove(v)
+            improved[new[v]].add(v)
 
-    while len(transfers) > 0 or len(swaps) > 0:
-        if len(transfers) > 0:
-            i, j = transfers.pop()
-            g_i, g_j = partition[i], partition[j]
-            size_max = max(size[i], size[j])
-            v_star = None
-            for v in g_i:
-                size_i = (2 / (len(g_i) - 2)) * (totals[i] - marginals[i][v])
-                size_j = (2 / (len(g_j))) * (totals[j] + marginals[j][v])
-                if curr_max := max(size_i, size_j) < size_max:
-                    size_max = curr_max
-                    v_star = v
+    return improved
 
-            if v_star is not None:
-                # update partitions`
-                g_i.remove(v_star)
-                partition[i] = g_i
-                g_j.add(v_star)
-                partition[j] = g_j
 
-                # update sizes
-                if len(g_i) <= 2:
-                    print(partition)
-                size[i] = (2 / (len(g_i) - 2)) * (totals[i] - marginals[i][v])
-                size[j] = (2 / (len(g_j))) * (totals[j] + marginals[j][v])
+def improve_partition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
+    """Algorithm 3: AHP from Balanced Task Allocation by Partitioning the
+       Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
-                # update marginals
-                for v in range(g.numNodes):
-                    weight = (
-                        g.nodeWeight[v_star] + g.nodeWeight[v]
-                    ) / 2 + g.edgeWeight[v][v_star]
-                    marginals[i][v] -= weight
-                    marginals[j][v] += weight
+    Use algorithm 1 and 2 to improve a partition of a graph
 
-                # update totals
-                totals[i] = size[i] * (len(partition[i]) - 1) / 2
-                totals[j] = size[j] * (len(partition[j]) - 1) / 2
+    Runtime:
 
-                # update check pairs
-                for k in range(m):
-                    if k != i:
-                        transfers.add((i, k))
-                        transfers.add((k, i))
-                    if k != j:
-                        transfers.add((j, k))
-                        transfers.add((k, j))
-            else:
-                print("No Transfer")
-        elif len(swaps) > 0:
-            i, j = swaps.pop()
-            g_i, g_j = partition[i], partition[j]
-            size_max = max(size[i], size[j])
-            v_i_star, v_j_star = None, None
-            for v in g_i:
-                for v_prime in g_j:
-                    # no need to check for equality between i and j, partitions are disjoint
-                    weight = (
-                        g.nodeWeight[v] + g.nodeWeight[v_prime]
-                    ) / 2 + g.edgeWeight[v][v_prime]
-                    weight_i = (
-                        totals[i] - marginals[i][v] + marginals[i][v_prime] - weight
-                    )
-                    weight_j = (
-                        totals[j] + marginals[j][v] - marginals[j][v_prime] - weight
-                    )
-                    size_i = (2 / (len(g_i) - 1)) * weight_i
-                    size_j = (2 / (len(g_j) - 1)) * weight_j
-                    if curr_max := max(size_i, size_j) < size_max:
-                        size_max = curr_max
-                        v_i_star, v_j_star = v, v_prime
+    Args:
+        g: input graph
+        partition: partition of g representing nodes that make up subgraphs
 
-            if v_i_star is not None and v_j_star is not None:
-                # update partitions`
-                g_i.remove(v_i_star)
-                g_i.add(v_j_star)
-                partition[i] = g_i
-                g_j.remove(v_j_star)
-                g_j.add(v_i_star)
-                partition[j] = g_j
+    Returns:
+        list[set[int]]: near-optimal solution according to algorithm 1 and 2 and C_a
+    """
 
-                # update totals
-                totals[i] = totals[i] - marginals[i][v] + marginals[i][v_prime] - weight
-                totals[j] = totals[j] + marginals[j][v] - marginals[j][v_prime] - weight
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
 
-                # update sizes
-                size[i] = (2 / (len(g_i) - 1)) * totals[i]
-                size[j] = (2 / (len(g_j) - 1)) * totals[i]
+    # Validate partition
+    nodes: list[bool] = [False] * g.num_nodes
+    for subset in partition:
+        if len(subset) == 0:
+            raise ValueError("Passed partition contains empty subset")
+        for n in subset:
+            if n >= g.num_nodes or n < 0:
+                raise ValueError(f"Passed {subset = } contains nodes not in g")
+            if nodes[n] is True:
+                raise ValueError(f"{n = } is in multiple subsets")
+            nodes[n] = True
 
-                # update marginals
-                for v in range(g.numNodes):
-                    weight = (
-                        g.nodeWeight[v_i_star] + g.nodeWeight[v]
-                    ) / 2 + g.edgeWeight[v][v_i_star]
-                    marginals[i][v] -= weight
-                    marginals[j][v] += weight
-                for v in range(g.numNodes):
-                    weight = (
-                        g.nodeWeight[v_j_star] + g.nodeWeight[v]
-                    ) / 2 + g.edgeWeight[v][v_j_star]
-                    marginals[i][v] += weight
-                    marginals[j][v] -= weight
+    for n in range(g.num_nodes):
+        if nodes[n] is False:
+            raise ValueError(f"Node {n = } is not in any subset in partition")
 
-                # update check pairs
-                for k in range(m):
-                    if k != i:
-                        swaps.add((i, k))
-                        swaps.add((k, i))
-                    if k != j:
-                        swaps.add((j, k))
-                        swaps.add((k, j))
-            else:
-                print("No Swap")
-    return partition
+    # initial improvement (since transfers and swaps can never return worse result)
+    init: float = max_average_cycle_length(g, partition)
+
+    print("initial transfer and swap")
+    P: list[set[int]] = transfers_and_swaps(g, partition)
+    curr: float = max_average_cycle_length(g, P)
+
+    # TODO: Why does this fail sometimes
+    assert curr <= init
+
+    improved: bool = True
+    while improved:
+        print("transferring outliers")
+        P_prime: list[set[int]] = transfer_outliers(g, P)
+        print("transferring and swapping")
+        P_prime = transfers_and_swaps(g, P_prime)
+        if improvement := max_average_cycle_length(g, P_prime) < curr:
+            P = P_prime
+            curr = improvement
+            print("found improvement")
+        else:
+            improved = False
+
+    return P
 
 
 # Depreciated MWLP_DP function. Does not work
@@ -842,10 +1007,10 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 #     """
 #
 #     # for now assume complete
-#     if not Graph.isComplete(g):
+#     if not Graph.is_complete(g):
 #         raise ValueError("Passed graph is not complete")
 #
-#     if start >= g.numNodes:
+#     if start >= g.num_nodes:
 #         raise ValueError(f"{start = } is not in passed graph")
 #
 #     # key: tuple(set[int]: nodes, int: end)
@@ -856,8 +1021,8 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 #     def solveMWLP(S: set[int], e: int) -> tuple[float, float, list[int]]:
 #         # base case: if no in-between nodes must take edge from start -> e
 #         if len(S) == 0:
-#             path_len: float = g.edgeWeight[start][e]
-#             return (path_len * g.nodeWeight[e], path_len, [start])
+#             path_len: float = g.edge_weight[start][e]
+#             return (path_len * g.node_weight[e], path_len, [start])
 #
 #         current_mwlp = float("inf")
 #         current_length = float("inf")
@@ -867,8 +1032,8 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 #             S_i: set[int] = set(S)
 #             S_i.remove(s_i)
 #             sub_mwlp, sublength, suborder = completed[frozenset(S_i), s_i]
-#             length: float = sublength + g.edgeWeight[s_i][e]
-#             mwlp: float = (g.nodeWeight[e] * length) + sub_mwlp
+#             length: float = sublength + g.edge_weight[s_i][e]
+#             mwlp: float = (g.node_weight[e] * length) + sub_mwlp
 #             if mwlp < current_mwlp:
 #                 current_mwlp = mwlp
 #                 current_length = length
@@ -878,7 +1043,7 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 #         return current_mwlp, current_length, best_order
 #
 #     # solve MWLP over all subsets of nodes, smallest to largest
-#     targets: set[int] = set(i for i in range(g.numNodes))
+#     targets: set[int] = set(i for i in range(g.num_nodes))
 #     targets.remove(start)
 #     for k in range(1, len(targets) + 1):
 #         for subset in combinations(targets, k):
@@ -888,7 +1053,7 @@ def improvePartition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
 #                 completed[frozenset(S), e] = solveMWLP(S, e)
 #
 #     # sanity check
-#     sol = bruteForceMWLP(g)
+#     sol = brute_force_MWLP(g)
 #
 #     # Find best MWLP over all nodes (essentially solving last case again)
 #     mwlp_sol = float("inf")

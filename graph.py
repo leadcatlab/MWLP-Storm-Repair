@@ -1,18 +1,16 @@
 from __future__ import annotations
-from typing_extensions import TypedDict
 import random
+from typing_extensions import TypedDict
 
-"""
-    Graph dict structure
-    dict[numNodes] = number of nodes
-    dict[nodeWeight] = list of correct length of nodeWeights
-    dict[edges] = list of tuples of form (startingNode, endingNode, nodeWeight)
-"""
-graphDict = TypedDict(
-    "graphDict",
+# TODO: docstring
+graph_dict = TypedDict(
+    "graph_dict",
     {
-        "numNodes": int,
-        "nodeWeight": list[int],
+        # number of nodes
+        "num_nodes": int,
+        # list of correct length of node_weights
+        "node_weight": list[int],
+        # list of tuples of form (start_node, end_node, node_weight)
         "edges": list[tuple[int, int, float]],
     },
 )
@@ -22,10 +20,10 @@ class Graph:
     """Directed graph class with weighted edges and nodes
 
     Attributes:
-        numNodes: number of nodes from [0, n)
-        adjacenList: directed adjacency list
-        edgeWeight: 2D matrix representing l(i, j)
-        nodeWeight: list of all weights w(i)
+        num_nodes: number of nodes from [0, n)
+        adjacen_list: directed adjacency list
+        edge_weight: 2D matrix representing l(i, j)
+        node_weight: list of all weights w(i)
 
     """
 
@@ -40,76 +38,86 @@ class Graph:
         if n < 0:
             raise ValueError(f"Number of nodes passed in is negative: {n}")
 
-        self.numNodes = n
-        self.adjacenList: list[list[int]] = [[] for _ in range(n)]
-        self.edgeWeight: list[list[float]] = [
+        self.num_nodes = n
+        self.adjacen_list: list[list[int]] = [[] for _ in range(n)]
+        self.edge_weight: list[list[float]] = [
             [-1.0 for _ in range(n)] for _ in range(n)
         ]
-        self.nodeWeight: list[int] = [0 for _ in range(n)]
+        self.node_weight: list[int] = [0 for _ in range(n)]
 
     @staticmethod
-    def fromDict(dictionary: graphDict) -> Graph:
+    def from_dict(dictionary: graph_dict) -> Graph:
         """Alternate constructor using dictionary
 
         Args:
-            graphDict: Dictionary containing the needed information for a graph
+            graph_dict: Dictionary containing the needed information for a graph
 
         Returns:
             Graph
         """
 
-        if dictionary["numNodes"] < 0:
-            raise ValueError(f"Number of nodes is negative: {dictionary['numNodes']}")
-        g = Graph(dictionary["numNodes"])
+        if dictionary["num_nodes"] < 0:
+            raise ValueError(f"Number of nodes is negative: {dictionary['num_nodes']}")
+        g = Graph(dictionary["num_nodes"])
 
-        if len(dictionary["nodeWeight"]) != g.numNodes:
+        if len(dictionary["node_weight"]) != g.num_nodes:
             raise ValueError(
-                f"nodeWeight list is incorrect length ({dictionary['nodeWeight']} vs {g.numNodes})"
+                "node_weight list is incorrect length: "
+                + f"({dictionary['node_weight']} vs {g.num_nodes})"
             )
 
-        if min(dictionary["nodeWeight"]) < 0:
+        if min(dictionary["node_weight"]) < 0:
             raise ValueError(
-                f"nodeWeight list has nodes of a negative weight: {dictionary['nodeWeight']}"
+                f"node_weight list has nodes of a negative weight: {dictionary['node_weight']}"
             )
 
-        g.nodeWeight = dictionary["nodeWeight"]
+        g.node_weight = dictionary["node_weight"]
 
-        for (startingNode, endingNode, nodeWeight) in dictionary["edges"]:
-            if startingNode >= g.numNodes:
+        for (start_node, end_node, node_weight) in dictionary["edges"]:
+            if start_node >= g.num_nodes:
                 raise ValueError(
-                    f"Starting node {startingNode} is out of range [0, {g.numNodes - 1}]"
+                    f"Starting node {start_node} is out of range [0, {g.num_nodes - 1}]"
                 )
-            if endingNode >= g.numNodes:
+            if end_node >= g.num_nodes:
                 raise ValueError(
-                    f"Ending node {endingNode} is out of range [0, {g.numNodes - 1}]"
+                    f"Ending node {end_node} is out of range [0, {g.num_nodes - 1}]"
                 )
 
-            g.addEdge(startingNode, endingNode, nodeWeight)
+            g.add_edge(start_node, end_node, node_weight)
 
         return g
 
     @staticmethod
-    def dictFromGraph(g: Graph) -> graphDict:
-        numNodes: int = g.numNodes
-        nodeWeight: list[int] = g.nodeWeight
+    def dict_from_graph(g: Graph) -> graph_dict:
+        """create graph_dict from Graph
+
+        Args:
+            g: input graph
+
+        Returns:
+            graph_dict gd such that Graph.from_dict(gd) == g
+        """
+
+        num_nodes: int = g.num_nodes
+        node_weight: list[int] = g.node_weight
 
         edges: list[tuple[int, int, float]] = []
-        for i in range(numNodes):
-            for j in range(numNodes):
-                if i != j and j in g.adjacenList[i]:
-                    edges.append((i, j, g.edgeWeight[i][j]))
+        for i in range(num_nodes):
+            for j in range(num_nodes):
+                if i != j and j in g.adjacen_list[i]:
+                    edges.append((i, j, g.edge_weight[i][j]))
 
-        gd: graphDict = {
-            "numNodes": numNodes,
+        gd: graph_dict = {
+            "num_nodes": num_nodes,
             "edges": edges,
-            "nodeWeight": nodeWeight,
+            "node_weight": node_weight,
         }
 
         return gd
 
     @staticmethod
-    def randomComplete(
-        n: int, edgeW: tuple[float, float] = (0, 1), nodeW: tuple[int, int] = (0, 100)
+    def random_complete(
+        n: int, edge_w: tuple[float, float] = (0, 1), node_w: tuple[int, int] = (0, 100)
     ) -> Graph:
         """Create a randomly generated complete weighted undirected graph
 
@@ -117,8 +125,8 @@ class Graph:
 
         Args:
             n: number of nodes
-            edgeW: the interval that edge weights can be in
-            nodeW: the interval that node weights can be in
+            edge_w: the interval that edge weights can be in
+            node_w: the interval that node weights can be in
 
         Returns:
             Graph
@@ -126,33 +134,33 @@ class Graph:
 
         g = Graph(n)
 
-        if nodeW[0] < 0 or nodeW[1] < 0:
+        if node_w[0] < 0 or node_w[1] < 0:
             raise ValueError(
-                f"Passed node weight range contains negative values: {nodeW}"
+                f"Passed node weight range contains negative values: {node_w}"
             )
-        if nodeW[1] < nodeW[0]:
-            raise ValueError(f"Passed node weight range is in wrong order: {nodeW}")
-        if edgeW[0] < 0.0 or nodeW[1] < 0.0:
+        if node_w[1] < node_w[0]:
+            raise ValueError(f"Passed node weight range is in wrong order: {node_w}")
+        if edge_w[0] < 0.0 or node_w[1] < 0.0:
             raise ValueError(
-                f"Passed edge weight range contains negative values: {edgeW}"
+                f"Passed edge weight range contains negative values: {edge_w}"
             )
-        if edgeW[1] < edgeW[0]:
-            raise ValueError(f"Passed edge weight range is in wrong order: {edgeW}")
+        if edge_w[1] < edge_w[0]:
+            raise ValueError(f"Passed edge weight range is in wrong order: {edge_w}")
 
-        g.nodeWeight = [random.randint(nodeW[0], nodeW[1]) for _ in range(n)]
+        g.node_weight = [random.randint(node_w[0], node_w[1]) for _ in range(n)]
 
         for i in range(n):
             for j in range(i + 1, n):
-                weight: float = random.uniform(edgeW[0], edgeW[1])
-                g.addEdge(i, j, weight)
-                g.addEdge(j, i, weight)
+                weight: float = random.uniform(edge_w[0], edge_w[1])
+                g.add_edge(i, j, weight)
+                g.add_edge(j, i, weight)
 
-        assert Graph.isComplete(g)
+        assert Graph.is_complete(g)
         return g
 
     @staticmethod
-    def randomCompleteMetric(
-        n: int, upper: float = 1, nodeW: tuple[int, int] = (1, 100)
+    def random_complete_metric(
+        n: int, upper: float = 1, node_w: tuple[int, int] = (1, 100)
     ) -> Graph:
         """Create a randomly generated complete weighted undirected metric graph
 
@@ -162,14 +170,14 @@ class Graph:
         Args:
             n: number of nodes
             upper: the upper bound of edge weights used to create the interval (upper / 2, upper)
-            nodeW: the interval that node weights can be in
+            node_w: the interval that node weights can be in
 
         Returns:
             Graph
         """
 
-        g = Graph.randomComplete(n, edgeW=(upper / 2, upper), nodeW=nodeW)
-        assert Graph.isMetric(g)
+        g = Graph.random_complete(n, edge_w=(upper / 2, upper), node_w=node_w)
+        assert Graph.is_metric(g)
         return g
 
     @staticmethod
@@ -192,51 +200,51 @@ class Graph:
         """
 
         for n in nodes:
-            if n >= g.numNodes:
+            if n >= g.num_nodes:
                 raise ValueError(
                     f"Passed in {nodes = } contains nodes not in passed in graph"
                 )
 
-        newNodeList = list(range(len(nodes)))
+        new_node_list = list(range(len(nodes)))
 
         # mapping for original -> subgraph
-        ots: dict[int, int] = {o: s for (o, s) in zip(nodes, newNodeList)}
+        ots: dict[int, int] = dict(zip(nodes, new_node_list))
         # mapping for subgraph -> original
-        sto: dict[int, int] = {s: o for (o, s) in zip(nodes, newNodeList)}
+        sto: dict[int, int] = dict(zip(new_node_list, nodes))
 
         subg = Graph(len(nodes))
-        for n in newNodeList:
-            subg.setNodeWeight(n, g.nodeWeight[sto[n]])
+        for n in new_node_list:
+            subg.set_node_weight(n, g.node_weight[sto[n]])
 
         for i in nodes:
             for j in nodes:
-                if i != j and j in g.adjacenList[i]:
-                    subg.addEdge(ots[i], ots[j], g.edgeWeight[i][j])
+                if i != j and j in g.adjacen_list[i]:
+                    subg.add_edge(ots[i], ots[j], g.edge_weight[i][j])
 
         return subg, sto, ots
 
-    def addNode(self, nodeWeight: int = 0) -> None:
+    def add_node(self, node_weight: int = 0) -> None:
         """Adds a node to the graph
 
         Args:
-            nodeWeight: weight of the new node
+            node_weight: weight of the new node
         """
 
-        if nodeWeight < 0:
-            raise ValueError(f"Passed nodeWeight is negative: {nodeWeight}")
+        if node_weight < 0:
+            raise ValueError(f"Passed node_weight is negative: {node_weight}")
 
-        self.numNodes += 1
-        self.adjacenList.append([])
-        self.nodeWeight.append(nodeWeight)
+        self.num_nodes += 1
+        self.adjacen_list.append([])
+        self.node_weight.append(node_weight)
 
         # need to add slot for new node to edge weight matrix
-        for weightList in self.edgeWeight:
-            weightList.append(-1.0)
+        for weight_list in self.edge_weight:
+            weight_list.append(-1.0)
 
         # add new row to edge weight matrix
-        self.edgeWeight.append([-1.0 for _ in range(self.numNodes)])
+        self.edge_weight.append([-1.0 for _ in range(self.num_nodes)])
 
-    def addEdge(self, start: int, end: int, weight: float = 0.0) -> None:
+    def add_edge(self, start: int, end: int, weight: float = 0.0) -> None:
         """Adds a directed edge to the graph
 
         Args:
@@ -246,25 +254,26 @@ class Graph:
         """
 
         # ensure nodes exist
-        if start >= self.numNodes:
+        if start >= self.num_nodes:
             raise ValueError(
-                f"Starting node {start} is out of range [0, {self.numNodes - 1}]"
+                f"Starting node {start} is out of range [0, {self.num_nodes - 1}]"
             )
-        if end >= self.numNodes:
+        if end >= self.num_nodes:
             raise ValueError(
-                f"Ending node {end} is out of range [0, {self.numNodes - 1}]"
+                f"Ending node {end} is out of range [0, {self.num_nodes - 1}]"
             )
 
         # add edge only once
-        if end in self.adjacenList[start]:
+        if end in self.adjacen_list[start]:
             raise ValueError(
-                f"Edge from {start} to {end} already exists with weight {self.edgeWeight[start][end]}"
+                f"Edge from {start} to {end} already exists "
+                + "with weight {self.edge_weight[start][end]}"
             )
 
-        self.adjacenList[start].append(end)
-        self.edgeWeight[start][end] = weight
+        self.adjacen_list[start].append(end)
+        self.edge_weight[start][end] = weight
 
-    def setNodeWeight(self, node: int, nodeWeight: int) -> None:
+    def set_node_weight(self, node: int, node_weight: int) -> None:
         """Set the weight of a node in a graph
 
         Args:
@@ -272,45 +281,45 @@ class Graph:
             weight: the new weight
         """
 
-        if node >= self.numNodes:
-            raise ValueError(f"Node {node} is out of range [0, {self.numNodes - 1}]")
+        if node >= self.num_nodes:
+            raise ValueError(f"Node {node} is out of range [0, {self.num_nodes - 1}]")
 
-        if nodeWeight < 0:
-            raise ValueError(f"Passed nodeWeight is negative: {nodeWeight}")
+        if node_weight < 0:
+            raise ValueError(f"Passed node_weight is negative: {node_weight}")
 
-        self.nodeWeight[node] = nodeWeight
+        self.node_weight[node] = node_weight
 
-    def setEdgeWeight(
-        self, startingNode: int, endingNode: int, edgeWeight: float
+    def set_edge_weight(
+        self, start_node: int, end_node: int, edge_weight: float
     ) -> None:
         """Set the weight of a directed edge in the graph
 
         Args:
-            startingNode: u
-            endingNode: v
-            edgeWeight: l(u, v) = weight
+            start_node: u
+            end_node: v
+            edge_weight: l(u, v) = weight
         """
 
         # ensure nodes exist
-        if startingNode >= self.numNodes:
+        if start_node >= self.num_nodes:
             raise ValueError(
-                f"Starting node {startingNode} is out of range [0, {self.numNodes - 1}]"
+                f"Starting node {start_node} is out of range [0, {self.num_nodes - 1}]"
             )
-        if endingNode >= self.numNodes:
+        if end_node >= self.num_nodes:
             raise ValueError(
-                f"Ending node {endingNode} is out of range [0, {self.numNodes - 1}]"
+                f"Ending node {end_node} is out of range [0, {self.num_nodes - 1}]"
             )
 
-        if edgeWeight < 0.0:
-            raise ValueError(f"Edge has negative weight {edgeWeight}")
+        if edge_weight < 0.0:
+            raise ValueError(f"Edge has negative weight {edge_weight}")
         # add weight only if edge exists
-        if endingNode not in self.adjacenList[startingNode]:
-            raise ValueError(f"{endingNode} is not a neighbor of {startingNode}")
+        if end_node not in self.adjacen_list[start_node]:
+            raise ValueError(f"{end_node} is not a neighbor of {start_node}")
 
-        self.edgeWeight[startingNode][endingNode] = edgeWeight
+        self.edge_weight[start_node][end_node] = edge_weight
 
     @staticmethod
-    def isComplete(cls: Graph) -> bool:
+    def is_complete(g: Graph) -> bool:
         """Checks if a graph is complete
 
         Args:
@@ -320,15 +329,15 @@ class Graph:
             bool: True if complete, false O.W.
         """
 
-        for u in range(cls.numNodes):
-            for v in range(cls.numNodes):
-                if u != v and v not in cls.adjacenList[u]:
+        for u in range(g.num_nodes):
+            for v in range(g.num_nodes):
+                if u != v and v not in g.adjacen_list[u]:
                     return False
 
         return True
 
     @staticmethod
-    def isMetric(cls: Graph) -> bool:
+    def is_metric(g: Graph) -> bool:
         """Checks if a graph is complete
 
         Checks if for all u, v, w in the graph that the following inequality is maintained
@@ -341,44 +350,67 @@ class Graph:
             bool: True if metric, false O.W.
         """
 
-        for u in range(cls.numNodes):
-            for v in range(cls.numNodes):
-                if u != v and v in cls.adjacenList[u]:
-                    for w in range(cls.numNodes):
-                        if w in cls.adjacenList[u] and v in cls.adjacenList[w]:
+        for u in range(g.num_nodes):
+            for v in range(g.num_nodes):
+                if u != v and v in g.adjacen_list[u]:
+                    for w in range(g.num_nodes):
+                        if w in g.adjacen_list[u] and v in g.adjacen_list[w]:
                             if (
-                                cls.edgeWeight[u][w] + cls.edgeWeight[w][v]
-                                < cls.edgeWeight[u][v]
+                                g.edge_weight[u][w] + g.edge_weight[w][v]
+                                < g.edge_weight[u][v]
                             ):
                                 return False
+
+        return True
+
+    @staticmethod
+    def is_partition(g: Graph, partition: list[set[int]]) -> bool:
+        """Determines if a partition of graph nodes is valid"""
+
+        nodes: list[bool] = [False] * g.num_nodes
+        for subset in partition:
+            if len(subset) == 0:
+                return False
+            for n in subset:
+                if n >= g.num_nodes or n < 0:
+                    return False
+                if nodes[n] is True:
+                    return False
+                nodes[n] = True
+
+        for n in range(g.num_nodes):
+            if nodes[n] is False:
+                return False
 
         return True
 
     def __str__(self) -> str:  # pragma: no cover
         """String representation of the graph"""
 
-        toPrint: str = ""
-        for i in range(len(self.adjacenList)):
-            currentList = self.adjacenList[i]
-
+        to_print: str = ""
+        for start, current_list in enumerate(self.adjacen_list):
             nodes: str = ""
 
-            for j in currentList:
+            for end in current_list:
                 nodes += (
                     " " * 4
-                    + str(j)
+                    + str(end)
                     + " with distance "
-                    + str(self.edgeWeight[i][j])
+                    + str(self.edge_weight[start][end])
                     + "\n"
                 )
 
-            toPrint += "Node " + str(i) + " is connected to: \n" + nodes + "\n"
+            to_print += "Node " + str(start) + " is connected to: \n" + nodes + "\n"
 
-        toPrint += "\n"
+        to_print += "\n"
 
-        for i in range(len(self.nodeWeight)):
-            toPrint += (
-                "The weight of node " + str(i) + " is " + str(self.nodeWeight[i]) + "\n"
+        for node in range(self.num_nodes):
+            to_print += (
+                "The weight of node "
+                + str(node)
+                + " is "
+                + str(self.node_weight[node])
+                + "\n"
             )
 
-        return toPrint
+        return to_print

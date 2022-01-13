@@ -1,42 +1,37 @@
 from graph import Graph
 import algos
 from typing_extensions import TypedDict
-import benchmark
+import random
 
-graphDict = TypedDict(
-    "graphDict",
+graph_dict = TypedDict(
+    "graph_dict",
     {
         "numNodes": int,
-        "nodeWeight": list[int],
+        "node_weight": list[int],
         "edges": list[tuple[int, int, float]],
     },
 )
 
 
 def main() -> None:
-    # n: int = 7
+    n: int = 30
+    k: int = 3
+    g = Graph.random_complete_metric(n)
+    partition: list[set[int]] = [set() for _ in range(k)]
+    for i in range(n):
+        partition[random.randint(0, 1000) % k].add(i)
 
-    # g = Graph.randomComplete(n)
-    # optimal_m, optimal_order = algos.optimalNumberOfAgents(
-    #     g, algos.bruteForceMWLP, 1, n - 1
-    # )
-    # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
-    # print(f"{optimal_order = }")
-    #
-    # g = Graph.randomCompleteMetric(n)
-    # optimal_m, optimal_order = algos.optimalNumberOfAgents(
-    #     g, algos.bruteForceMWLP, 1, n - 1
-    # )
-    # print(f"Optimal solution is {optimal_m} with {len(optimal_order)} agents")
-    # print(f"{optimal_order = }")
-    #
-    # benchmark.benchmarkMulti(8, 2, 5, metric=False)
+    before: str = f"Before: {algos.max_average_cycle_length(g, partition)}\n"
+    for i in range(len(partition)):
+        before += f"    Agent {i}: {partition[i]}\n"
+    print(before)
 
-    n: int = 40
-    g = Graph.randomCompleteMetric(n)
-    partition = [set(range(i, i + 10)) for i in range(0, n, 10)]
-    print(partition)
-    print(algos.improvePartition(g, partition))
+    res = algos.improve_partition(g, partition)
+
+    after: str = f"After: {algos.max_average_cycle_length(g, res)}\n"
+    for i in range(len(res)):
+        after += f"    Agent {i}: {res[i]}\n"
+    print(after)
 
 
 if __name__ == "__main__":

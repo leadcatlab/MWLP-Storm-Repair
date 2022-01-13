@@ -1,16 +1,14 @@
+import random
 from graph import Graph
 import algos
-import random
-from more_itertools import set_partitions
-from typing import Iterator
 
 
-def benchmarkSingle(
+def benchmark_single(
     n: int,
     rounds: int,
     metric: bool = False,
-    edgeW: tuple[float, float] = (0, 1),
-    nodeW: tuple[int, int] = (1, 100),
+    edge_w: tuple[float, float] = (0, 1),
+    node_w: tuple[int, int] = (1, 100),
     upper: float = 1,
 ) -> None:
 
@@ -23,15 +21,15 @@ def benchmarkSingle(
         n: number of nodes for the graphs
         rounds: number of graphs to test
         metric: Create metric graphs if True, else False
-        edgeW: interval for edge weights
-        nodeW: interval for node weights
+        edge_w: interval for edge weights
+        node_w: interval for node weights
         upper: upper bound edge weight for metric graphs
     """
 
     if n <= 0 or rounds <= 0:
         return
-    assert edgeW[0] < edgeW[1]
-    assert nodeW[0] < nodeW[1]
+    assert edge_w[0] < edge_w[1]
+    assert node_w[0] < node_w[1]
     assert upper >= 0
 
     # Print arguments
@@ -39,10 +37,10 @@ def benchmarkSingle(
     print(f"{rounds = }")
     print(f"{metric = }")
     if not metric:
-        print(f"{edgeW = }")
+        print(f"{edge_w = }")
     else:
         print(f"{upper = }")
-    print(f"{nodeW = }")
+    print(f"{node_w = }")
     print()
 
     # Lists to store results
@@ -55,14 +53,14 @@ def benchmarkSingle(
     # Run heuristics
     for _ in range(rounds):
         g = (
-            Graph.randomCompleteMetric(n, upper, nodeW=nodeW)
+            Graph.random_complete_metric(n, upper, node_w=node_w)
             if metric
-            else Graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
+            else Graph.random_complete(n, edge_w=edge_w, node_w=node_w)
         )
-        brute_forces.append(algos.WLP(g, algos.bruteForceMWLP(g)))
-        tsp_orders.append(algos.WLP(g, algos.HeldKarp(g)))
-        random_orders.append(algos.WLP(g, algos.randomOrder(g)))
-        nearest_ns.append(algos.WLP(g, algos.nearestNeighbor(g)))
+        brute_forces.append(algos.WLP(g, algos.brute_force_MWLP(g)))
+        tsp_orders.append(algos.WLP(g, algos.held_karp(g)))
+        random_orders.append(algos.WLP(g, algos.random_order(g)))
+        nearest_ns.append(algos.WLP(g, algos.nearest_neighbor(g)))
         greedy_orders.append(algos.WLP(g, algos.greedy(g)))
 
     print(
@@ -147,13 +145,13 @@ def benchmarkSingle(
         )
 
 
-def benchmarkMulti(
+def benchmark_multi(
     n: int,
     k: int,
     rounds: int,
     metric: bool = False,
-    edgeW: tuple[float, float] = (0, 1),
-    nodeW: tuple[int, int] = (1, 100),
+    edge_w: tuple[float, float] = (0, 1),
+    node_w: tuple[int, int] = (1, 100),
     upper: float = 1,
 ) -> None:
 
@@ -167,15 +165,15 @@ def benchmarkMulti(
         k: number of agents
         rounds: number of graphs to test
         metric: Create metric graphs if True, else False
-        edgeW: interval for edge weights
-        nodeW: interval for node weights
+        edge_w: interval for edge weights
+        node_w: interval for node weights
         upper: upper bound edge weight for metric graphs
     """
 
     if n <= 0 or rounds <= 0:
         return
-    assert edgeW[0] < edgeW[1]
-    assert nodeW[0] < nodeW[1]
+    assert edge_w[0] < edge_w[1]
+    assert node_w[0] < node_w[1]
     assert upper >= 0
 
     # Print arguments
@@ -184,10 +182,10 @@ def benchmarkMulti(
     print(f"{rounds = }")
     print(f"{metric = }")
     if not metric:
-        print(f"{edgeW = }")
+        print(f"{edge_w = }")
     else:
         print(f"{upper = }")
-    print(f"{nodeW = }")
+    print(f"{node_w = }")
     print()
 
     # Lists to store results
@@ -200,36 +198,32 @@ def benchmarkMulti(
     # Run heuristics
     for _ in range(rounds):
         g = (
-            Graph.randomCompleteMetric(n, upper, nodeW=nodeW)
+            Graph.random_complete_metric(n, upper, node_w=node_w)
             if metric
-            else Graph.randomComplete(n, edgeW=edgeW, nodeW=nodeW)
+            else Graph.random_complete(n, edge_w=edge_w, node_w=node_w)
         )
 
-        brute_m, brute_order = algos.partitionHeuristic(g, algos.bruteForceMWLP, k)
+        brute_m, _ = algos.partition_heuristic(g, algos.brute_force_MWLP, k)
         brute_forces.append(brute_m)
 
-        tsp_m, tsp_order = algos.partitionHeuristic(g, algos.HeldKarp, k)
+        tsp_m, _ = algos.partition_heuristic(g, algos.held_karp, k)
         tsp_orders.append(tsp_m)
 
-        nodes: list[int] = list(range(n))
-        rand: list[list[int]] = []
+        partition: list[list[int]] = [[] for _ in range(k)]
+        for i in range(n):
+            partition[random.randint(0, 1000) % k].append(i)
 
-        # use appoximation for Stirling Numbers of the second kind
-        count: int = ((k ** 2 + k + 2) // 2) * (k ** (n - k - 1)) - 1
-        parts: Iterator[list[list[int]]] = set_partitions(nodes, k)
-        for _ in range(random.randint(1, count)):
-            rand = next(parts)
         rand_total: float = 0.0
-        for part in rand:
+        for part in partition:
             rand_total += algos.WLP(g, part)
 
         random_orders.append(rand_total)
 
-        nn_m, nn_order = algos.partitionHeuristic(g, algos.nearestNeighbor, k)
+        nn_m, _ = algos.partition_heuristic(g, algos.nearest_neighbor, k)
         nearest_ns.append(nn_m)
 
-        greedy_m, greedy_order = algos.partitionHeuristic(g, algos.greedy, k)
-        greedy_orders.append(tsp_m)
+        greedy_m, _ = algos.partition_heuristic(g, algos.greedy, k)
+        greedy_orders.append(greedy_m)
 
     print(
         f"{'brute force':22}"

@@ -1,12 +1,13 @@
-from graph import Graph
+import random
 from typing_extensions import TypedDict
 import pytest
+from graph import Graph
 
-graphDict = TypedDict(
-    "graphDict",
+graph_dict = TypedDict(
+    "graph_dict",
     {
-        "numNodes": int,
-        "nodeWeight": list[int],
+        "num_nodes": int,
+        "node_weight": list[int],
         "edges": list[tuple[int, int, float]],
     },
 )
@@ -15,98 +16,98 @@ graphDict = TypedDict(
 ### Correctness Tests ###
 def test_default_graph() -> None:
     g = Graph()
-    assert g.numNodes == 0
-    assert len(g.adjacenList) == 0
-    assert len(g.edgeWeight) == 0
-    assert len(g.nodeWeight) == 0
+    assert g.num_nodes == 0
+    assert len(g.adjacen_list) == 0
+    assert len(g.edge_weight) == 0
+    assert len(g.node_weight) == 0
 
 
-def test_addNode() -> None:
+def test_add_node() -> None:
     g = Graph(5)
-    assert g.numNodes == 5
+    assert g.num_nodes == 5
 
-    g.addNode()
-    assert g.numNodes == 6
-    assert g.nodeWeight == [0, 0, 0, 0, 0, 0]
+    g.add_node()
+    assert g.num_nodes == 6
+    assert g.node_weight == [0, 0, 0, 0, 0, 0]
 
-    g.addNode(5)
-    assert g.numNodes == 7
-    g.setNodeWeight(5, 6)
-    assert g.nodeWeight == [0, 0, 0, 0, 0, 6, 5]
+    g.add_node(5)
+    assert g.num_nodes == 7
+    g.set_node_weight(5, 6)
+    assert g.node_weight == [0, 0, 0, 0, 0, 6, 5]
 
-    assert len(g.adjacenList) == g.numNodes
+    assert len(g.adjacen_list) == g.num_nodes
 
 
-def test_addEdge() -> None:
+def test_add_edge() -> None:
     g = Graph(2)
 
-    g.addEdge(0, 1, 1.0)
-    g.addEdge(1, 0, 2.0)
-    assert 1 in g.adjacenList[0]
-    assert 0 in g.adjacenList[1]
-    assert g.edgeWeight[0][1] == 1.0
-    assert g.edgeWeight[1][0] == 2.0
+    g.add_edge(0, 1, 1.0)
+    g.add_edge(1, 0, 2.0)
+    assert 1 in g.adjacen_list[0]
+    assert 0 in g.adjacen_list[1]
+    assert g.edge_weight[0][1] == 1.0
+    assert g.edge_weight[1][0] == 2.0
 
-    g.addNode()
+    g.add_node()
 
-    g.addEdge(0, 2, 3.0)
-    assert 2 in g.adjacenList[0]
-    g.addEdge(2, 0, 0.0)
-    g.setEdgeWeight(2, 0, 4.0)
-    assert g.edgeWeight[0][2] == 3.0
-    assert g.edgeWeight[2][0] == 4.0
+    g.add_edge(0, 2, 3.0)
+    assert 2 in g.adjacen_list[0]
+    g.add_edge(2, 0, 0.0)
+    g.set_edge_weight(2, 0, 4.0)
+    assert g.edge_weight[0][2] == 3.0
+    assert g.edge_weight[2][0] == 4.0
 
 
-def test_fromDict() -> None:
-    gd: graphDict = {
-        "numNodes": 3,
+def test_from_dict() -> None:
+    gd: graph_dict = {
+        "num_nodes": 3,
         "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-        "nodeWeight": [0, 0, 0],
+        "node_weight": [0, 0, 0],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
-    assert g.numNodes == 3
-    assert 1 in g.adjacenList[0]
-    assert 0 in g.adjacenList[1]
-    assert g.edgeWeight[0][1] == 1.0
-    assert g.edgeWeight[1][0] == 2.0
-    assert 2 in g.adjacenList[0]
-    assert g.edgeWeight[0][2] == 3.0
-    assert g.edgeWeight[2][0] == 4.0
-    assert g.nodeWeight == [0, 0, 0]
+    assert g.num_nodes == 3
+    assert 1 in g.adjacen_list[0]
+    assert 0 in g.adjacen_list[1]
+    assert g.edge_weight[0][1] == 1.0
+    assert g.edge_weight[1][0] == 2.0
+    assert 2 in g.adjacen_list[0]
+    assert g.edge_weight[0][2] == 3.0
+    assert g.edge_weight[2][0] == 4.0
+    assert g.node_weight == [0, 0, 0]
 
 
-def test_dictFromGraph() -> None:
-    g = Graph.randomComplete(5)
-    gd = Graph.dictFromGraph(g)
-    assert gd["numNodes"] == 5
+def test_dict_from_graph() -> None:
+    g = Graph.random_complete(5)
+    gd = Graph.dict_from_graph(g)
+    assert gd["num_nodes"] == 5
     assert len(gd["edges"]) == 20
-    assert len(gd["nodeWeight"]) == 5
+    assert len(gd["node_weight"]) == 5
 
-    g_again = Graph.fromDict(gd)
-    assert g.numNodes == g_again.numNodes
-    assert g.nodeWeight == g_again.nodeWeight
-    assert g.adjacenList == g_again.adjacenList
-    assert g.edgeWeight == g_again.edgeWeight
+    g_again = Graph.from_dict(gd)
+    assert g.num_nodes == g_again.num_nodes
+    assert g.node_weight == g_again.node_weight
+    assert g.adjacen_list == g_again.adjacen_list
+    assert g.edge_weight == g_again.edge_weight
 
 
-def test_isComplete() -> None:
+def test_is_complete() -> None:
     g = Graph(4)
     for i in range(4):
         for j in range(i + 1, 4):
-            g.addEdge(i, j)
-            g.addEdge(j, i)
+            g.add_edge(i, j)
+            g.add_edge(j, i)
 
-    assert Graph.isComplete(g)
-
-
-def test_randomComplete_isComplete() -> None:
-    assert Graph.isComplete(Graph.randomComplete(10))
+    assert Graph.is_complete(g)
 
 
-def test_isMetric() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
+def test_random_complete_is_complete() -> None:
+    assert Graph.is_complete(Graph.random_complete(10))
+
+
+def test_is_metric() -> None:
+    gd: graph_dict = {
+        "num_nodes": 4,
         "edges": [
             (0, 1, 2.0),
             (0, 2, 2.0),
@@ -121,65 +122,72 @@ def test_isMetric() -> None:
             (3, 1, 2.0),
             (3, 2, 2.0),
         ],
-        "nodeWeight": [0, 0, 0, 0],
+        "node_weight": [0, 0, 0, 0],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
-    assert Graph.isMetric(g)
+    assert Graph.is_metric(g)
 
 
-def test_randomCompleteMetric_is_both() -> None:
-    g = Graph.randomCompleteMetric(10)
-    assert Graph.isComplete(g) and Graph.isMetric(g)
+def test_random_complete_metric_is_both() -> None:
+    g = Graph.random_complete_metric(10)
+    assert Graph.is_complete(g) and Graph.is_metric(g)
+
+
+def test_is_partition() -> None:
+    n = 10
+    g = Graph(n)
+    partition: list[set[int]] = [set(range(0, 3)), set(range(3, 7)), set(range(7, n))]
+    assert Graph.is_partition(g, partition)
 
 
 def test_subgraph_one_to_one() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
+    gd: graph_dict = {
+        "num_nodes": 4,
         "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
-        "nodeWeight": [10, 2, 6, 20],
+        "node_weight": [10, 2, 6, 20],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
     sg, sto, ots = Graph.subgraph(g, [0, 1, 2])
 
-    assert sg.numNodes == 3
+    assert sg.num_nodes == 3
 
     for i in range(3):
         assert sto[i] == i
         assert ots[i] == i
-        assert g.nodeWeight[i] == sg.nodeWeight[i]
+        assert g.node_weight[i] == sg.node_weight[i]
 
     for i in range(3):
         for j in range(3):
-            if i != j and j in g.adjacenList[i]:
-                assert j in sg.adjacenList[i]
-                assert g.edgeWeight[i][j] == sg.edgeWeight[i][j]
+            if i != j and j in g.adjacen_list[i]:
+                assert j in sg.adjacen_list[i]
+                assert g.edge_weight[i][j] == sg.edge_weight[i][j]
 
 
 def test_subgraph_empty() -> None:
-    g = Graph.randomComplete(4)
+    g = Graph.random_complete(4)
     sg, sto, ots = Graph.subgraph(g, [])
 
-    assert sg.numNodes == 0
-    assert sg.adjacenList == []
-    assert sg.nodeWeight == []
-    assert sg.edgeWeight == []
+    assert sg.num_nodes == 0
+    assert sg.adjacen_list == []
+    assert sg.node_weight == []
+    assert sg.edge_weight == []
 
     assert len(sto) == len(ots) == 0
 
 
 def test_subgraph() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
+    gd: graph_dict = {
+        "num_nodes": 4,
         "edges": [(0, 1, 1.0), (1, 2, 3.0), (2, 3, 5.0), (0, 2, 2.0)],
-        "nodeWeight": [10, 2, 6, 20],
+        "node_weight": [10, 2, 6, 20],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
     sg, sto, ots = Graph.subgraph(g, [0, 1, 3])
 
-    assert sg.numNodes == 3
+    assert sg.num_nodes == 3
 
     assert ots[0] == 0
     assert ots[1] == 1
@@ -189,28 +197,28 @@ def test_subgraph() -> None:
     assert sto[2] == 3
 
     for i in range(3):
-        assert sg.nodeWeight[i] == g.nodeWeight[sto[i]]
+        assert sg.node_weight[i] == g.node_weight[sto[i]]
 
     for i in range(3):
         for j in range(3):
-            if i != j and j in sg.adjacenList[i]:
-                assert sto[j] in g.adjacenList[sto[i]]
-                assert sg.edgeWeight[i][j] == g.edgeWeight[sto[i]][sto[j]]
+            if i != j and j in sg.adjacen_list[i]:
+                assert sto[j] in g.adjacen_list[sto[i]]
+                assert sg.edge_weight[i][j] == g.edge_weight[sto[i]][sto[j]]
 
 
 def test_subgraph_maintains_properties() -> None:
-    g = Graph.randomCompleteMetric(6)
+    g = Graph.random_complete_metric(6)
 
-    sg, sto, ots = Graph.subgraph(g, [0, 2, 4, 5])
+    sg, _, _ = Graph.subgraph(g, [0, 2, 4, 5])
 
-    assert Graph.isComplete(sg)
-    assert Graph.isMetric(sg)
+    assert Graph.is_complete(sg)
+    assert Graph.is_metric(sg)
 
 
 ### Failure Tests ###
-def test_isComplete_failure() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
+def test_is_complete_failure() -> None:
+    gd: graph_dict = {
+        "num_nodes": 4,
         "edges": [
             (0, 1, 2.0),
             (0, 2, 2.0),
@@ -220,16 +228,16 @@ def test_isComplete_failure() -> None:
             (3, 1, 2.0),
             (3, 2, 2.0),
         ],
-        "nodeWeight": [0, 0, 0, 0],
+        "node_weight": [0, 0, 0, 0],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
-    assert Graph.isComplete(g) is False
+    assert Graph.is_complete(g) is False
 
 
-def test_isMetric_failure() -> None:
-    gd: graphDict = {
-        "numNodes": 4,
+def test_is_metric_failure() -> None:
+    gd: graph_dict = {
+        "num_nodes": 4,
         "edges": [
             (0, 1, 2.0),
             (0, 2, 2.0),
@@ -244,11 +252,45 @@ def test_isMetric_failure() -> None:
             (3, 1, 2.0),
             (3, 2, 2.0),
         ],
-        "nodeWeight": [0, 0, 0, 0],
+        "node_weight": [0, 0, 0, 0],
     }
-    g = Graph.fromDict(gd)
+    g = Graph.from_dict(gd)
 
-    assert Graph.isMetric(g) is False
+    assert Graph.is_metric(g) is False
+
+
+def test_is_partition_failure() -> None:
+    n = 20
+    k = 3
+    g = Graph(20)
+
+    has_empty_set: list[set[int]] = [set(), set(range(n)), set()]
+    assert Graph.is_partition(g, has_empty_set) is False
+
+    has_invalid_nodes: list[set[int]] = [
+        set(range(0, 3)),
+        set(range(3, 7)),
+        set(range(7, n)),
+    ]
+    for i in range(n):
+        has_invalid_nodes[random.randint(0, 1000) % k].add(i)
+    has_invalid_nodes[0].add(n)
+    assert Graph.is_partition(g, has_invalid_nodes) is False
+
+    has_repeated_nodes: list[set[int]] = [
+        set(range(0, 3)),
+        set(range(3, 7)),
+        set(range(7, n)),
+    ]
+    has_repeated_nodes[1].add(0)
+    assert Graph.is_partition(g, has_repeated_nodes) is False
+
+    has_missing_nodes: list[set[int]] = [
+        set(range(1, 3)),
+        set(range(3, 7)),
+        set(range(7, n)),
+    ]
+    assert Graph.is_partition(g, has_missing_nodes) is False
 
 
 ### Error Tests ###
@@ -257,142 +299,142 @@ def test_negative_num_nodes() -> None:
         Graph(-1)
 
 
-def test_fromDict_negative_num_nodes() -> None:
+def test_from_dict_negative_num_nodes() -> None:
     with pytest.raises(ValueError):
-        gd: graphDict = {
-            "numNodes": -1,
+        gd: graph_dict = {
+            "num_nodes": -1,
             "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-            "nodeWeight": [0, 0, 0, 0],
+            "node_weight": [0, 0, 0, 0],
         }
-        Graph.fromDict(gd)
+        Graph.from_dict(gd)
 
 
-def test_fromDict_negative_nodeweight() -> None:
+def test_from_dict_negative_nodeweight() -> None:
     with pytest.raises(ValueError):
-        gd: graphDict = {
-            "numNodes": 3,
+        gd: graph_dict = {
+            "num_nodes": 3,
             "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-            "nodeWeight": [0, -2, 0],
+            "node_weight": [0, -2, 0],
         }
-        Graph.fromDict(gd)
+        Graph.from_dict(gd)
 
 
-def test_fromDict_nonexistant_start_node() -> None:
+def test_from_dict_nonexistant_start_node() -> None:
     with pytest.raises(ValueError):
-        gd: graphDict = {
-            "numNodes": 3,
+        gd: graph_dict = {
+            "num_nodes": 3,
             "edges": [(3, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-            "nodeWeight": [0, 0, 0],
+            "node_weight": [0, 0, 0],
         }
-        Graph.fromDict(gd)
+        Graph.from_dict(gd)
 
 
-def test_fromDict_nonexistant_end_node() -> None:
+def test_from_dict_nonexistant_end_node() -> None:
     with pytest.raises(ValueError):
-        gd: graphDict = {
-            "numNodes": 3,
+        gd: graph_dict = {
+            "num_nodes": 3,
             "edges": [(1, 3, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-            "nodeWeight": [0, 0, 0],
+            "node_weight": [0, 0, 0],
         }
-        Graph.fromDict(gd)
+        Graph.from_dict(gd)
 
 
-def test_fromDict_wrong_nodeWeight_len() -> None:
+def test_from_dict_wrong_node_weight_len() -> None:
     with pytest.raises(ValueError):
-        gd: graphDict = {
-            "numNodes": 3,
+        gd: graph_dict = {
+            "num_nodes": 3,
             "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
-            "nodeWeight": [0, 0, 0, 0],
+            "node_weight": [0, 0, 0, 0],
         }
-        Graph.fromDict(gd)
+        Graph.from_dict(gd)
 
 
-def test_randomComplete_negative_edgeWeight_range() -> None:
+def test_random_complete_negative_edge_weight_range() -> None:
     with pytest.raises(ValueError):
-        Graph.randomComplete(10, (-1.0, 3.0))
+        Graph.random_complete(10, (-1.0, 3.0))
 
 
-def test_randomComplete_wrong_edge_weight_order() -> None:
+def test_random_complete_wrong_edge_weight_order() -> None:
     with pytest.raises(ValueError):
-        Graph.randomComplete(10, (6.0, 3.0))
+        Graph.random_complete(10, (6.0, 3.0))
 
 
-def test_randomComplete_wrong_node_weight_order() -> None:
+def test_random_complete_wrong_node_weight_order() -> None:
     with pytest.raises(ValueError):
-        Graph.randomComplete(10, (3.0, 6.0), (4, 1))
+        Graph.random_complete(10, (3.0, 6.0), (4, 1))
 
 
-def test_randomComplete_negative_node_weight_range() -> None:
+def test_random_complete_negative_node_weight_range() -> None:
     with pytest.raises(ValueError):
-        Graph.randomComplete(10, (3.0, 6.0), (-1, 4))
+        Graph.random_complete(10, (3.0, 6.0), (-1, 4))
 
 
-def test_addNode_negative_weight() -> None:
-    with pytest.raises(ValueError):
-        g = Graph(2)
-        g.addNode(-1)
-
-
-def test_addEdge_nonexistant_start() -> None:
+def test_add_node_negative_weight() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(2, 0, 5.0)
+        g.add_node(-1)
 
 
-def test_addEdge_nonexistant_end() -> None:
+def test_add_edge_nonexistant_start() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 2, 5.0)
+        g.add_edge(2, 0, 5.0)
 
 
-def test_addEdge_again() -> None:
+def test_add_edge_nonexistant_end() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 1, 5.0)
-        g.addEdge(0, 1, 4.0)
+        g.add_edge(0, 2, 5.0)
 
 
-def test_setNodeWeight_nonexistant() -> None:
+def test_add_edge_again() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.setNodeWeight(2, 3)
+        g.add_edge(0, 1, 5.0)
+        g.add_edge(0, 1, 4.0)
 
 
-def test_setNodeWeight_negative() -> None:
+def test_set_node_weight_nonexistant() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.setNodeWeight(1, -3)
+        g.set_node_weight(2, 3)
 
 
-def test_setEdgeWeight_nonexistant_start() -> None:
+def test_set_node_weight_negative() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 1, 1.0)
-        g.setEdgeWeight(2, 0, 2.0)
+        g.set_node_weight(1, -3)
 
 
-def test_setEdgeWeight_nonexistant_end() -> None:
+def test_set_edge_weight_nonexistant_start() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 1, 1.0)
-        g.setEdgeWeight(0, 2, 2.0)
+        g.add_edge(0, 1, 1.0)
+        g.set_edge_weight(2, 0, 2.0)
 
 
-def test_setEdgeWeight_negative_weight() -> None:
+def test_set_edge_weight_nonexistant_end() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 1, 1.0)
-        g.setEdgeWeight(0, 1, -2.0)
+        g.add_edge(0, 1, 1.0)
+        g.set_edge_weight(0, 2, 2.0)
 
 
-def test_setEdgeWeight_nonexistant_edge() -> None:
+def test_set_edge_weight_negative_weight() -> None:
     with pytest.raises(ValueError):
         g = Graph(2)
-        g.addEdge(0, 1, 1.0)
-        g.setEdgeWeight(1, 0, 2.0)
+        g.add_edge(0, 1, 1.0)
+        g.set_edge_weight(0, 1, -2.0)
+
+
+def test_set_edge_weight_nonexistant_edge() -> None:
+    with pytest.raises(ValueError):
+        g = Graph(2)
+        g.add_edge(0, 1, 1.0)
+        g.set_edge_weight(1, 0, 2.0)
 
 
 def test_subgraph_nonexistant_node() -> None:
     with pytest.raises(ValueError):
-        g = Graph.randomComplete(4)
+        g = Graph.random_complete(4)
         Graph.subgraph(g, [0, 2, 4])

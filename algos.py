@@ -1,11 +1,11 @@
 from itertools import permutations, combinations
 from collections import deque
-from typing import Deque, Callable
+from typing import Deque, Callable, Optional
 from more_itertools import set_partitions
 import numpy as np
 from graph import Graph
 
-# TODO: Implement MWLP_DP from https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.101.7189&rep=rep1&type=pdf
+# TODO: Implement MWLP_DP from Exact algorithms for the minimum latency problem
 # TODO: Implement Christofides' Algorithm
 # TODO: docstring
 
@@ -78,7 +78,7 @@ def create_metric_from_graph(g: Graph) -> Graph:
     return metric
 
 
-def WLP(g: Graph, order: list[int]) -> float:
+def wlp(g: Graph, order: list[int]) -> float:
     """Calculate the weighted latency of a given path
 
     Runtime: O(n)
@@ -106,12 +106,10 @@ def WLP(g: Graph, order: list[int]) -> float:
         path_len[i] = path_len[i - 1] + g.edge_weight[order[i - 1]][order[i]]
 
     # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
-    wlp: float = sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
-
-    return wlp
+    return sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
 
 
-def brute_force_MWLP(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
+def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Calculate minumum weighted latency
 
     Iterates over all possible paths and solves in brute force manner
@@ -129,24 +127,18 @@ def brute_force_MWLP(g: Graph, start: int = 0, seq_start: list[int] = []) -> lis
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
-    # check validity of start
-    if start >= g.num_nodes or start < 0:
-        raise ValueError(f"{start = } is not in passed graph")
-    if start in seq_start:
-        raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seq_start = }"
-        )
+    if start is None:
+        start = [0]
 
-    # check validity of seq_start:
-    for n in seq_start:
+    # check validity of start:
+    for n in start:
         if n >= g.num_nodes or n < 0:
-            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
+            raise ValueError(f"Passed {start = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.num_nodes
-    for n in seq_start:
+    for n in start:
         visited[n] = True
-    visited[start] = True
 
     # valid nodes to visit
     nodes: list[int] = [i for i in range(g.num_nodes) if visited[i] is False]
@@ -156,8 +148,8 @@ def brute_force_MWLP(g: Graph, start: int = 0, seq_start: list[int] = []) -> lis
 
     # test every permutation
     for order in permutations(nodes):
-        full_order: list[int] = seq_start + [start] + list(order)
-        curr: float = WLP(g, full_order)
+        full_order: list[int] = start + list(order)
+        curr: float = wlp(g, full_order)
         if curr < mwlp:
             mwlp = curr
             best = full_order
@@ -166,10 +158,10 @@ def brute_force_MWLP(g: Graph, start: int = 0, seq_start: list[int] = []) -> lis
 
 
 def cost(g: Graph, order: list[int]) -> float:
-    """cost function from "Polynomial time algorithms for some minimum latency problems" (Wu)
+    """cost function used for MWLP_DP algorithm
 
+    from "Polynomial time algorithms for some minimum latency problems" (Wu)
     c(order) = Latency(order) + (w(g) + w(order))*Length(order)
-    This is the cost function used for MWLP_DP algorithm
 
     Runtime: O(n)
 
@@ -186,25 +178,22 @@ def cost(g: Graph, order: list[int]) -> float:
         if node >= g.num_nodes:
             raise ValueError(f"Node {node} is not in passed graph")
 
-    latency: float = WLP(g, order)
+    latency: float = wlp(g, order)
     length: float = 0.0
     for i in range(len(order) - 1):
-        # Note we do not need to check if edges exist since prior call to WLP checks for us
         length += g.edge_weight[order[i]][order[i + 1]]
 
     weight_order: int = sum(g.node_weight[n] for n in order)
     return latency + (sum(g.node_weight) - weight_order) * length
 
 
-def nearest_neighbor(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
+def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Approximates MWLP using nearest neighbor heuristic
 
     Generates sequence starting from 0 going to the nearest node
 
     Args:
         g: input graph
-        start: start node after seq_start
-        seq_start: list of nodes already visited
 
     Returns:
         list[int]: nearest neighbor order
@@ -215,29 +204,23 @@ def nearest_neighbor(g: Graph, start: int = 0, seq_start: list[int] = []) -> lis
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
-    # check validity of start
-    if start >= g.num_nodes or start < 0:
-        raise ValueError(f"{start = } is not in passed graph")
-    if start in seq_start:
-        raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seq_start = }"
-        )
+    if start is None:
+        start = [0]
 
-    # check validity of seq_start:
-    for n in seq_start:
+    # check validity of start:
+    for n in start:
         if n >= g.num_nodes or n < 0:
-            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
+            raise ValueError(f"Passed {start = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.num_nodes
-    for n in seq_start:
+    for n in start:
         visited[n] = True
-    visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = seq_start + [start]
+    order: list[int] = list(start)
     q: Deque[int] = deque()
-    q.appendleft(start)
+    q.appendleft(order[-1])
 
     while len(q) != 0:
         curr: int = q.pop()
@@ -255,15 +238,13 @@ def nearest_neighbor(g: Graph, start: int = 0, seq_start: list[int] = []) -> lis
     return order
 
 
-def greedy(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
+def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Approximates MWLP using greedy heuristic
 
     Generates sequence starting from 0 going to the node of greatest weight
 
     Args:
         g: input graph
-        start: start node after seq_start
-        seq_start: list of nodes already visited
 
     Returns:
         list[int]: greedy order
@@ -274,29 +255,23 @@ def greedy(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
-    # check validity of start
-    if start >= g.num_nodes or start < 0:
-        raise ValueError(f"{start = } is not in passed graph")
-    if start in seq_start:
-        raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seq_start = }"
-        )
+    if start is None:
+        start = [0]
 
-    # check validity of seq_start:
-    for n in seq_start:
+    # check validity of start:
+    for n in start:
         if n >= g.num_nodes or n < 0:
-            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
+            raise ValueError(f"Passed {start = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.num_nodes
-    for n in seq_start:
+    for n in start:
         visited[n] = True
-    visited[start] = True
 
     # Use queue to remember current node
-    order: list[int] = seq_start + [start]
+    order: list[int] = list(start)
     q: Deque[int] = deque()
-    q.appendleft(start)
+    q.appendleft(order[-1])
 
     while len(q) != 0:
         curr: int = q.pop()
@@ -314,7 +289,7 @@ def greedy(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
     return order
 
 
-def random_order(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[int]:
+def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Random order generator
 
     Generates random sequence starting from start or starting from seq_start -> start
@@ -322,8 +297,6 @@ def random_order(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[in
 
     Args:
         g: input graph
-        start: start node after seq_start
-        seq_start: list of nodes already visited
 
     Returns:
         list[int]: greedy order
@@ -334,31 +307,27 @@ def random_order(g: Graph, start: int = 0, seq_start: list[int] = []) -> list[in
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
-    # check validity of start
-    if start >= g.num_nodes or start < 0:
-        raise ValueError(f"{start = } is not in passed graph")
-    if start in seq_start:
-        raise ValueError(
-            f"Cannot start ({start}) at node already visited in {seq_start = }"
-        )
+    if start is None:
+        start = [0]
 
-    # check validity of seq_start:
-    for n in seq_start:
+    # check validity of start:
+    for n in start:
         if n >= g.num_nodes or n < 0:
-            raise ValueError(f"Passed {seq_start = } contains nodes not in g")
+            raise ValueError(f"Passed {start = } contains nodes not in g")
 
     # keep track of visited nodes
     visited: list[bool] = [False] * g.num_nodes
-    for n in seq_start:
+    for n in start:
         visited[n] = True
-    visited[start] = True
 
     to_visit: list[int] = [i for i in range(g.num_nodes) if visited[i] is False]
 
-    return seq_start + [start] + list(np.random.permutation(to_visit))
+    return start + list(np.random.permutation(to_visit))
 
 
-def TSP(g: Graph, start: int = 0) -> list[int]:
+def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
+    # TODO: Allow for more variable start of list of nodes
+
     """Brute Force TSP
 
     Generates sequence that solves travelling salesman. Solved via
@@ -401,6 +370,8 @@ def TSP(g: Graph, start: int = 0) -> list[int]:
 
 
 def held_karp(g: Graph, start: int = 0) -> list[int]:
+    # TODO: Allow for more variable start of list of nodes
+
     """TSP via Held-Karp
 
     Generate the solution to TSP via dynamic programming using Held-Karp
@@ -428,22 +399,22 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     completed = {}  # type: ignore # typing this would be too verbose
 
     # recursive solver
-    def solve_tour(S: set[int], e: int) -> tuple[float, list[int]]:
+    def solve_tour(s: set[int], e: int) -> tuple[float, list[int]]:
         # base case: if no in-between nodes must take edge from start -> e
-        if len(S) == 0:
+        if len(s) == 0:
             return (g.edge_weight[start][e], [start])
 
         min_length = float("inf")
         best_order: list[int] = []
         # otherwise iterate over S all possible second-t-last nodes
-        for s_i in S:
-            S_i: set[int] = set(S)
-            S_i.remove(s_i)
-            sublength, suborder = completed[frozenset(S_i), s_i]
-            length: float = sublength + g.edge_weight[s_i][e]
+        for i in s:
+            s_i: set[int] = set(s)
+            s_i.remove(i)
+            sublength, suborder = completed[frozenset(s_i), i]
+            length: float = sublength + g.edge_weight[i][e]
             if length < min_length:
                 min_length = length
-                best_order = list(suborder) + [s_i]
+                best_order = list(suborder) + [i]
 
         return min_length, best_order
 
@@ -453,20 +424,20 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     for k in range(1, len(targets) + 1):
         for subset in combinations(targets, k):
             for e in subset:
-                S: set[int] = set(subset)
-                S.remove(e)
-                completed[frozenset(S), e] = solve_tour(S, e)
+                s: set[int] = set(subset)
+                s.remove(e)
+                completed[frozenset(s), e] = solve_tour(s, e)
 
     # Find best TSP over all nodes (essentially solving last case again)
     tsp_sol = float("inf")
     best_order: list[int] = []
-    for s_i in targets:
-        S_i = set(targets)
-        S_i.remove(s_i)
-        tsp, order = completed[frozenset(S_i), s_i]
+    for i in targets:
+        s_i = set(targets)
+        s_i.remove(i)
+        tsp, order = completed[frozenset(s_i), i]
         if tsp < tsp_sol:
             tsp_sol = tsp
-            best_order = order + [s_i]
+            best_order = order + [i]
 
     return best_order
 
@@ -477,7 +448,6 @@ def partition_heuristic(
     """Bruteforce multi-agent MWLP
 
     Generates best partition according to passed heuristic f
-    Returned partition is ordered in subgroups so the best order for each partition is returned
 
     Args:
         g: input graph
@@ -487,6 +457,8 @@ def partition_heuristic(
     Returns:
         float: optimal MWLP value according to heuristic
         list[list[int]: Best graph partition and order
+            partss in each partition is ordered such tha
+            the best order for each partition is maintained
 
     """
 
@@ -519,7 +491,7 @@ def partition_heuristic(
 
             # calculuate heuristic
             heuristic_order: list[int] = f(sg)
-            curr += WLP(sg, heuristic_order)
+            curr += wlp(sg, heuristic_order)
 
             # collect orders
             original_order = [sto[n] for n in heuristic_order]
@@ -537,8 +509,8 @@ def optimal_number_of_agents(
 ) -> tuple[float, list[list[int]]]:
     """Bruteforce multi-agent MWLP for variable number of agents
 
-    Generates optimal number of agents along with best partition according to passed heuristic f
-    Returned partition is ordered in subgroups so the best order for each partition is returned
+    Generates best partition according to passed heuristic f
+    parts in partition maintains best order for each part
     Length of optimal partition is number of agents used
 
     Args:
@@ -551,7 +523,9 @@ def optimal_number_of_agents(
 
     Returns:
         float: optimal MWLP value according to heuristic
-        list[list[int]: Best graph partition and order for k agents where k_min <= k <= k_max
+        list[list[int]: Optimal graph partition
+            Order of each part is optimal
+            number of agents = number of parts
 
     """
 
@@ -560,9 +534,7 @@ def optimal_number_of_agents(
         raise ValueError("Passed graph is not complete")
 
     if k_max <= k_min:
-        raise ValueError(
-            "Minimum number of agents {k_min} must be less than maximum number of agents {k_max}"
-        )
+        raise ValueError("{k_min = } >= {k_max = }")
 
     if k_min <= 0:
         raise ValueError(f"Multi-agent case must have non-zero agents ({k_min})")
@@ -684,31 +656,18 @@ def max_average_cycle_length(g: Graph, partition: list[set[int]]) -> float:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    # Validate partition
-    nodes: list[bool] = [False] * g.num_nodes
-    for subset in partition:
-        if len(subset) == 0:
-            raise ValueError("Passed partition contains empty subset")
-        for n in subset:
-            if n >= g.num_nodes or n < 0:
-                raise ValueError(f"Passed {subset = } contains nodes not in g")
-            if nodes[n] is True:
-                raise ValueError(f"{n = } is in multiple subsets")
-            nodes[n] = True
+    if Graph.is_partition(g, partition) is False:
+        raise ValueError("Passed partition is not valid")
 
-    for n in range(g.num_nodes):
-        if nodes[n] is False:
-            raise ValueError(f"Node {n = } is not in any subset in partition")
-
-    C_a = float("-inf")
+    c_a = float("-inf")
     for subset in partition:
         n_i: float = len(subset)
-        C_a = max(C_a, (2 / (n_i - 1)) * total_edge_weight(g, subset))
+        c_a = max(c_a, (2 / (n_i - 1)) * total_edge_weight(g, subset))
 
-    return C_a
+    return c_a
 
 
-def transfers_and_swaps(g: Graph, P: list[set[int]]) -> list[set[int]]:
+def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
     """Algorithm 1: Improve Partition from Balanced Task Allocation by Partitioning the
        Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
@@ -718,10 +677,10 @@ def transfers_and_swaps(g: Graph, P: list[set[int]]) -> list[set[int]]:
 
     Args:
         g: input graph
-        P: partiton of g representing nodes that make up subgraphs
+        p: partiton of g representing nodes that make up subgraphs
 
     Returns:
-        list[set[int]]: better partition of nodes such that average cost of partition is lower
+        list[set[int]]: Local minimum partition wrt cost function
 
     """
     # TODO: Deal with potential divide by zero errors from size heuristic
@@ -732,11 +691,9 @@ def transfers_and_swaps(g: Graph, P: list[set[int]]) -> list[set[int]]:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    # Validate partition
-    if Graph.is_partition(g, P) is False:
+    if Graph.is_partition(g, partition) is False:
         raise ValueError("Passed partition is not valid")
 
-    partition: list[set[int]] = list(P)
     m: int = len(partition)
 
     # initialize with all possible transfers / swaps
@@ -811,7 +768,6 @@ def transfers_and_swaps(g: Graph, P: list[set[int]]) -> list[set[int]]:
             # v_prime: g_j -> g_i
             for v in g_i:
                 for v_prime in g_j:
-                    # no need to check for equality between i and j, partitions are disjoint
                     weight = (0.5) * (
                         g.node_weight[v] + g.node_weight[v_prime]
                     ) + g.edge_weight[v][v_prime]
@@ -880,26 +836,13 @@ def transfer_outliers(
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    # Validate partition
-    nodes: list[bool] = [False] * g.num_nodes
-    for subset in partition:
-        if len(subset) == 0:
-            raise ValueError("Passed partition contains empty subset")
-        for n in subset:
-            if n >= g.num_nodes or n < 0:
-                raise ValueError(f"Passed {subset = } contains nodes not in g")
-            if nodes[n] is True:
-                raise ValueError(f"{n = } is in multiple subsets")
-            nodes[n] = True
-
-    for n in range(g.num_nodes):
-        if nodes[n] is False:
-            raise ValueError(f"Node {n = } is not in any subset in partition")
+    if Graph.is_partition(g, partition) is False:
+        raise ValueError("Passed partition is not valid")
 
     m: int = len(partition)
     outliers: set[int] = set()
     new: list[int] = [-1] * g.num_nodes
-    old: list[int] = [0] * g.num_nodes
+    old: list[int] = [-1] * g.num_nodes
     for i in range(m):
         for v in partition[i]:
             old[v] = i
@@ -917,7 +860,7 @@ def transfer_outliers(
                         curr_min = curr
                         j = i_prime
 
-                if j != -1 and j != i:
+                if j not in {-1, i}:
                     outliers.add(v)
                     new[v] = j
 
@@ -949,28 +892,15 @@ def improve_partition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    # Validate partition
-    nodes: list[bool] = [False] * g.num_nodes
-    for subset in partition:
-        if len(subset) == 0:
-            raise ValueError("Passed partition contains empty subset")
-        for n in subset:
-            if n >= g.num_nodes or n < 0:
-                raise ValueError(f"Passed {subset = } contains nodes not in g")
-            if nodes[n] is True:
-                raise ValueError(f"{n = } is in multiple subsets")
-            nodes[n] = True
-
-    for n in range(g.num_nodes):
-        if nodes[n] is False:
-            raise ValueError(f"Node {n = } is not in any subset in partition")
+    if Graph.is_partition(g, partition) is False:
+        raise ValueError("Passed partition is not valid")
 
     # initial improvement (since transfers and swaps can never return worse result)
     init: float = max_average_cycle_length(g, partition)
 
     print("initial transfer and swap")
-    P: list[set[int]] = transfers_and_swaps(g, partition)
-    curr: float = max_average_cycle_length(g, P)
+    p: list[set[int]] = transfers_and_swaps(g, partition)
+    curr: float = max_average_cycle_length(g, p)
 
     # TODO: Why does this fail sometimes
     assert curr <= init
@@ -978,17 +908,17 @@ def improve_partition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
     improved: bool = True
     while improved:
         print("transferring outliers")
-        P_prime: list[set[int]] = transfer_outliers(g, P)
+        p_prime: list[set[int]] = transfer_outliers(g, p)
         print("transferring and swapping")
-        P_prime = transfers_and_swaps(g, P_prime)
-        if improvement := max_average_cycle_length(g, P_prime) < curr:
-            P = P_prime
+        p_prime = transfers_and_swaps(g, p_prime)
+        if improvement := max_average_cycle_length(g, p_prime) < curr:
+            p = p_prime
             curr = improvement
             print("found improvement")
         else:
             improved = False
 
-    return P
+    return p
 
 
 # Depreciated MWLP_DP function. Does not work

@@ -1,18 +1,8 @@
-from typing_extensions import TypedDict
 import pytest
 import algos
-from graph import Graph
+from graph import Graph, graph_dict
 
 # TODO: Needs major refactor. So much duplicate code
-
-graph_dict = TypedDict(
-    "graph_dict",
-    {
-        "num_nodes": int,
-        "node_weight": list[int],
-        "edges": list[tuple[int, int, float]],
-    },
-)
 
 # Bank of graphs
 empty = Graph()
@@ -90,13 +80,13 @@ almost_complete = Graph.from_dict(almost_complete_graph_dict)
 ### Correctness Tests ###
 
 
-def test_FW_empty() -> None:
+def test_fw_empty() -> None:
     dist: list[list[float]] = algos.floyd_warshall(empty)
 
     assert len(dist) == 0
 
 
-def test_FW_no_edges() -> None:
+def test_fw_no_edges() -> None:
     g = no_edges
     dist: list[list[float]] = algos.floyd_warshall(g)
 
@@ -108,7 +98,7 @@ def test_FW_no_edges() -> None:
                 assert dist[i][j] == float("inf")
 
 
-def test_FW_complete() -> None:
+def test_fw_complete() -> None:
     g = random_complete_metric
     dist: list[list[float]] = algos.floyd_warshall(g)
 
@@ -120,7 +110,7 @@ def test_FW_complete() -> None:
                 assert dist[i][j] != float("inf")
 
 
-def test_FW_metric_complete() -> None:
+def test_fw_metric_complete() -> None:
     g = random_complete_metric
     dist: list[list[float]] = algos.floyd_warshall(g)
 
@@ -150,34 +140,34 @@ def test_create_metric_from_graph_metric_is_same() -> None:
                 assert g.edge_weight[i][j] == metric.edge_weight[i][j]
 
 
-def test_WLP_small_orders() -> None:
+def test_wlp_small_orders() -> None:
     g = random_complete
-    assert algos.WLP(g, []) == 0.0
-    assert algos.WLP(g, [0]) == 0.0
-    assert algos.WLP(g, [1]) == 0.0
+    assert algos.wlp(g, []) == 0.0
+    assert algos.wlp(g, [0]) == 0.0
+    assert algos.wlp(g, [1]) == 0.0
 
 
-def test_WLP() -> None:
+def test_wlp() -> None:
     g = small_graph
-    assert algos.WLP(g, [0, 1, 2, 3]) == 206.0
-    assert algos.WLP(g, [0, 1]) == 2.0
-    assert algos.WLP(g, [0, 2]) == 12.0
-    assert algos.WLP(g, [0, 2, 3]) == 152.0
-    assert algos.WLP(g, [1, 2, 3]) == 178.0
+    assert algos.wlp(g, [0, 1, 2, 3]) == 206.0
+    assert algos.wlp(g, [0, 1]) == 2.0
+    assert algos.wlp(g, [0, 2]) == 12.0
+    assert algos.wlp(g, [0, 2, 3]) == 152.0
+    assert algos.wlp(g, [1, 2, 3]) == 178.0
 
 
-def test_brute_force_MWLP() -> None:
+def test_brute_force_mwlp() -> None:
     g = complete
-    assert algos.brute_force_MWLP(g) == [0, 1, 2, 3]
-    assert algos.brute_force_MWLP(g, start=1) == [1, 2, 0, 3]
+    assert algos.brute_force_mwlp(g) == [0, 1, 2, 3]
+    assert algos.brute_force_mwlp(g, start=[1]) == [1, 2, 0, 3]
 
 
-def test_brute_force_MWLP_seq_start() -> None:
+def test_brute_force_mwlp_seq_start() -> None:
     g = Graph.random_complete(5)
-    order: list[int] = algos.brute_force_MWLP(g)
+    order: list[int] = algos.brute_force_mwlp(g)
 
     for i in range(len(order)):
-        assert algos.brute_force_MWLP(g, start=order[i], seq_start=order[:i]) == order
+        assert algos.brute_force_mwlp(g, start=order[: i + 1]) == order
 
 
 def test_cost() -> None:
@@ -185,11 +175,11 @@ def test_cost() -> None:
     assert algos.cost(g, [0, 1, 2]) == 59.0
 
     rand: list[int] = algos.random_order(g)
-    assert algos.cost(g, rand) == algos.WLP(g, rand)
+    assert algos.cost(g, rand) == algos.wlp(g, rand)
 
     g = random_complete
     rand = algos.random_order(g)
-    assert algos.cost(g, rand) == algos.WLP(g, rand)
+    assert algos.cost(g, rand) == algos.wlp(g, rand)
 
 
 def test_cost_small_orders() -> None:
@@ -201,29 +191,29 @@ def test_cost_small_orders() -> None:
 def test_nearest_neighbor() -> None:
     g = complete
     assert algos.nearest_neighbor(g) == [0, 1, 2, 3]
-    assert algos.nearest_neighbor(g, start=1) == [1, 2, 3, 0]
+    assert algos.nearest_neighbor(g, start=[1]) == [1, 2, 3, 0]
 
 
-def test_nearest_neighbor_seq_start() -> None:
+def test_nearest_neighbor_start() -> None:
     g = random_complete
     order: list[int] = algos.nearest_neighbor(g)
 
-    for i in range(len(order)):
-        assert algos.nearest_neighbor(g, start=order[i], seq_start=order[:i]) == order
+    for i in range(1, len(order) + 1):
+        assert algos.nearest_neighbor(g, start=order[:i]) == order
 
 
 def test_greedy() -> None:
     g = complete
     assert algos.greedy(g) == [0, 2, 3, 1]
-    assert algos.greedy(g, start=1) == [1, 2, 0, 3]
+    assert algos.greedy(g, start=[1]) == [1, 2, 0, 3]
 
 
-def test_greedy_seq_start() -> None:
+def test_greedy_start() -> None:
     g = random_complete
     order: list[int] = algos.greedy(g)
 
-    for i in range(len(order)):
-        assert algos.greedy(g, start=order[i], seq_start=order[:i]) == order
+    for i in range(1, len(order) + 1):
+        assert algos.greedy(g, start=order[:i]) == order
 
 
 def test_random_order() -> None:
@@ -233,24 +223,16 @@ def test_random_order() -> None:
     for i in range(g.num_nodes):
         assert i in rand
 
-    rand_start_at_one: list[int] = algos.random_order(g, start=1)
+    rand_start_at_one: list[int] = algos.random_order(g, start=[1])
     assert rand_start_at_one[0] == 1
     for i in range(g.num_nodes):
         assert i in rand_start_at_one
 
 
-def test_random_order_seq_start() -> None:
-    g = random_complete
-    rand: list[int] = algos.random_order(g, start=2, seq_start=[0])
-    assert rand[0:2] == [0, 2]
-    for i in range(g.num_nodes):
-        assert i in rand
-
-
-def test_TSP() -> None:
+def test_brute_force_tsp() -> None:
     g = complete
-    assert algos.TSP(g) == [0, 1, 2, 3]
-    assert algos.TSP(g, start=1) == [1, 2, 0, 3]
+    assert algos.brute_force_tsp(g) == [0, 1, 2, 3]
+    assert algos.brute_force_tsp(g, start=1) == [1, 2, 0, 3]
 
 
 def test_held_karp() -> None:
@@ -258,27 +240,27 @@ def test_held_karp() -> None:
     assert algos.held_karp(g, start=0) == [0, 1, 2, 3]
 
 
-def test_TSP_correctness() -> None:
+def test_tsp_correctness() -> None:
     for _ in range(10):
         g = Graph.random_complete(7)
-        assert algos.held_karp(g) == algos.TSP(g)
+        assert algos.held_karp(g) == algos.brute_force_tsp(g)
 
 
-def test_partition_heuristic_MWLP_2_agents() -> None:
+def test_partition_heuristic_mwlp_2_agents() -> None:
     g = complete_two
-    result, partition = algos.partition_heuristic(g, algos.brute_force_MWLP, 2)
+    result, partition = algos.partition_heuristic(g, algos.brute_force_mwlp, 2)
 
     assert result == 52.0
     assert [0, 1, 2] in partition and [0, 3] in partition
 
 
-def test_optimal_number_of_agents_MWLP() -> None:
+def test_optimal_number_of_agents_mwlp() -> None:
     g = complete_two
-    optimalMWLP, optimal_order = algos.optimal_number_of_agents(
-        g, algos.brute_force_MWLP, 1, 3
+    optimalmwlp, optimal_order = algos.optimal_number_of_agents(
+        g, algos.brute_force_mwlp, 1, 3
     )
 
-    assert optimalMWLP == 52.0
+    assert optimalmwlp == 52.0
     assert len(optimal_order) == 2
     assert [0, 1, 2] in optimal_order and [0, 3] in optimal_order
 
@@ -297,44 +279,52 @@ def test_marginal_edge_weight() -> None:
     assert algos.marginal_edge_weight(g, all_nodes, 1) == 83.0
 
 
+def test_maximum_average_cycle_length() -> None:
+    g = (
+        random_complete
+        if random_complete.num_nodes % 2 == 0
+        else Graph.random_complete(8)
+    )
+    subsets = [{i, i + 1} for i in range(0, g.num_nodes, 2)]
+    expected = float("-inf")
+    for u, v in subsets:
+        macl: float = 2 * (
+            0.5 * (g.node_weight[u] + g.node_weight[v])
+            + g.edge_weight[u][v]
+            + 0.5 * (g.node_weight[v] + g.node_weight[u])
+            + g.edge_weight[v][u]
+        )
+        expected = max(expected, macl)
+
+    assert algos.max_average_cycle_length(g, subsets) == pytest.approx(expected, 0.001)
+
+
 ### Error Tests ###
 
 
-def test_WLP_node_not_in_graph() -> None:
+def test_wlp_node_not_in_graph() -> None:
     g = random_complete
     n: int = g.num_nodes
     with pytest.raises(ValueError):
-        algos.WLP(g, [0, 1, 2, n])
+        algos.wlp(g, [0, 1, 2, n])
 
 
-def test_WLP_missing_edge() -> None:
+def test_wlp_missing_edge() -> None:
     g = small_graph
     with pytest.raises(ValueError):
-        algos.WLP(g, [0, 1, 2, 3, 2])
+        algos.wlp(g, [0, 1, 2, 3, 2])
 
 
-def test_brute_force_MWLP_incomplete() -> None:
+def test_brute_force_mwlp_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
-        algos.brute_force_MWLP(g)
+        algos.brute_force_mwlp(g)
 
 
-def test_brute_force_MWLP_invalid_start() -> None:
+def test_brute_force_mwlp_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.brute_force_MWLP(g, start=g.num_nodes)
-
-
-def test_brute_force_MWLP_start_already_visited() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.brute_force_MWLP(g, start=0, seq_start=[0, 1])
-
-
-def test_brute_force_MWLP_invalid_seq_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.brute_force_MWLP(g, start=0, seq_start=[g.num_nodes])
+        algos.brute_force_mwlp(g, start=[g.num_nodes])
 
 
 def test_cost_invalid_nodes() -> None:
@@ -358,19 +348,7 @@ def test_nearest_neighbor_incomplete() -> None:
 def test_nearest_neighbor_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.nearest_neighbor(g, start=g.num_nodes)
-
-
-def test_nearest_neighbor_start_already_visited() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.nearest_neighbor(g, start=0, seq_start=[0, 1])
-
-
-def test_nearest_neighbor_invalid_seq_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.nearest_neighbor(g, start=0, seq_start=[g.num_nodes])
+        algos.nearest_neighbor(g, start=[g.num_nodes])
 
 
 def test_greedy_incomplete() -> None:
@@ -382,19 +360,7 @@ def test_greedy_incomplete() -> None:
 def test_greedy_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.greedy(g, start=g.num_nodes)
-
-
-def test_greedy_start_already_visited() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.greedy(g, start=0, seq_start=[0, 1])
-
-
-def test_greedy_invalid_seq_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.greedy(g, start=0, seq_start=[g.num_nodes])
+        algos.greedy(g, start=[g.num_nodes])
 
 
 def test_random_order_incomplete() -> None:
@@ -406,40 +372,28 @@ def test_random_order_incomplete() -> None:
 def test_random_order_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.random_order(g, start=g.num_nodes)
+        algos.random_order(g, start=[g.num_nodes])
 
 
-def test_random_order_start_already_visited() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.random_order(g, start=0, seq_start=[0, 1])
-
-
-def test_random_order_invalid_seq_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.random_order(g, start=0, seq_start=[g.num_nodes])
-
-
-def test_TSP_incomplete() -> None:
+def test_tsp_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
-        algos.TSP(g)
+        algos.brute_force_tsp(g)
 
 
-def test_TSP_invalid_start() -> None:
+def test_tsp_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.TSP(g, start=g.num_nodes)
+        algos.brute_force_tsp(g, start=g.num_nodes)
 
 
-def test_HK_incomplete() -> None:
+def test_hk_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
         algos.held_karp(g)
 
 
-def test_HK_invalid_start() -> None:
+def test_hk_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.held_karp(g, start=g.num_nodes)
@@ -448,43 +402,43 @@ def test_HK_invalid_start() -> None:
 def test_partition_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.TSP, 2)
+        algos.partition_heuristic(g, algos.brute_force_tsp, 2)
 
 
 def test_partition_too_few_agents() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.TSP, 0)
+        algos.partition_heuristic(g, algos.brute_force_tsp, 0)
 
 
 def test_partition_too_many_agents() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.TSP, g.num_nodes + 1)
+        algos.partition_heuristic(g, algos.brute_force_tsp, g.num_nodes + 1)
 
 
 def test_optimal_number_of_agents_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.TSP, 1, 3)
+        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, 3)
 
 
 def test_optimal_number_of_agents_invalid_order() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.TSP, 3, 1)
+        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 3, 1)
 
 
 def test_optimal_number_of_agents_too_few() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.TSP, -1, 1)
+        algos.optimal_number_of_agents(g, algos.brute_force_tsp, -1, 1)
 
 
 def test_optimal_number_of_agents_too_many() -> None:
     g = random_complete
     with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.TSP, 1, g.num_nodes)
+        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
 
 
 def test_total_edge_weight_incomplete() -> None:
@@ -520,6 +474,21 @@ def test_marginal_edge_weight_invalid_nodes() -> None:
     with pytest.raises(ValueError):
         nodes = set(range(1, g.num_nodes + 1))
         algos.marginal_edge_weight(g, nodes, 0)
+
+
+def test_maximum_average_cycle_length_incomplete() -> None:
+    g = almost_complete
+    with pytest.raises(ValueError):
+        evens = set(i for i in range(g.num_nodes) if i % 2 == 0)
+        odds = set(i for i in range(g.num_nodes) if i % 2 == 1)
+        algos.max_average_cycle_length(g, [evens, odds])
+
+
+def test_maximum_average_cycle_length_invalid_partition() -> None:
+    g = random_complete
+    with pytest.raises(ValueError):
+        evens = set(i for i in range(g.num_nodes) if i % 2 == 0)
+        algos.max_average_cycle_length(g, [evens, set()])
 
 
 def test_improve_partition_incomplete() -> None:
@@ -563,9 +532,9 @@ def test_improve_partition_missing_node() -> None:
         algos.improve_partition(g, [evens, odds])
 
 
-### DEPRECIATED MWLP_DP TESTS
+### DEPRECIATED mwlp_DP TESTS
 
-# def test_MWLP_failure() -> None:
+# def test_mwlp_failure() -> None:
 #     gd: graph_dict = {
 #         "num_nodes": 5,
 #         "edges": [
@@ -594,19 +563,19 @@ def test_improve_partition_missing_node() -> None:
 #     }
 #
 #     g = Graph.from_dict(gd)
-#     brute: list[int] = algos.brute_force_MWLP(g)
-#     DP: list[int] = algos.MWLP_DP(g)
-#     assert algos.WLP(g, brute) == algos.WLP(g, DP)
+#     brute: list[int] = algos.brute_force_mwlp(g)
+#     DP: list[int] = algos.mwlp_DP(g)
+#     assert algos.wlp(g, brute) == algos.wlp(g, DP)
 #
 #
-# def test_MWLP_correctness() -> None:
+# def test_mwlp_correctness() -> None:
 #     for _ in range(100):
 #         g = Graph.random_complete(5)
-#         brute: list[int] = algos.brute_force_MWLP(g)
-#         DP: list[int] = algos.MWLP_DP(g)
-#         assert algos.WLP(g, brute) == algos.WLP(g, DP)
+#         brute: list[int] = algos.brute_force_mwlp(g)
+#         DP: list[int] = algos.mwlp_DP(g)
+#         assert algos.wlp(g, brute) == algos.wlp(g, DP)
 #
-# def test_MWLP_DP_incomplete() -> None:
+# def test_mwlp_DP_incomplete() -> None:
 #     gd: graph_dict = {
 #         "num_nodes": 4,
 #         "edges": [
@@ -627,11 +596,11 @@ def test_improve_partition_missing_node() -> None:
 #     g = Graph.from_dict(gd)
 #
 #     with pytest.raises(ValueError):
-#         algos.MWLP_DP(g)
+#         algos.mwlp_DP(g)
 #
 #
-# def test_MWLP_DP_invalid_start() -> None:
+# def test_mwlp_DP_invalid_start() -> None:
 #     g = Graph.random_complete(4)
 #
 #     with pytest.raises(ValueError):
-#         algos.MWLP_DP(g, start=4)
+#         algos.mwlp_DP(g, start=4)

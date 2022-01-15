@@ -46,34 +46,34 @@ class Graph:
         self.node_weight: list[int] = [0 for _ in range(n)]
 
     @staticmethod
-    def from_dict(dictionary: graph_dict) -> Graph:
+    def from_dict(gd: graph_dict) -> Graph:
         """Alternate constructor using dictionary
 
         Args:
-            graph_dict: Dictionary containing the needed information for a graph
+            gd: graph_dict containing the needed information for a graph
 
         Returns:
-            Graph
+            Graph with the same information as gd
         """
 
-        if dictionary["num_nodes"] < 0:
-            raise ValueError(f"Number of nodes is negative: {dictionary['num_nodes']}")
-        g = Graph(dictionary["num_nodes"])
+        if gd["num_nodes"] < 0:
+            raise ValueError(f"Number of nodes is negative: {gd['num_nodes']}")
+        g = Graph(gd["num_nodes"])
 
-        if len(dictionary["node_weight"]) != g.num_nodes:
+        if len(gd["node_weight"]) != g.num_nodes:
             raise ValueError(
                 "node_weight list is incorrect length: "
-                + f"({dictionary['node_weight']} vs {g.num_nodes})"
+                + f"({gd['node_weight']} vs {g.num_nodes})"
             )
 
-        if min(dictionary["node_weight"]) < 0:
+        if min(gd["node_weight"]) < 0:
             raise ValueError(
-                f"node_weight list has nodes of a negative weight: {dictionary['node_weight']}"
+                f"node_weight list contains negative values: {gd['node_weight']}"
             )
 
-        g.node_weight = dictionary["node_weight"]
+        g.node_weight = gd["node_weight"]
 
-        for (start_node, end_node, node_weight) in dictionary["edges"]:
+        for (start_node, end_node, node_weight) in gd["edges"]:
             if start_node >= g.num_nodes:
                 raise ValueError(
                     f"Starting node {start_node} is out of range [0, {g.num_nodes - 1}]"
@@ -169,7 +169,7 @@ class Graph:
 
         Args:
             n: number of nodes
-            upper: the upper bound of edge weights used to create the interval (upper / 2, upper)
+            upper: used to create the edge weight interval (upper / 2, upper)
             node_w: the interval that node weights can be in
 
         Returns:
@@ -340,7 +340,7 @@ class Graph:
     def is_metric(g: Graph) -> bool:
         """Checks if a graph is complete
 
-        Checks if for all u, v, w in the graph that the following inequality is maintained
+        Checks triangle inequality for all nodes  u, v, w in the graph
         l(u, w) + l(w, v) >= l(u, v)
 
         Args:

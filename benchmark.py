@@ -15,7 +15,7 @@ def benchmark_single(
     """Benchmarks various heuristics against bruteforce MWLP
 
     Tests the following heuristics: Random order, nearest neighbor, greedy, TSP
-    Creates random complete (metric) graphs and runs the heuristics and prints comparisons
+    on random complete (metric) graphs and prints comparisons
 
     Args:
         n: number of nodes for the graphs
@@ -57,11 +57,11 @@ def benchmark_single(
             if metric
             else Graph.random_complete(n, edge_w=edge_w, node_w=node_w)
         )
-        brute_forces.append(algos.WLP(g, algos.brute_force_MWLP(g)))
-        tsp_orders.append(algos.WLP(g, algos.held_karp(g)))
-        random_orders.append(algos.WLP(g, algos.random_order(g)))
-        nearest_ns.append(algos.WLP(g, algos.nearest_neighbor(g)))
-        greedy_orders.append(algos.WLP(g, algos.greedy(g)))
+        brute_forces.append(algos.wlp(g, algos.brute_force_mwlp(g)))
+        tsp_orders.append(algos.wlp(g, algos.held_karp(g)))
+        random_orders.append(algos.wlp(g, algos.random_order(g)))
+        nearest_ns.append(algos.wlp(g, algos.nearest_neighbor(g)))
+        greedy_orders.append(algos.wlp(g, algos.greedy(g)))
 
     print(
         f"{'brute force':22}"
@@ -158,7 +158,7 @@ def benchmark_multi(
     """Benchmarks various heuristics against bruteforce multi-agent MWLP
 
     Tests the following heuristics: Random order, nearest neighbor, greedy, TSP
-    Creates random complete (metric) graphs and runs the heuristics and prints comparisons
+    on random complete (metric) graphs and prints comparisons
 
     Args:
         n: number of nodes for the graphs
@@ -203,7 +203,7 @@ def benchmark_multi(
             else Graph.random_complete(n, edge_w=edge_w, node_w=node_w)
         )
 
-        brute_m, _ = algos.partition_heuristic(g, algos.brute_force_MWLP, k)
+        brute_m, _ = algos.partition_heuristic(g, algos.brute_force_mwlp, k)
         brute_forces.append(brute_m)
 
         tsp_m, _ = algos.partition_heuristic(g, algos.held_karp, k)
@@ -215,7 +215,7 @@ def benchmark_multi(
 
         rand_total: float = 0.0
         for part in partition:
-            rand_total += algos.WLP(g, part)
+            rand_total += algos.wlp(g, part)
 
         random_orders.append(rand_total)
 

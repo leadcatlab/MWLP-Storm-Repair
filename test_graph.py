@@ -1,16 +1,6 @@
 import random
-from typing_extensions import TypedDict
 import pytest
-from graph import Graph
-
-graph_dict = TypedDict(
-    "graph_dict",
-    {
-        "num_nodes": int,
-        "node_weight": list[int],
-        "edges": list[tuple[int, int, float]],
-    },
-)
+from graph import Graph, graph_dict
 
 
 ### Correctness Tests ###

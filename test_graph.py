@@ -131,6 +131,78 @@ def test_is_partition() -> None:
     assert Graph.is_partition(g, partition)
 
 
+def test_is_undirected() -> None:
+    assert Graph.is_undirected(Graph()) is True
+    assert Graph.is_undirected(Graph(10)) is True
+    assert Graph.is_undirected(Graph.random_complete(10, directed=False)) is True
+    assert Graph.is_undirected(Graph.random_complete(10, directed=True)) is False
+
+    gd: graph_dict = {
+        "num_nodes": 4,
+        "edges": [
+            (0, 1, 2.0),
+            (0, 2, 2.0),
+            (0, 3, 2.0),
+            (1, 0, 2.0),
+            (1, 2, 2.0),
+            (1, 3, 2.0),
+            (2, 0, 2.0),
+            (2, 1, 2.0),
+            (2, 3, 2.0),
+            (3, 0, 2.0),
+            (3, 1, 2.0),
+            (3, 2, 2.0),
+        ],
+        "node_weight": [0, 0, 0, 0],
+    }
+    g = Graph.from_dict(gd)
+    assert Graph.is_undirected(g) is True
+
+    # test if unequal edges are found
+    g.edge_weight[0][3] = 3.0
+    assert Graph.is_undirected(g) is False
+
+    # check if missing edges are found in both directions
+    gd = {
+        "num_nodes": 4,
+        "edges": [
+            (0, 1, 2.0),
+            (0, 2, 2.0),
+            (0, 3, 2.0),
+            (1, 0, 2.0),
+            (1, 3, 2.0),
+            (2, 0, 2.0),
+            (2, 1, 2.0),
+            (2, 3, 2.0),
+            (3, 0, 2.0),
+            (3, 2, 2.0),
+        ],
+        "node_weight": [0, 0, 0, 0],
+    }
+    g = Graph.from_dict(gd)
+    assert Graph.is_undirected(g) is False
+
+    gd = {
+        "num_nodes": 4,
+        "edges": [
+            (0, 1, 2.0),
+            (0, 2, 2.0),
+            (0, 3, 2.0),
+            (1, 2, 2.0),
+            (1, 3, 2.0),
+            (2, 0, 2.0),
+            (2, 1, 2.0),
+            (2, 3, 2.0),
+            (3, 0, 2.0),
+            (3, 1, 2.0),
+            (3, 2, 2.0),
+        ],
+        "node_weight": [0, 0, 0, 0],
+    }
+    g = Graph.from_dict(gd)
+    assert Graph.is_undirected(g) is False
+
+
 def test_subgraph_one_to_one() -> None:
     gd: graph_dict = {
         "num_nodes": 4,

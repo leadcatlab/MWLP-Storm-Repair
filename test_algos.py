@@ -265,40 +265,6 @@ def test_optimal_number_of_agents_mwlp() -> None:
     assert [0, 1, 2] in optimal_order and [0, 3] in optimal_order
 
 
-def test_total_edge_weight() -> None:
-    g = complete
-    all_nodes = set(range(g.num_nodes))
-    assert algos.total_edge_weight(g, all_nodes) == 312.0
-    assert algos.total_edge_weight(g, {0, 1}) == 22.0
-
-
-def test_marginal_edge_weight() -> None:
-    g = complete
-    all_nodes = set(range(g.num_nodes))
-    assert algos.marginal_edge_weight(g, all_nodes, 0) == 40.0
-    assert algos.marginal_edge_weight(g, all_nodes, 1) == 83.0
-
-
-def test_maximum_average_cycle_length() -> None:
-    g = (
-        random_complete
-        if random_complete.num_nodes % 2 == 0
-        else Graph.random_complete(8)
-    )
-    subsets = [{i, i + 1} for i in range(0, g.num_nodes, 2)]
-    expected = float("-inf")
-    for u, v in subsets:
-        macl: float = 2 * (
-            0.5 * (g.node_weight[u] + g.node_weight[v])
-            + g.edge_weight[u][v]
-            + 0.5 * (g.node_weight[v] + g.node_weight[u])
-            + g.edge_weight[v][u]
-        )
-        expected = max(expected, macl)
-
-    assert algos.max_average_cycle_length(g, subsets) == pytest.approx(expected, 0.001)
-
-
 ### Error Tests ###
 
 

@@ -117,7 +117,10 @@ class Graph:
 
     @staticmethod
     def random_complete(
-        n: int, edge_w: tuple[float, float] = (0, 1), node_w: tuple[int, int] = (0, 100)
+        n: int,
+        edge_w: tuple[float, float] = (0, 1),
+        node_w: tuple[int, int] = (0, 100),
+        directed: bool = True,
     ) -> Graph:
         """Create a randomly generated complete weighted undirected graph
 
@@ -149,18 +152,28 @@ class Graph:
 
         g.node_weight = [random.randint(node_w[0], node_w[1]) for _ in range(n)]
 
-        for i in range(n):
-            for j in range(i + 1, n):
-                weight: float = random.uniform(edge_w[0], edge_w[1])
-                g.add_edge(i, j, weight)
-                g.add_edge(j, i, weight)
+        if directed:
+            for i in range(n):
+                for j in range(n):
+                    if i != j:
+                        weight: float = random.uniform(edge_w[0], edge_w[1])
+                        g.add_edge(i, j, weight)
+        else:
+            for i in range(n):
+                for j in range(i + 1, n):
+                    weight = random.uniform(edge_w[0], edge_w[1])
+                    g.add_edge(i, j, weight)
+                    g.add_edge(j, i, weight)
 
         assert Graph.is_complete(g)
         return g
 
     @staticmethod
     def random_complete_metric(
-        n: int, upper: float = 1, node_w: tuple[int, int] = (1, 100)
+        n: int,
+        upper: float = 1,
+        node_w: tuple[int, int] = (1, 100),
+        directed: bool = True,
     ) -> Graph:
         """Create a randomly generated complete weighted undirected metric graph
 
@@ -176,7 +189,9 @@ class Graph:
             Graph
         """
 
-        g = Graph.random_complete(n, edge_w=(upper / 2, upper), node_w=node_w)
+        g = Graph.random_complete(
+            n, edge_w=(upper / 2, upper), node_w=node_w, directed=directed
+        )
         assert Graph.is_metric(g)
         return g
 
@@ -317,6 +332,28 @@ class Graph:
             raise ValueError(f"{end_node} is not a neighbor of {start_node}")
 
         self.edge_weight[start_node][end_node] = edge_weight
+
+    @staticmethod
+    def is_undirected(g: Graph) -> bool:
+        """Checks if a graph is undirected
+
+        Args:
+            cls: the graph to check
+
+        Returns:
+            bool: True if undirected, false O.W.
+        """
+
+        for u in range(g.num_nodes):
+            for v in range(u + 1, g.num_nodes):
+                if v in g.adjacen_list[u] and u in g.adjacen_list[v]:
+                    if g.edge_weight[u][v] != g.edge_weight[v][u]:
+                        return False
+                elif v in g.adjacen_list[u] and u not in g.adjacen_list[v]:
+                    return False
+                elif v not in g.adjacen_list[u] and u in g.adjacen_list[v]:
+                    return False
+        return True
 
     @staticmethod
     def is_complete(g: Graph) -> bool:

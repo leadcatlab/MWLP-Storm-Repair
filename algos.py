@@ -7,7 +7,7 @@ from graph import Graph
 
 # TODO: Implement MWLP_DP from Exact algorithms for the minimum latency problem
 # TODO: Implement Christofides' Algorithm
-# TODO: docstring
+# TODO: better docstrings
 
 
 def floyd_warshall(g: Graph) -> list[list[float]]:
@@ -275,11 +275,11 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
     while len(q) != 0:
         curr: int = q.pop()
-        weight = float("-inf")
+        best_weight = float("-inf")
         heaviest: int = -1
         for n in g.adjacen_list[curr]:
-            if not visited[n] and g.node_weight[n] > weight:
-                weight = g.node_weight[n]
+            if not visited[n] and g.node_weight[n] > best_weight:
+                best_weight = g.node_weight[n]
                 heaviest = n
         if heaviest != -1:
             q.appendleft(heaviest)
@@ -557,12 +557,25 @@ def optimal_number_of_agents(
     return minimum, best_order
 
 
+def weight(g: Graph, u: int, v: int) -> float:
+    if u >= g.num_nodes or u < 0:
+        raise ValueError(f"{u} is not in passed graph")
+    if v >= g.num_nodes or v < 0:
+        raise ValueError(f"{v} is not in passed graph")
+    if v not in g.adjacen_list[u]:
+        raise ValueError(f"{v} is not in the adjacency list of {u}")
+    if u not in g.adjacen_list[v]:
+        raise ValueError(f"{u} is not in the adjacency list of {v}")
+
+    return 0.5 * (g.node_weight[u] + g.node_weight[v]) + g.edge_weight[u][v]
+
+
 def total_edge_weight(g: Graph, subgraph: set[int]) -> float:
     """W(G_i) from Balanced Task Allocation by Partitioning the
        Multiple Traveling Salesperson Problem (Vandermeulen et al,)
 
     This is the sum of w(e) for all edges in the subgraph
-    w(u -> v)  = 1/2 * (w(u) + w(v)) + l(u -> v)
+    w(u <-> v)  = 1/2 * (w(u) + w(v)) + l(u <-> v)
 
     Passed subgraph can be represented as a set since we know g is complete
 
@@ -581,15 +594,20 @@ def total_edge_weight(g: Graph, subgraph: set[int]) -> float:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    for n in subgraph:
-        if n >= g.num_nodes or n < 0:
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    for v in subgraph:
+        if v >= g.num_nodes or v < 0:
             raise ValueError(f"Passed {subgraph = } contains nodes not in g")
 
+    subgraph_list = list(subgraph)
     total: float = 0.0
-    for u in subgraph:
-        for v in subgraph:
-            if u != v:
-                total += (g.node_weight[u] + g.node_weight[v]) / 2 + g.edge_weight[u][v]
+    n: int = len(subgraph_list)
+    for i in range(n):
+        for j in range(i + 1, n):
+            u, v = subgraph_list[i], subgraph_list[j]
+            total += weight(g, u, v)
 
     return total
 
@@ -620,6 +638,9 @@ def marginal_edge_weight(g: Graph, subgraph: set[int], v: int) -> float:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
     if v >= g.num_nodes or v < 0:
         raise ValueError(f"{v = } is not in passed graph")
 
@@ -630,10 +651,7 @@ def marginal_edge_weight(g: Graph, subgraph: set[int], v: int) -> float:
     total: float = 0.0
     for v_prime in subgraph:
         if v_prime != v:
-            total += (
-                0.5 * (g.node_weight[v] + g.node_weight[v_prime])
-                + g.edge_weight[v][v_prime]
-            )
+            total += weight(g, v, v_prime)
 
     return total
 
@@ -655,6 +673,9 @@ def max_average_cycle_length(g: Graph, partition: list[set[int]]) -> float:
     """
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
 
     if Graph.is_partition(g, partition) is False:
         raise ValueError("Passed partition is not valid")
@@ -685,11 +706,14 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
     """
     # TODO: Deal with potential divide by zero errors from size heuristic
     # TODO: Determine how to measure >> for transfers
-    # TODO: Determine why C_a after improvement is sometimes worse
+    # TODO: Determine why c_a after improvement is sometimes worse
     # TODO: Determine why infinite loops occur sometimes
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
 
     if Graph.is_partition(g, partition) is False:
         raise ValueError("Passed partition is not valid")
@@ -768,7 +792,7 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
             # v_prime: g_j -> g_i
             for v in g_i:
                 for v_prime in g_j:
-                    weight = (0.5) * (
+                    curr_weight = (0.5) * (
                         g.node_weight[v] + g.node_weight[v_prime]
                     ) + g.edge_weight[v][v_prime]
 
@@ -776,13 +800,13 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
                         total_i
                         - marginal_edge_weight(g, g_i, v)
                         + marginal_edge_weight(g, g_i, v_prime)
-                        - weight
+                        - curr_weight
                     )
                     weight_j = (
                         total_j
                         + marginal_edge_weight(g, g_j, v)
                         - marginal_edge_weight(g, g_j, v_prime)
-                        - weight
+                        - curr_weight
                     )
 
                     size_i = (2 / (n_i - 1)) * weight_i

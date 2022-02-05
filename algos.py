@@ -683,7 +683,7 @@ def max_average_cycle_length(g: Graph, partition: list[set[int]]) -> float:
     c_a = float("-inf")
     for subset in partition:
         n_i: float = len(subset)
-        c_a = max(c_a, (2 / (n_i - 1)) * total_edge_weight(g, subset))
+        c_a = max(c_a, (2 / (n_i - 1)) * total_edge_weight(g, subset) if n_i > 1 else 0)
 
     return c_a
 
@@ -740,8 +740,8 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
             total_i = total_edge_weight(g, g_i)
             total_j = total_edge_weight(g, g_j)
 
-            size_i_init: float = (2 / (n_i - 1)) * total_i
-            size_j_init: float = (2 / (n_j - 1)) * total_j
+            size_i_init: float = (2 / (n_i - 1)) * total_i if n_i > 1 else 0
+            size_j_init: float = (2 / (n_j - 1)) * total_j if n_j > 1 else 0
 
             if size_i_init <= size_j_init:
                 continue
@@ -750,8 +750,8 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
             v_star: int = -1
             # Try all potential transfers, transfer if max is improved
             for v in g_i:
-                size_i = (2 / (n_i - 2)) * (total_i - marginal_edge_weight(g, g_i, v))
-                size_j = (2 / n_j) * (total_j - marginal_edge_weight(g, g_j, v))
+                size_i = (2 / (n_i - 2)) * (total_i - marginal_edge_weight(g, g_i, v)) if n_i > 2 else 0
+                size_j = (2 / n_j) * (total_j + marginal_edge_weight(g, g_j, v)) 
                 if curr_max := max(size_i, size_j) < size_max:
                     size_max = curr_max
                     v_star = v
@@ -779,8 +779,8 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
             total_i = total_edge_weight(g, g_i)
             total_j = total_edge_weight(g, g_j)
 
-            size_i_init = (2 / (n_i - 1)) * total_i
-            size_j_init = (2 / (n_j - 1)) * total_j
+            size_i_init = (2 / (n_i - 1)) * total_i if n_i > 1 else 0
+            size_j_init = (2 / (n_j - 1)) * total_j if n_j > 1 else 0
 
             size_max = max(size_i_init, size_j_init)
             # v_i_star swapped from g_i to g_j
@@ -809,8 +809,8 @@ def transfers_and_swaps(g: Graph, partition: list[set[int]]) -> list[set[int]]:
                         - curr_weight
                     )
 
-                    size_i = (2 / (n_i - 1)) * weight_i
-                    size_j = (2 / (n_j - 1)) * weight_j
+                    size_i = (2 / (n_i - 1)) * weight_i if n_i > 1 else 0
+                    size_j = (2 / (n_j - 1)) * weight_j if n_j > 1 else 0
 
                     # swap is advantageous if worst case is improved
                     if curr_max := max(size_i, size_j) < size_max:

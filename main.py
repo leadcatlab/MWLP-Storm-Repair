@@ -14,8 +14,8 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 20
-    k: int = 4
+    n: int = 50
+    k: int = 5
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = [set() for _ in range(k)]
     for i in range(n):

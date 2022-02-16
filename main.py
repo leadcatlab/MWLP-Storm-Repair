@@ -1,5 +1,7 @@
 from graph import Graph
 import algos
+import benchmark
+from typing import Callable
 from typing_extensions import TypedDict
 import random
 
@@ -14,30 +16,22 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 12
-    k: int = 4
+    n: int = 40
+    k: int = 10
     g = Graph.random_complete_metric(n, directed=False)
-    
-    # TODO: Create function to generate partition
-    # TODO: Create function to evalute before and after of transfers/swaps
+    partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
-    partition: list[set[int]] = [set() for _ in range(k)]
-    for i in range(n):
-        partition[random.randint(0, 1000) % k].add(i)
+    f: Callable[..., list[int]] = algos.greedy
+    benchmark.print_heuristic_benchmark(g, partition, f)
 
-    # before: str = f"Before: {algos.nearest_neighbor(g, partition)}\n"
-    before: str = ""
-    for i in range(len(partition)):
-        before += f"    Agent {i}: {partition[i]}\n"
-    print(before)
+    f = algos.nearest_neighbor
+    benchmark.print_heuristic_benchmark(g, partition, f)
 
-    res = algos.transfers_and_swaps_mwlp(g, partition, algos.nearest_neighbor)
+    f = algos.held_karp
+    benchmark.print_heuristic_benchmark(g, partition, f)
 
-    # after: str = f"After: {algos.nearest_neighbor(g, res)}\n"
-    after: str = ""
-    for i in range(len(res)):
-        after += f"    Agent {i}: {res[i]}\n"
-    print(after)
+    f = algos.brute_force_mwlp
+    benchmark.print_heuristic_benchmark(g, partition, f)
 
 
 if __name__ == "__main__":

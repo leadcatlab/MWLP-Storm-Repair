@@ -3,6 +3,7 @@ from collections import deque
 from typing import Deque, Callable, Optional
 from more_itertools import set_partitions
 import numpy as np
+import random
 from graph import Graph
 
 # TODO: Implement MWLP_DP from Exact algorithms for the minimum latency problem
@@ -76,6 +77,17 @@ def create_metric_from_graph(g: Graph) -> Graph:
                 metric.edge_weight[i][j] = metric_weights[i][j]
 
     return metric
+
+
+def create_agent_partition(g: Graph, k: int) -> list[set[int]]:
+
+    # all agent contain 0 as start
+    n: int = g.num_nodes
+    partition: list[set[int]] = [{0} for _ in range(k)]
+    for i in range(1, n):
+        partition[random.randint(0, 1000) % k].add(i)
+
+    return partition
 
 
 def wlp(g: Graph, order: list[int]) -> float:
@@ -949,7 +961,90 @@ def improve_partition(g: Graph, partition: list[set[int]]) -> list[set[int]]:
     return p
 
 
-def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..., list[int]]) -> list[set[int]]:
+def transfers_mwlp(
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]]
+) -> list[set[int]]:
+    # Transfers only part of mwlp
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
+
+    # don't want to edit original partition
+    m: int = len(part)
+    partition: list[set[int]] = [{0} for _ in range(m)]
+    for i in range(m):
+        partition[i] = partition[i] | part[i]
+
+    # initialize with all possible transfers / swaps
+    transfers: set[tuple[int, int]] = {
+        (i, j) for i in range(m) for j in range(m) if i != j
+    }
+
+    while len(transfers) > 0:
+        i, j = transfers.pop()
+        g_i, g_j = partition[i], partition[j]
+
+        assert 0 in g_i
+        assert 0 in g_j
+
+        sub_i, _, _ = Graph.subgraph(g, list(g_i))
+        sub_j, _, _ = Graph.subgraph(g, list(g_j))
+
+        size_i_init = wlp(g, f(sub_i))
+        size_j_init = wlp(g, f(sub_j))
+
+        if size_i_init <= size_j_init:
+            continue
+
+        size_max = max(size_i_init, size_j_init)
+        v_star: int = -1
+        for v in g_i:
+            if v != 0:
+                # transfer v from g_i to g_j
+                new_i = {v_i for v_i in g_i if v_i != v}
+                new_j = set(g_j)
+                new_j.add(v)
+
+                assert 0 in new_i
+                assert 0 in new_j
+
+                new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
+                new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+
+                new_size_i = wlp(new_sub_i, f(new_sub_i))
+                new_size_j = wlp(new_sub_j, f(new_sub_j))
+
+                if curr_max := max(new_size_i, new_size_j) < size_max:
+                    size_max = curr_max
+                    v_star = v
+
+        if v_star > 0:
+            # print(f"transferring {v_star} from {i} to {j}")
+            g_i.remove(v_star)
+            g_j.add(v_star)
+
+            partition[i] = g_i
+            partition[j] = g_j
+
+            for k in range(m):
+                if k not in {i, j}:
+                    # j increased so may need to transfer to other nodes
+                    # i decreased so may need to accept other nodes
+                    transfers.add((j, k))
+                    transfers.add((k, i))
+
+    return partition
+
+
+def transfers_and_swaps_mwlp(
+    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+) -> list[set[int]]:
     # NOTE: THIS IS REALLY SLOW FOR NOW
     # TODO: Fix and optimize the following:
     #   Determine infinite swaps occur
@@ -959,7 +1054,7 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
     #   Add and remove edges without making new graphs each time?
 
     """
-    Outline: 
+    Outline:
         initialize sets to be checked
         attempt transfers:
             transfer node
@@ -979,9 +1074,6 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_partition(g, partition) is False:
-        raise ValueError("Passed partition is not valid")
-
     m: int = len(partition)
     # 0 is the universal start, so all sets should contain it
     for part in partition:
@@ -997,16 +1089,16 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
         while len(transfers) > 0:
             i, j = transfers.pop()
             g_i, g_j = partition[i], partition[j]
-            
+
             assert 0 in g_i
             assert 0 in g_j
 
             sub_i, _, _ = Graph.subgraph(g, list(g_i))
-            sub_j, _, _ = Graph.subgraph(g, list(g_i))
-            
+            sub_j, _, _ = Graph.subgraph(g, list(g_j))
+
             size_i_init = wlp(g, f(sub_i))
             size_j_init = wlp(g, f(sub_j))
-           
+
             if size_i_init <= size_j_init:
                 continue
 
@@ -1016,15 +1108,15 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
                 if v != 0:
                     # transfer v from g_i to g_j
                     new_i = {v_i for v_i in g_i if v_i != v}
-                    new_j = {g_j}
+                    new_j = set(g_j)
                     new_j.add(v)
-                        
+
                     assert 0 in new_i
                     assert 0 in new_j
 
                     new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
                     new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
-                    
+
                     new_size_i = wlp(new_sub_i, f(new_sub_i))
                     new_size_j = wlp(new_sub_j, f(new_sub_j))
 
@@ -1050,21 +1142,20 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
         while len(swaps) > 0:
             i, j = swaps.pop()
             g_i, g_j = partition[i], partition[j]
-            
+
             assert 0 in g_i
             assert 0 in g_j
 
             sub_i, _, _ = Graph.subgraph(g, list(g_i))
             sub_j, _, _ = Graph.subgraph(g, list(g_i))
-            
+
             size_i_init = wlp(g, f(sub_i))
             size_j_init = wlp(g, f(sub_j))
-           
+
             # TODO: Determine a condition to not check swap or prove one cannot be found
-    
+
             size_max = max(size_i_init, size_j_init)
             v_i_star, v_j_star = -1, -1
-
 
             for v in g_i:
                 for v_prime in g_j:
@@ -1074,13 +1165,13 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
                         new_i.add(v_prime)
                         new_j = {v_j for v_j in g_j if v_j != v_prime}
                         new_j.add(v)
-                            
+
                         assert 0 in new_i
                         assert 0 in new_j
 
                         new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
                         new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
-                        
+
                         new_size_i = wlp(new_sub_i, f(new_sub_i))
                         new_size_j = wlp(new_sub_j, f(new_sub_j))
 
@@ -1090,7 +1181,7 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
 
             if v_i_star != -1 and v_j_star != -1:
                 print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
-                
+
                 g_i.remove(v_i_star)
                 g_i.add(v_j_star)
                 g_j.remove(v_j_star)
@@ -1098,13 +1189,12 @@ def transfers_and_swaps_mwlp(g: Graph, partition: list[set[int]], f: Callable[..
 
                 partition[i] = g_i
                 partition[j] = g_j
-                
+
                 for k in range(m):
                     if k not in {i, j}:
                         # j increased so may need to transfer to other nodes
                         # j decreased so may need to accept other nodes
                         swaps.add((j, k))
                         swaps.add((k, i))
-        
-    return partition
 
+    return partition

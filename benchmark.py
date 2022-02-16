@@ -1,4 +1,5 @@
 import random
+from typing import Callable, Optional
 from graph import Graph
 import algos
 
@@ -305,3 +306,38 @@ def benchmark_multi(
             + f"{str(nn_av) + '%' : <22}"
             + f"{str(greedy_av) + '%' : <22}"
         )
+
+
+def mwlp_heuristic_benchmark(
+    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+) -> list[float]:
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+
+    res: list[float] = []
+    for part in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(part))
+        val: float = algos.wlp(g, f(sub_g))
+        res.append(val)
+
+    return res
+
+
+def print_heuristic_benchmark(
+    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+) -> None:
+    before: str = "Before:\n"
+    before_vals: list[float] = mwlp_heuristic_benchmark(g, partition, f)
+    for i in range(len(partition)):
+        before += f"    Agent {i} = {before_vals[i] : >15}: {partition[i]}\n"
+    before += f"Maximum: {max(before_vals)}\n"
+    print(before)
+
+    res: list[set[int]] = algos.transfers_mwlp(g, partition, f)
+
+    after: str = f"After {f.__name__}:\n"
+    after_vals: list[float] = mwlp_heuristic_benchmark(g, res, f)
+    for i in range(len(res)):
+        after += f"    Agent {i} = {after_vals[i]: >15}: {res[i]}\n"
+    after += f"Maximum: {max(after_vals)}\n"
+    print(after)

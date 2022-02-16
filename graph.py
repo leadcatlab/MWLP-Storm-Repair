@@ -421,6 +421,61 @@ class Graph:
 
         return True
 
+    @staticmethod
+    def create_agent_partition(g: Graph, k: int) -> list[set[int]]:
+
+        n: int = g.num_nodes
+        barriers: list[bool] = [False] * (n - 1)
+        nodes = list(range(1, n))
+        random.shuffle(nodes)
+
+        for _ in range(k - 1):
+            found: bool = False
+            while not found:
+                pos: int = random.randint(1, n - 2)
+                if barriers[pos] is False:
+                    barriers[pos] = True
+                    found = True
+
+        # all agent contain 0 as start
+        partition: list[set[int]] = [{0} for _ in range(k)]
+        start, end = 0, 1
+        part: int = 0
+        while start < n - 1:
+            while end < n - 1 and barriers[end] is not True:
+                end += 1
+            if end >= n - 1:
+                partition[part].update(nodes[start:])
+            else:
+                partition[part].update(nodes[start:end])
+            start, end = end, end + 1
+            part += 1
+
+        return partition
+
+    @staticmethod
+    def is_agent_partition(g: Graph, partition: list[set[int]]) -> bool:
+        """Determines if a partition of graph nodes is a valid agent partition"""
+
+        nodes: list[bool] = [False] * g.num_nodes
+        for subset in partition:
+            if len(subset) == 0:
+                return False
+            if 0 not in subset:
+                return False
+            for n in subset:
+                if n >= g.num_nodes or n < 0:
+                    return False
+                if n != 0 and nodes[n] is True:
+                    return False
+                nodes[n] = True
+
+        for n in range(g.num_nodes):
+            if nodes[n] is False:
+                return False
+
+        return True
+
     def __str__(self) -> str:  # pragma: no cover
         """String representation of the graph"""
 

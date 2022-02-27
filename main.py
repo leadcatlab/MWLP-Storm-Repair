@@ -1,9 +1,10 @@
-from graph import Graph
+from typing import Callable
+
+from typing_extensions import TypedDict
+
 import algos
 import benchmark
-from typing import Callable
-from typing_extensions import TypedDict
-import random
+from graph import Graph
 
 graph_dict = TypedDict(
     "graph_dict",
@@ -16,8 +17,8 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 40
-    k: int = 10
+    n: int = 20
+    k: int = 4
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
@@ -25,13 +26,13 @@ def main() -> None:
     benchmark.print_heuristic_benchmark(g, partition, f)
 
     f = algos.nearest_neighbor
-    benchmark.print_heuristic_benchmark(g, partition, f)
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     f = algos.held_karp
-    benchmark.print_heuristic_benchmark(g, partition, f)
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     f = algos.brute_force_mwlp
-    benchmark.print_heuristic_benchmark(g, partition, f)
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 import random
-from typing import Callable, Optional
-from graph import Graph
+from typing import Callable
+
 import algos
+from graph import Graph
 
 
 def benchmark_single(
@@ -324,14 +325,18 @@ def mwlp_heuristic_benchmark(
 
 
 def print_heuristic_benchmark(
-    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+    g: Graph,
+    partition: list[set[int]],
+    f: Callable[..., list[int]],
+    print_before: bool = True,
 ) -> None:
-    before: str = "Before:\n"
-    before_vals: list[float] = mwlp_heuristic_benchmark(g, partition, f)
-    for i in range(len(partition)):
-        before += f"    Agent {i} = {before_vals[i] : >15}: {partition[i]}\n"
-    before += f"Maximum: {max(before_vals)}\n"
-    print(before)
+    if print_before:
+        before: str = "Before:\n"
+        before_vals: list[float] = mwlp_heuristic_benchmark(g, partition, f)
+        for i in range(len(partition)):
+            before += f"    Agent {i} = {before_vals[i] : >15}: {partition[i]}\n"
+        before += f"Maximum: {max(before_vals)}\n"
+        print(before)
 
     res: list[set[int]] = algos.transfers_mwlp(g, partition, f)
 

@@ -1,5 +1,7 @@
 import random
+
 import pytest
+
 from graph import Graph, graph_dict
 
 
@@ -125,10 +127,31 @@ def test_random_complete_metric_is_both() -> None:
 
 
 def test_is_partition() -> None:
-    n = 10
-    g = Graph(n)
+    n: int = 10
+    g = Graph.random_complete(n)
     partition: list[set[int]] = [set(range(0, 3)), set(range(3, 7)), set(range(7, n))]
     assert Graph.is_partition(g, partition)
+
+
+def test_is_agent_partition() -> None:
+    n: int = 10
+    k: int = 4
+    g = Graph.random_complete(n)
+    partition: list[set[int]] = [{0} for _ in range(k)]
+    partition[0].update({1, 2})
+    partition[1].update({3})
+    partition[2].update({4, 5, 6})
+    partition[3].update({7, 8, 9})
+    assert Graph.is_agent_partition(g, partition)
+
+
+def test_create_agent_partition() -> None:
+    n: int = 20
+    k_max: int = 4
+    g = Graph.random_complete(n)
+    for k in range(1, k_max):
+        part: list[set[int]] = Graph.create_agent_partition(g, k)
+        assert Graph.is_agent_partition(g, part)
 
 
 def test_is_undirected() -> None:
@@ -324,7 +347,7 @@ def test_is_metric_failure() -> None:
 def test_is_partition_failure() -> None:
     n = 20
     k = 3
-    g = Graph(20)
+    g = Graph(n)
 
     has_empty_set: list[set[int]] = [set(), set(range(n)), set()]
     assert Graph.is_partition(g, has_empty_set) is False
@@ -353,6 +376,39 @@ def test_is_partition_failure() -> None:
         set(range(7, n)),
     ]
     assert Graph.is_partition(g, has_missing_nodes) is False
+
+
+def test_is_agent_partition_failure() -> None:
+    n: int = 10
+    g = Graph(n)
+
+    # Check that empty subsets are caught
+    has_empty: list[set[int]] = [set(), set(range(n))]
+    assert Graph.is_agent_partition(g, has_empty) is False
+
+    # Check that subsets containing just 0 are caught
+    has_start_only: list[set[int]] = [{0}, set(range(n))]
+    assert Graph.is_agent_partition(g, has_start_only) is False
+
+    # Check if 0 is missing
+    missing_zero: list[set[int]] = [{1}, {0}]
+    missing_zero[1].update(set(range(2, 20)))
+    assert Graph.is_agent_partition(g, missing_zero) is False
+
+    # Check subset only contain valid nodes
+    has_negative: list[set[int]] = [{0, -1}, set(range(n))]
+    assert Graph.is_agent_partition(g, has_negative) is False
+    out_of_range: list[set[int]] = [{0, n}, set(range(n))]
+    assert Graph.is_agent_partition(g, out_of_range) is False
+
+    # Catch duplicates that aren't 0
+    has_dupes: list[set[int]] = [{0, 1}, set(range(n))]
+    assert Graph.is_agent_partition(g, has_dupes) is False
+
+    # Catch missing nodes
+    missing_nodes: list[set[int]] = [{0, 1}, {0}]
+    missing_nodes[1].update(set(range(3, n)))
+    assert Graph.is_agent_partition(g, missing_nodes) is False
 
 
 ### Error Tests ###

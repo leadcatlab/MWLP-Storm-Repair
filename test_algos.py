@@ -1,8 +1,12 @@
+from typing import Callable
+
 import pytest
+
 import algos
 from graph import Graph, graph_dict
 
 # TODO: Needs major refactor. So much duplicate code
+# TESTING TEST
 
 # Bank of graphs
 empty = Graph()
@@ -57,6 +61,7 @@ complete_two_graph_dict: graph_dict = {
 }
 complete_two = Graph.from_dict(complete_two_graph_dict)
 
+# Missing 1 -> 0
 almost_complete_graph_dict: graph_dict = {
     "num_nodes": 4,
     "edges": [
@@ -76,6 +81,25 @@ almost_complete_graph_dict: graph_dict = {
 }
 almost_complete = Graph.from_dict(almost_complete_graph_dict)
 
+undirected_graph_dict: graph_dict = {
+    "num_nodes": 4,
+    "edges": [
+        (0, 1, 1.0),
+        (0, 2, 4.0),
+        (0, 3, 3.0),
+        (1, 0, 1.0),
+        (1, 2, 6.0),
+        (1, 3, 5.0),
+        (2, 0, 4.0),
+        (2, 1, 6.0),
+        (2, 3, 7.0),
+        (3, 0, 3.0),
+        (3, 1, 5.0),
+        (3, 2, 7.0),
+    ],
+    "node_weight": [10, 5, 20, 7],
+}
+undirected = Graph.from_dict(undirected_graph_dict)
 
 ### Correctness Tests ###
 
@@ -265,6 +289,25 @@ def test_optimal_number_of_agents_mwlp() -> None:
     assert [0, 1, 2] in optimal_order and [0, 3] in optimal_order
 
 
+def test_weight() -> None:
+    g: Graph = complete
+    assert algos.weight(g, 0, 1) == 8.5
+    assert algos.weight(g, 2, 3) == 14.5
+    assert algos.weight(g, 1, 0) == 13.5
+
+
+def test_total_edge_weight() -> None:
+    g: Graph = undirected
+    subgraph: set[int] = {0, 1, 2}
+    assert algos.total_edge_weight(g, subgraph) == 46.0
+
+
+def test_marginal_edge_weight() -> None:
+    g: Graph = undirected
+    subgraph: set[int] = {0, 1, 2}
+    assert algos.marginal_edge_weight(g, subgraph, 0) == 27.5
+
+
 ### Error Tests ###
 
 
@@ -407,6 +450,56 @@ def test_optimal_number_of_agents_too_many() -> None:
         algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
 
 
+def test_mwlp_transfers_and_swaps_incomplete() -> None:
+    g = almost_complete
+    partition: list[set[int]] = Graph.create_agent_partition(g, 2)
+    f: Callable[..., list[int]] = algos.greedy
+    with pytest.raises(ValueError):
+        algos.transfers_mwlp(g, partition, f)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, partition, f)
+
+
+def test_mwlp_transfers_and_swaps_undirected() -> None:
+    g = complete
+    partition: list[set[int]] = Graph.create_agent_partition(g, 2)
+    f: Callable[..., list[int]] = algos.greedy
+    with pytest.raises(ValueError):
+        algos.transfers_mwlp(g, partition, f)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, partition, f)
+
+
+def test_mwlp_transfers_and_swaps_invalid_partition() -> None:
+    g = undirected
+    partition: list[set[int]] = [{0, 1}, {2, 3}]
+    f: Callable[..., list[int]] = algos.greedy
+    with pytest.raises(ValueError):
+        algos.transfers_mwlp(g, partition, f)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, partition, f)
+
+
+def test_weight_invalid_nodes() -> None:
+    g = random_complete_metric
+    with pytest.raises(ValueError):
+        algos.weight(g, 0, g.num_nodes)
+    with pytest.raises(ValueError):
+        algos.weight(g, 0, -1)
+    with pytest.raises(ValueError):
+        algos.weight(g, g.num_nodes, 0)
+    with pytest.raises(ValueError):
+        algos.weight(g, -1, 0)
+
+
+def test_weight_missing_edges() -> None:
+    g = almost_complete
+    with pytest.raises(ValueError):
+        algos.weight(g, 1, 0)
+    with pytest.raises(ValueError):
+        algos.weight(g, 0, 1)
+
+
 def test_total_edge_weight_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):
@@ -414,8 +507,15 @@ def test_total_edge_weight_incomplete() -> None:
         algos.total_edge_weight(g, nodes)
 
 
+def test_total_edge_weight_directed() -> None:
+    g = complete
+    with pytest.raises(ValueError):
+        nodes = {0, 1}
+        algos.total_edge_weight(g, nodes)
+
+
 def test_total_edge_weight_invalid_nodes() -> None:
-    g = random_complete
+    g = undirected
     with pytest.raises(ValueError):
         nodes = set(range(1, g.num_nodes + 1))
         algos.total_edge_weight(g, nodes)
@@ -429,16 +529,23 @@ def test_marginal_edge_weight_incomplete() -> None:
 
 
 def test_marginal_edge_weight_invalid_margin_node() -> None:
-    g = random_complete
+    g = undirected
     with pytest.raises(ValueError):
         nodes = set(range(1, g.num_nodes))
         algos.marginal_edge_weight(g, nodes, g.num_nodes + 1)
 
 
 def test_marginal_edge_weight_invalid_nodes() -> None:
-    g = random_complete
+    g = undirected
     with pytest.raises(ValueError):
         nodes = set(range(1, g.num_nodes + 1))
+        algos.marginal_edge_weight(g, nodes, 0)
+
+
+def test_marginal_edge_weight_directed() -> None:
+    g = complete
+    with pytest.raises(ValueError):
+        nodes = {0, 1}
         algos.marginal_edge_weight(g, nodes, 0)
 
 

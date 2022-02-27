@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 import random
+
 from typing_extensions import TypedDict
 
 # TODO: docstring
@@ -375,7 +377,7 @@ class Graph:
 
     @staticmethod
     def is_metric(g: Graph) -> bool:
-        """Checks if a graph is complete
+        """Checks if a graph is metric
 
         Checks triangle inequality for all nodes  u, v, w in the graph
         l(u, w) + l(w, v) >= l(u, v)
@@ -423,6 +425,15 @@ class Graph:
 
     @staticmethod
     def create_agent_partition(g: Graph, k: int) -> list[set[int]]:
+        """Creates agent partition for algorithms
+
+        Agent partition:
+        ---------------
+        k agents, each starting from start note 0
+        Distribute notes [1, n] to the k agents
+        Each node other than 0 is used only one
+        Each agent gets partitions that contain more nodes than just {0}
+        """
 
         n: int = g.num_nodes
         barriers: list[bool] = [False] * (n - 1)
@@ -459,7 +470,7 @@ class Graph:
 
         nodes: list[bool] = [False] * g.num_nodes
         for subset in partition:
-            if len(subset) == 0:
+            if len(subset) == 0 or subset == {0}:
                 return False
             if 0 not in subset:
                 return False

@@ -5,9 +5,6 @@ import pytest
 import algos
 from graph import Graph, graph_dict
 
-# TODO: Needs major refactor. So much duplicate code
-# TESTING TEST
-
 # Bank of graphs
 empty = Graph()
 no_edges = Graph(6)

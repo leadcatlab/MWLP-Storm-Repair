@@ -11,7 +11,6 @@ from graph import Graph
 # TODO: Implement Christofides' Algorithm
 # TODO: better docstrings
 
-
 def floyd_warshall(g: Graph) -> list[list[float]]:
     """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
@@ -111,6 +110,7 @@ def wlp(g: Graph, order: list[int]) -> float:
     return sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
 
 
+# TODO: Allow for more variable start of list of nodes for all heuristic functions
 def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Calculate minumum weighted latency
 
@@ -328,7 +328,6 @@ def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
 
 def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
-    # TODO: Allow for more variable start of list of nodes
 
     """Brute Force TSP
 
@@ -372,8 +371,6 @@ def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
 
 
 def held_karp(g: Graph, start: int = 0) -> list[int]:
-    # TODO: Allow for more variable start of list of nodes
-
     """TSP via Held-Karp
 
     Generate the solution to TSP via dynamic programming using Held-Karp
@@ -645,12 +642,9 @@ def transfers_and_swaps_mwlp(
 ) -> list[set[int]]:
     # NOTE: THIS IS REALLY SLOW FOR NOW
     # TODO: Fix and optimize the following:
-    #   Determine infinite swaps occur
+    #   Determine infinite if swaps occur
     #   Recheck transfers after swaps?
-    #   One single set of unchecked pairs?
-    #   Store information
-    #   Add and remove edges without making new graphs each time?
-
+    #   Determine when to skip transfers / swaps
     # TODO: COPY ORDER OF FARHAD'S CODE FOR TRANSFERS AND SWAPS
 
     if Graph.is_complete(g) is False:
@@ -739,8 +733,6 @@ def transfers_and_swaps_mwlp(
 
             size_i_init = wlp(g, f(sub_i))
             size_j_init = wlp(g, f(sub_j))
-
-            # TODO: Determine a condition to not check swap or prove one cannot be found
 
             size_max = max(size_i_init, size_j_init)
             v_i_star, v_j_star = -1, -1

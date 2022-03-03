@@ -651,6 +651,8 @@ def transfers_and_swaps_mwlp(
     #   Store information
     #   Add and remove edges without making new graphs each time?
 
+    # TODO: COPY ORDER OF FARHAD'S CODE FOR TRANSFERS AND SWAPS
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
@@ -711,7 +713,7 @@ def transfers_and_swaps_mwlp(
                         v_star = v
 
             if v_star != -1:
-                print(f"transferring {v_star} from {i} to {j}")
+                # print(f"transferring {v_star} from {i} to {j}")
                 g_i.remove(v_star)
                 g_j.add(v_star)
 
@@ -766,7 +768,7 @@ def transfers_and_swaps_mwlp(
                             v_i_star, v_j_star = v, v_prime
 
             if v_i_star != -1 and v_j_star != -1:
-                print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
+                # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
 
                 g_i.remove(v_i_star)
                 g_i.add(v_j_star)

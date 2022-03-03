@@ -1,4 +1,5 @@
 import random
+import timeit
 from typing import Callable
 
 import algos
@@ -338,11 +339,14 @@ def print_heuristic_benchmark(
         before += f"Maximum: {max(before_vals)}\n"
         print(before)
 
-    res: list[set[int]] = algos.transfers_mwlp(g, partition, f)
+    start: float = timeit.default_timer()
+    res: list[set[int]] = algos.transfers_and_swaps_mwlp(g, partition, f)
+    end: float = timeit.default_timer()
 
     after: str = f"After {f.__name__}:\n"
     after_vals: list[float] = mwlp_heuristic_benchmark(g, res, f)
     for i in range(len(res)):
         after += f"    Agent {i} = {after_vals[i]: >15}: {res[i]}\n"
-    after += f"Maximum: {max(after_vals)}\n"
+    after += f"Maximum: {max(after_vals)}"
     print(after)
+    print(f"Time elapsed = {end - start}\n")

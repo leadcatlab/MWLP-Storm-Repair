@@ -11,6 +11,7 @@ from graph import Graph
 # TODO: Implement Christofides' Algorithm
 # TODO: better docstrings
 
+
 def floyd_warshall(g: Graph) -> list[list[float]]:
     """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
@@ -556,96 +557,19 @@ def optimal_number_of_agents(
     return minimum, best_order
 
 
-def transfers_mwlp(
-    g: Graph, part: list[set[int]], f: Callable[..., list[int]]
-) -> list[set[int]]:
-    # Transfers only part of mwlp
+def choose2(n: int) -> list[tuple[int, int]]:
+    """Gives all pairs (i, j) for 0 <= i, j < n without order"""
 
-    if Graph.is_complete(g) is False:
-        raise ValueError("Passed graph is not complete")
-
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
-
-    if Graph.is_agent_partition(g, part) is False:
-        raise ValueError("Passed partition is invalid")
-
-    # don't want to edit original partition
-    m: int = len(part)
-    partition: list[set[int]] = [{0} for _ in range(m)]
-    for i in range(m):
-        partition[i] = partition[i] | part[i]
-
-    # initialize with all possible transfers / swaps
-    transfers: set[tuple[int, int]] = {
-        (i, j) for i in range(m) for j in range(m) if i != j
-    }
-
-    while len(transfers) > 0:
-        i, j = transfers.pop()
-        g_i, g_j = partition[i], partition[j]
-
-        assert 0 in g_i
-        assert 0 in g_j
-
-        sub_i, _, _ = Graph.subgraph(g, list(g_i))
-        sub_j, _, _ = Graph.subgraph(g, list(g_j))
-
-        size_i_init = wlp(g, f(sub_i))
-        size_j_init = wlp(g, f(sub_j))
-
-        if size_i_init <= size_j_init:
-            continue
-
-        size_max = max(size_i_init, size_j_init)
-        v_star: int = -1
-        for v in g_i:
-            if v != 0:
-                # transfer v from g_i to g_j
-                new_i = {v_i for v_i in g_i if v_i != v}
-                new_j = set(g_j)
-                new_j.add(v)
-
-                assert 0 in new_i
-                assert 0 in new_j
-
-                new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
-                new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
-
-                new_size_i = wlp(new_sub_i, f(new_sub_i))
-                new_size_j = wlp(new_sub_j, f(new_sub_j))
-
-                if curr_max := max(new_size_i, new_size_j) < size_max:
-                    size_max = curr_max
-                    v_star = v
-
-        if v_star > 0:
-            # print(f"transferring {v_star} from {i} to {j}")
-            g_i.remove(v_star)
-            g_j.add(v_star)
-
-            partition[i] = g_i
-            partition[j] = g_j
-
-            for k in range(m):
-                if k not in {i, j}:
-                    # j increased so may need to transfer to other nodes
-                    # i decreased so may need to accept other nodes
-                    transfers.add((j, k))
-                    transfers.add((k, i))
-
-    return partition
+    pairs: list[tuple[int, int]] = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            pairs.append((i, j))
+    return pairs
 
 
 def transfers_and_swaps_mwlp(
     g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
-    # NOTE: THIS IS REALLY SLOW FOR NOW
-    # TODO: Fix and optimize the following:
-    #   Determine infinite if swaps occur
-    #   Recheck transfers after swaps?
-    #   Determine when to skip transfers / swaps
-    # TODO: COPY ORDER OF FARHAD'S CODE FOR TRANSFERS AND SWAPS
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -657,126 +581,153 @@ def transfers_and_swaps_mwlp(
         raise ValueError("Passed partition is invalid")
 
     m: int = len(partition)
-    # 0 is the universal start, so all sets should contain it
-    for part in partition:
-        part.add(0)
+    pairs: list[tuple[int, int]] = choose2(m)
+    # Use these arrays as "hashmaps" of indicator variables
+    # to see if a pair needs to be checked
 
-    # initialize with all possible transfers / swaps
-    transfers: set[tuple[int, int]] = {
-        (i, j) for i in range(m) for j in range(m) if i != j
-    }
-    swaps = set(transfers)
+    # determine if partition i needs to be checked for transfer
+    check_transfers: list[bool] = [True] * m
+    # determine if partition i needs to be checked for swap
+    check_swaps: list[bool] = [True] * m
+    # determine if pair i, j needs to be checked for transfer
+    check_transfer_pairs: list[bool] = [True] * len(pairs)
+    # determine if pair i, j needs to be checked for swap
+    check_swap_pairs: list[bool] = [True] * len(pairs)
+    checks: int = (
+        sum(check_transfers)
+        + sum(check_swaps)
+        + sum(check_transfer_pairs)
+        + sum(check_swap_pairs)
+    )
 
-    while len(transfers) > 0 or len(swaps) > 0:
-        while len(transfers) > 0:
-            i, j = transfers.pop()
-            g_i, g_j = partition[i], partition[j]
+    # while there are partitions to be checked
+    while checks > 0:
+        print(f"{checks = }")
+        # TODO: Formal justification of these conditions
+        for idx, (i, j) in enumerate(pairs):
+            # transfers
+            if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
+                g_i, g_j = partition[i], partition[j]
 
-            assert 0 in g_i
-            assert 0 in g_j
+                assert 0 in g_i
+                assert 0 in g_j
 
-            sub_i, _, _ = Graph.subgraph(g, list(g_i))
-            sub_j, _, _ = Graph.subgraph(g, list(g_j))
+                sub_i, _, _ = Graph.subgraph(g, list(g_i))
+                sub_j, _, _ = Graph.subgraph(g, list(g_j))
 
-            size_i_init = wlp(g, f(sub_i))
-            size_j_init = wlp(g, f(sub_j))
+                size_i: float = wlp(sub_i, f(sub_i))
+                size_j: float = wlp(sub_j, f(sub_j))
 
-            if size_i_init <= size_j_init:
-                continue
+                # we presume size_i => size_j
+                if size_i <= size_j:
+                    g_i, g_j = g_j, g_i
+                    sub_i, sub_j = sub_j, sub_i
+                    size_i, size_j = size_j, size_i
 
-            size_max = max(size_i_init, size_j_init)
-            v_star: int = -1
-            for v in g_i:
-                if v != 0:
-                    # transfer v from g_i to g_j
-                    new_i = {v_i for v_i in g_i if v_i != v}
-                    new_j = set(g_j)
-                    new_j.add(v)
-
-                    assert 0 in new_i
-                    assert 0 in new_j
-
-                    new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
-                    new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
-
-                    new_size_i = wlp(new_sub_i, f(new_sub_i))
-                    new_size_j = wlp(new_sub_j, f(new_sub_j))
-
-                    if curr_max := max(new_size_i, new_size_j) < size_max:
-                        size_max = curr_max
-                        v_star = v
-
-            if v_star != -1:
-                # print(f"transferring {v_star} from {i} to {j}")
-                g_i.remove(v_star)
-                g_j.add(v_star)
-
-                partition[i] = g_i
-                partition[j] = g_j
-
-                for k in range(m):
-                    if k not in {i, j}:
-                        # j increased so may need to transfer to other nodes
-                        # j decreased so may need to accept other nodes
-                        transfers.add((j, k))
-                        transfers.add((k, i))
-
-        while len(swaps) > 0:
-            i, j = swaps.pop()
-            g_i, g_j = partition[i], partition[j]
-
-            assert 0 in g_i
-            assert 0 in g_j
-
-            sub_i, _, _ = Graph.subgraph(g, list(g_i))
-            sub_j, _, _ = Graph.subgraph(g, list(g_i))
-
-            size_i_init = wlp(g, f(sub_i))
-            size_j_init = wlp(g, f(sub_j))
-
-            size_max = max(size_i_init, size_j_init)
-            v_i_star, v_j_star = -1, -1
-
-            for v in g_i:
-                for v_prime in g_j:
-                    if v != 0 and v_prime != 0:
-                        # swap v and v_prime
-                        new_i = {v_i for v_i in g_i if v_i != v}
-                        new_i.add(v_prime)
-                        new_j = {v_j for v_j in g_j if v_j != v_prime}
+                size_max: float = max(size_i, size_j)
+                v_star: int = -1
+                for v in g_i:
+                    if v != 0:
+                        new_i = set(g_i)
+                        new_i.remove(v)
+                        new_j = set(g_j)
                         new_j.add(v)
 
                         assert 0 in new_i
                         assert 0 in new_j
 
+                        # NOTE: This order is random, needs to be fixed in some way
                         new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
                         new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
 
                         new_size_i = wlp(new_sub_i, f(new_sub_i))
                         new_size_j = wlp(new_sub_j, f(new_sub_j))
+                        curr_max = max(new_size_i, new_size_j)
 
-                        if curr_max := max(new_size_i, new_size_j) < size_max:
+                        if curr_max < size_max:
                             size_max = curr_max
-                            v_i_star, v_j_star = v, v_prime
+                            v_star = v
 
-            if v_i_star != -1 and v_j_star != -1:
-                # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
+                if v_star > 0:
+                    g_i.remove(v_star)
+                    g_j.add(v_star)
 
-                g_i.remove(v_i_star)
-                g_i.add(v_j_star)
-                g_j.remove(v_j_star)
-                g_j.add(v_i_star)
+                    partition[i] = g_i
+                    partition[j] = g_j
 
-                partition[i] = g_i
-                partition[j] = g_j
+                    check_transfer_pairs[idx] = True
+                    check_transfers[i] = True
+                    check_transfers[j] = True
+                else:
+                    check_transfer_pairs[idx] = False
+                    check_transfers[i] = False
+                    check_transfers[j] = False
 
-                for k in range(m):
-                    if k not in {i, j}:
-                        # j increased so may need to transfer to other nodes
-                        # j decreased so may need to accept other nodes
-                        swaps.add((j, k))
-                        swaps.add((k, i))
+            # swaps
+            elif check_swap_pairs[idx] or check_swaps[i] or check_swaps[j]:
+                g_i, g_j = partition[i], partition[j]
 
+                assert 0 in g_i
+                assert 0 in g_j
+
+                sub_i, _, _ = Graph.subgraph(g, list(g_i))
+                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+
+                size_i = wlp(sub_i, f(sub_i))
+                size_j = wlp(sub_j, f(sub_j))
+
+                size_max = max(size_i, size_j)
+                v_i_star, v_j_star = -1, -1
+
+                for v in g_i:
+                    for v_prime in g_j:
+                        if v != 0 and v_prime != 0:
+                            # swap v and v_prime
+                            new_i = set(g_i)
+                            new_i.remove(v)
+                            new_i.add(v_prime)
+                            new_j = set(g_j)
+                            new_j.remove(v_prime)
+                            new_j.add(v)
+
+                            assert 0 in new_i
+                            assert 0 in new_j
+
+                            # NOTE: This order is random, needs to be fixed in some way
+                            new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
+                            new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+
+                            new_size_i = wlp(new_sub_i, f(new_sub_i))
+                            new_size_j = wlp(new_sub_j, f(new_sub_j))
+                            curr_max = max(new_size_i, new_size_j)
+                            if curr_max < size_max:
+                                size_max = curr_max
+                                v_i_star, v_j_star = v, v_prime
+
+                if v_i_star > 0 and v_j_star > 0:
+                    # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
+
+                    g_i.remove(v_i_star)
+                    g_i.add(v_j_star)
+                    g_j.remove(v_j_star)
+                    g_j.add(v_i_star)
+
+                    partition[i] = g_i
+                    partition[j] = g_j
+
+                    check_swap_pairs[idx] = True
+                    check_swaps[i] = True
+                    check_swaps[j] = True
+                else:
+                    check_swap_pairs[idx] = False
+                    check_swaps[i] = False
+                    check_swaps[j] = False
+        checks = (
+            sum(check_transfers)
+            + sum(check_swaps)
+            + sum(check_transfer_pairs)
+            + sum(check_swap_pairs)
+        )
     return partition
 
 

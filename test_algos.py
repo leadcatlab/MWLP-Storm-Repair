@@ -1,5 +1,3 @@
-from typing import Callable
-
 import pytest
 
 import algos
@@ -445,36 +443,6 @@ def test_optimal_number_of_agents_too_many() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
-
-
-def test_mwlp_transfers_and_swaps_incomplete() -> None:
-    g = almost_complete
-    partition: list[set[int]] = Graph.create_agent_partition(g, 2)
-    f: Callable[..., list[int]] = algos.greedy
-    with pytest.raises(ValueError):
-        algos.transfers_mwlp(g, partition, f)
-    with pytest.raises(ValueError):
-        algos.transfers_and_swaps_mwlp(g, partition, f)
-
-
-def test_mwlp_transfers_and_swaps_undirected() -> None:
-    g = complete
-    partition: list[set[int]] = Graph.create_agent_partition(g, 2)
-    f: Callable[..., list[int]] = algos.greedy
-    with pytest.raises(ValueError):
-        algos.transfers_mwlp(g, partition, f)
-    with pytest.raises(ValueError):
-        algos.transfers_and_swaps_mwlp(g, partition, f)
-
-
-def test_mwlp_transfers_and_swaps_invalid_partition() -> None:
-    g = undirected
-    partition: list[set[int]] = [{0, 1}, {2, 3}]
-    f: Callable[..., list[int]] = algos.greedy
-    with pytest.raises(ValueError):
-        algos.transfers_mwlp(g, partition, f)
-    with pytest.raises(ValueError):
-        algos.transfers_and_swaps_mwlp(g, partition, f)
 
 
 def test_weight_invalid_nodes() -> None:

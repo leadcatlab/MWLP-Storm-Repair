@@ -335,7 +335,7 @@ def print_heuristic_benchmark(
         before: str = "Before:\n"
         before_vals: list[float] = mwlp_heuristic_benchmark(g, partition, f)
         for i in range(len(partition)):
-            before += f"    Agent {i} = {before_vals[i] : >15}: {partition[i]}\n"
+            before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
         before += f"Maximum: {max(before_vals)}\n"
         print(before)
 
@@ -346,7 +346,7 @@ def print_heuristic_benchmark(
     after: str = f"After {f.__name__}:\n"
     after_vals: list[float] = mwlp_heuristic_benchmark(g, res, f)
     for i in range(len(res)):
-        after += f"    Agent {i} = {after_vals[i]: >15}: {res[i]}\n"
+        after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
     after += f"Maximum: {max(after_vals)}"
     print(after)
     print(f"Time elapsed = {end - start}\n")

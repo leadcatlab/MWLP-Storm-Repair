@@ -382,6 +382,10 @@ def test_is_agent_partition_failure() -> None:
     n: int = 10
     g = Graph(n)
 
+    # Check that empty partitions are caught
+    empty_part: list[set[int]] = []
+    assert Graph.is_agent_partition(g, empty_part) is False
+
     # Check that empty subsets are caught
     has_empty: list[set[int]] = [set(), set(range(n))]
     assert Graph.is_agent_partition(g, has_empty) is False

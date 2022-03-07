@@ -4,3 +4,4 @@ __pycache__/
 .flake8
 .coverage
 *.swp
+notes.norg

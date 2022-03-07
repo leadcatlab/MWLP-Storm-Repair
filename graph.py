@@ -468,6 +468,9 @@ class Graph:
     def is_agent_partition(g: Graph, partition: list[set[int]]) -> bool:
         """Determines if a partition of graph nodes is a valid agent partition"""
 
+        if len(partition) == 0:
+            return False
+
         nodes: list[bool] = [False] * g.num_nodes
         for subset in partition:
             if len(subset) == 0 or subset == {0}:

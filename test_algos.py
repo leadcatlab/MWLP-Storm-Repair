@@ -303,6 +303,25 @@ def test_marginal_edge_weight() -> None:
     assert algos.marginal_edge_weight(g, subgraph, 0) == 27.5
 
 
+def test_choose2() -> None:
+    pairs: list[tuple[int, int]] = algos.choose2(3)
+    assert (0, 1) in pairs
+    assert (0, 2) in pairs
+    assert (1, 2) in pairs
+
+    pairs = algos.choose2(10)
+    assert len(pairs) == 45
+
+    pairs = algos.choose2(74)
+    assert len(pairs) == 2701
+
+    pairs = algos.choose2(18)
+    assert len(pairs) == 153
+
+    pairs = algos.choose2(16)
+    assert len(pairs) == 120
+
+
 ### Error Tests ###
 
 
@@ -443,6 +462,11 @@ def test_optimal_number_of_agents_too_many() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
+
+
+def test_choose2_small_n() -> None:
+    with pytest.raises(ValueError):
+        algos.choose2(1)
 
 
 def test_weight_invalid_nodes() -> None:

@@ -560,6 +560,9 @@ def optimal_number_of_agents(
 def choose2(n: int) -> list[tuple[int, int]]:
     """Gives all pairs (i, j) for 0 <= i, j < n without order"""
 
+    if n <= 1:
+        raise ValueError("Passed n is too small")
+
     pairs: list[tuple[int, int]] = []
     for i in range(n):
         for j in range(i + 1, n):

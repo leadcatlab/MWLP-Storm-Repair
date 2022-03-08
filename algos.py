@@ -570,6 +570,10 @@ def choose2(n: int) -> list[tuple[int, int]]:
     return pairs
 
 
+def all_possible_mwlp_orders_avg(g: Graph) -> float:
+    pass
+
+
 def transfers_and_swaps_mwlp(
     g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
@@ -732,5 +736,3 @@ def transfers_and_swaps_mwlp(
             + sum(check_swap_pairs)
         )
     return partition
-
-

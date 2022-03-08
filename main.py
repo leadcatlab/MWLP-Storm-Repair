@@ -1,7 +1,7 @@
-import timeit
-from typing import Callable
-from itertools import permutations
 import math
+import timeit
+from itertools import permutations
+from typing import Callable
 
 from typing_extensions import TypedDict
 
@@ -50,7 +50,7 @@ def main() -> None:
     # print(f"Time elapsed = {end - start}")
 
     n: int = 10
-    g = Graph.random_complete(n, edge_w = (1.0, 1.0), node_w=(0, 10), directed=False)
+    g = Graph.random_complete(n, edge_w=(1.0, 1.0), node_w=(0, 10), directed=False)
 
     # shortcut???
     pairs = algos.choose2(n)
@@ -59,7 +59,7 @@ def main() -> None:
         for i, j in pairs:
             shortcut += g.node_weight[node] * g.edge_weight[i][j] * (n - 2)
     print(shortcut * math.factorial(n - 3))
-    
+
     # Brute Force
     nodes = list(range(1, n))
     sum = 0.0

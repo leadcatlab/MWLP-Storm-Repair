@@ -571,35 +571,6 @@ def choose2(n: int) -> list[tuple[int, int]]:
     return pairs
 
 
-def all_possible_wlp_orders_avg(g: Graph) -> float:
-    """
-    Heuristic for average weighted latency
-
-    Consider all possible node orderings that start with 0
-    Calculate the wlp for each order
-    Sum them together, divide by (n - 1)!
-
-    This calculates this in O(n^3) rather than O(n!)
-
-    TODO: figure out why this shortcut works
-    """
-
-    if Graph.is_complete(g) is False:
-        raise ValueError("Passed graph is not complete")
-
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
-
-    n: int = g.num_nodes
-    pairs: list[tuple[int, int]] = choose2(n)
-    shortcut: float = 0.0
-    for node in range(1, n):
-        for i, j in pairs:
-            shortcut += g.node_weight[node] * g.edge_weight[i][j]
-    # TODO: Can remove the n - 2 below vvv              and above   ^^^  ??
-    return shortcut / (n - 1)
-
-
 def transfers_and_swaps_mwlp(
     g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
@@ -635,7 +606,7 @@ def transfers_and_swaps_mwlp(
 
     # while there are partitions to be checked
     while checks > 0:
-        print(f"{checks = }")
+        # print(f"{checks = }")
         # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers
@@ -732,6 +703,198 @@ def transfers_and_swaps_mwlp(
 
                             new_size_i = wlp(new_sub_i, f(new_sub_i))
                             new_size_j = wlp(new_sub_j, f(new_sub_j))
+                            curr_max = max(new_size_i, new_size_j)
+                            if curr_max < size_max:
+                                size_max = curr_max
+                                v_i_star, v_j_star = v, v_prime
+
+                if v_i_star > 0 and v_j_star > 0:
+                    # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
+
+                    g_i.remove(v_i_star)
+                    g_i.add(v_j_star)
+                    g_j.remove(v_j_star)
+                    g_j.add(v_i_star)
+
+                    partition[i] = g_i
+                    partition[j] = g_j
+
+                    check_swap_pairs[idx] = True
+                    check_swaps[i] = True
+                    check_swaps[j] = True
+                else:
+                    check_swap_pairs[idx] = False
+                    check_swaps[i] = False
+                    check_swaps[j] = False
+        checks = (
+            sum(check_transfers)
+            + sum(check_swaps)
+            + sum(check_transfer_pairs)
+            + sum(check_swap_pairs)
+        )
+    return partition
+
+
+def all_possible_wlp_orders_avg(g: Graph) -> float:
+    """
+    Heuristic for average weighted latency
+
+    Consider all possible node orderings that start with 0
+    Calculate the wlp for each order
+    Sum them together, divide by (n - 1)!
+
+    This calculates this in O(n^3) rather than O(n!)
+
+    TODO: figure out why this shortcut works
+    """
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    n: int = g.num_nodes
+    pairs: list[tuple[int, int]] = choose2(n)
+    shortcut: float = 0.0
+    for node in range(1, n):
+        for i, j in pairs:
+            shortcut += g.node_weight[node] * g.edge_weight[i][j]
+    return shortcut / (n - 1)
+
+
+def transfers_and_swaps_mwlp_with_average(
+    g: Graph, partition: list[set[int]]
+) -> list[set[int]]:
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+
+    m: int = len(partition)
+    pairs: list[tuple[int, int]] = choose2(m)
+    # Use these arrays as "hashmaps" of indicator variables
+    # to see if a pair needs to be checked
+
+    # determine if partition i needs to be checked for transfer
+    check_transfers: list[bool] = [True] * m
+    # determine if partition i needs to be checked for swap
+    check_swaps: list[bool] = [True] * m
+    # determine if pair i, j needs to be checked for transfer
+    check_transfer_pairs: list[bool] = [True] * len(pairs)
+    # determine if pair i, j needs to be checked for swap
+    check_swap_pairs: list[bool] = [True] * len(pairs)
+    checks: int = (
+        sum(check_transfers)
+        + sum(check_swaps)
+        + sum(check_transfer_pairs)
+        + sum(check_swap_pairs)
+    )
+
+    # while there are partitions to be checked
+    while checks > 0:
+        # print(f"{checks = }")
+        # TODO: Formal justification of these conditions
+        for idx, (i, j) in enumerate(pairs):
+            # transfers
+            if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
+                g_i, g_j = partition[i], partition[j]
+
+                assert 0 in g_i
+                assert 0 in g_j
+
+                sub_i, _, _ = Graph.subgraph(g, list(g_i))
+                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+
+                size_i: float = all_possible_wlp_orders_avg(sub_i)
+                size_j: float = all_possible_wlp_orders_avg(sub_j)
+
+                # we presume size_i => size_j
+                if size_i <= size_j:
+                    g_i, g_j = g_j, g_i
+                    sub_i, sub_j = sub_j, sub_i
+                    size_i, size_j = size_j, size_i
+
+                size_max: float = max(size_i, size_j)
+                v_star: int = -1
+                for v in g_i:
+                    if v != 0:
+                        new_i = set(g_i)
+                        new_i.remove(v)
+                        new_j = set(g_j)
+                        new_j.add(v)
+
+                        assert 0 in new_i
+                        assert 0 in new_j
+
+                        # NOTE: This order is random, needs to be fixed in some way
+                        new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
+                        new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+
+                        new_size_i = all_possible_wlp_orders_avg(new_sub_i)
+                        new_size_j = all_possible_wlp_orders_avg(new_sub_j)
+
+                        curr_max = max(new_size_i, new_size_j)
+                        if curr_max < size_max:
+                            size_max = curr_max
+                            v_star = v
+
+                if v_star > 0:
+                    g_i.remove(v_star)
+                    g_j.add(v_star)
+
+                    partition[i] = g_i
+                    partition[j] = g_j
+
+                    check_transfer_pairs[idx] = True
+                    check_transfers[i] = True
+                    check_transfers[j] = True
+                else:
+                    check_transfer_pairs[idx] = False
+                    check_transfers[i] = False
+                    check_transfers[j] = False
+
+            # swaps
+            elif check_swap_pairs[idx] or check_swaps[i] or check_swaps[j]:
+                g_i, g_j = partition[i], partition[j]
+
+                assert 0 in g_i
+                assert 0 in g_j
+
+                sub_i, _, _ = Graph.subgraph(g, list(g_i))
+                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+
+                size_i = all_possible_wlp_orders_avg(sub_i)
+                size_j = all_possible_wlp_orders_avg(sub_j)
+
+                size_max = max(size_i, size_j)
+                v_i_star, v_j_star = -1, -1
+
+                for v in g_i:
+                    for v_prime in g_j:
+                        if v != 0 and v_prime != 0:
+                            # swap v and v_prime
+                            new_i = set(g_i)
+                            new_i.remove(v)
+                            new_i.add(v_prime)
+                            new_j = set(g_j)
+                            new_j.remove(v_prime)
+                            new_j.add(v)
+
+                            assert 0 in new_i
+                            assert 0 in new_j
+
+                            # NOTE: This order is random, needs to be fixed in some way
+                            new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
+                            new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+
+                            new_size_i = all_possible_wlp_orders_avg(new_sub_i)
+                            new_size_j = all_possible_wlp_orders_avg(new_sub_j)
+
                             curr_max = max(new_size_i, new_size_j)
                             if curr_max < size_max:
                                 size_max = curr_max

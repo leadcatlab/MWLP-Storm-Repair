@@ -350,3 +350,46 @@ def print_heuristic_benchmark(
     after += f"Maximum: {max(after_vals)}"
     print(after)
     print(f"Time elapsed = {end - start}\n")
+
+
+def mwlp_avg_benchmark(
+    g: Graph,
+    partition: list[set[int]],
+    f: Callable[..., list[int]] = algos.brute_force_mwlp,
+) -> list[float]:
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+
+    res: list[float] = []
+    for part in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(part))
+        val: float = algos.wlp(g, f(sub_g))
+        res.append(val)
+
+    return res
+
+
+def print_avg_benchmark(
+    g: Graph,
+    partition: list[set[int]],
+    print_before: bool = True,
+) -> None:
+    if print_before:
+        before: str = "Before:\n"
+        before_vals: list[float] = mwlp_avg_benchmark(g, partition)
+        for i in range(len(partition)):
+            before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
+        before += f"Maximum: {max(before_vals)}\n"
+        print(before)
+
+    start: float = timeit.default_timer()
+    res: list[set[int]] = algos.transfers_and_swaps_mwlp_with_average(g, partition)
+    end: float = timeit.default_timer()
+
+    after: str = "After average mwlp heuristic:\n"
+    after_vals: list[float] = mwlp_avg_benchmark(g, res)
+    for i in range(len(res)):
+        after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
+    after += f"Maximum: {max(after_vals)}"
+    print(after)
+    print(f"Time elapsed = {end - start}\n")

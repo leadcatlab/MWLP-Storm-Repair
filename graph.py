@@ -120,7 +120,7 @@ class Graph:
     @staticmethod
     def random_complete(
         n: int,
-        edge_w: tuple[float, float] = (0, 1),
+        edge_w: tuple[float, float] = (0.0, 1.0),
         node_w: tuple[int, int] = (0, 100),
         directed: bool = True,
     ) -> Graph:

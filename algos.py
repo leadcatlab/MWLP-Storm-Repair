@@ -567,11 +567,37 @@ def choose2(n: int) -> list[tuple[int, int]]:
     for i in range(n):
         for j in range(i + 1, n):
             pairs.append((i, j))
+
     return pairs
 
 
-def all_possible_mwlp_orders_avg(g: Graph) -> float:
-    pass
+def all_possible_wlp_orders_avg(g: Graph) -> float:
+    """
+    Heuristic for average weighted latency
+
+    Consider all possible node orderings that start with 0
+    Calculate the wlp for each order
+    Sum them together, divide by (n - 1)!
+
+    This calculates this in O(n^3) rather than O(n!)
+
+    TODO: figure out why this shortcut works
+    """
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    n: int = g.num_nodes
+    pairs: list[tuple[int, int]] = choose2(n)
+    shortcut: float = 0.0
+    for node in range(1, n):
+        for i, j in pairs:
+            shortcut += g.node_weight[node] * g.edge_weight[i][j]
+    # TODO: Can remove the n - 2 below vvv              and above   ^^^  ??
+    return shortcut / (n - 1)
 
 
 def transfers_and_swaps_mwlp(

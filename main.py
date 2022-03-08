@@ -61,11 +61,11 @@ def main() -> None:
     print(shortcut * math.factorial(n - 3))
 
     # Brute Force
-    nodes = list(range(1, n))
-    sum = 0.0
+    nodes: list[int] = list(range(1, n))
+    brute: float = 0.0
     for order in permutations(nodes):
-        sum += algos.wlp(g, [0] + list(order))
-    print(sum)
+        brute += algos.wlp(g, [0] + list(order))
+    print(brute)
 
 
 if __name__ == "__main__":

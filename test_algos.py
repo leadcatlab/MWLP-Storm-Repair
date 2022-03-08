@@ -1,4 +1,8 @@
+import math
+from itertools import permutations
+
 import pytest
+from pytest import approx
 
 import algos
 from graph import Graph, graph_dict
@@ -303,6 +307,35 @@ def test_choose2() -> None:
     assert len(pairs) == 120
 
 
+def test_all_possible_wlp_orders_avg() -> None:
+    n: int = 4
+    g = Graph.random_complete(n, directed=False)
+    avg: float = algos.all_possible_wlp_orders_avg(g)
+    brute: float = 0.0
+    nodes: list[int] = list(range(1, n))
+    for order in permutations(nodes):
+        brute += algos.wlp(g, [0] + list(order))
+    assert avg == approx(brute / math.factorial(n - 1))
+
+    n = 5
+    g = Graph.random_complete(n, directed=False)
+    avg = algos.all_possible_wlp_orders_avg(g)
+    brute = 0.0
+    nodes = list(range(1, n))
+    for order in permutations(nodes):
+        brute += algos.wlp(g, [0] + list(order))
+    assert avg == approx(brute / math.factorial(n - 1))
+
+    n = 6
+    g = Graph.random_complete(n, directed=False)
+    avg = algos.all_possible_wlp_orders_avg(g)
+    brute = 0.0
+    nodes = list(range(1, n))
+    for order in permutations(nodes):
+        brute += algos.wlp(g, [0] + list(order))
+    assert avg == approx(brute / math.factorial(n - 1))
+
+
 ### Error Tests ###
 
 
@@ -449,3 +482,14 @@ def test_choose2_small_n() -> None:
     with pytest.raises(ValueError):
         algos.choose2(1)
 
+
+def test_all_possible_wlp_orders_avg_incomplete() -> None:
+    g = almost_complete
+    with pytest.raises(ValueError):
+        algos.all_possible_wlp_orders_avg(g)
+
+
+def test_all_possible_wlp_orders_avg_undirected() -> None:
+    g = Graph.random_complete(10)
+    with pytest.raises(ValueError):
+        algos.all_possible_wlp_orders_avg(g)

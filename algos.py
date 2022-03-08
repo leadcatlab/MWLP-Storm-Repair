@@ -757,9 +757,9 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
     n: int = g.num_nodes
     pairs: list[tuple[int, int]] = choose2(n)
     shortcut: float = 0.0
-    for node in range(1, n):
-        for i, j in pairs:
-            shortcut += g.node_weight[node] * g.edge_weight[i][j]
+    weight_sum: int = sum(g.node_weight[1:])
+    for i, j in pairs:
+        shortcut += weight_sum * g.edge_weight[i][j]
     return shortcut / (n - 1)
 
 

@@ -20,13 +20,13 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 24
+    n: int = 32
     k: int = 4
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
     f: Callable[..., list[int]] = algos.greedy
-    benchmark.print_heuristic_benchmark(g, partition, f)
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=True)
 
     f = algos.nearest_neighbor
     benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)

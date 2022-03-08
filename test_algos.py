@@ -335,6 +335,15 @@ def test_all_possible_wlp_orders_avg() -> None:
         brute += algos.wlp(g, [0] + list(order))
     assert avg == approx(brute / math.factorial(n - 1))
 
+    n = 7
+    g = Graph.random_complete(n, directed=False)
+    avg = algos.all_possible_wlp_orders_avg(g)
+    brute = 0.0
+    nodes = list(range(1, n))
+    for order in permutations(nodes):
+        brute += algos.wlp(g, [0] + list(order))
+    assert avg == approx(brute / math.factorial(n - 1))
+
 
 ### Error Tests ###
 

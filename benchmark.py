@@ -337,6 +337,8 @@ def print_heuristic_benchmark(
         for i in range(len(partition)):
             before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
         before += f"Maximum: {max(before_vals)}\n"
+        before += f"Minimum: {min(before_vals)}\n"
+        before += f"Range: {max(before_vals) - min(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -347,7 +349,9 @@ def print_heuristic_benchmark(
     after_vals: list[float] = mwlp_heuristic_benchmark(g, res, f)
     for i in range(len(res)):
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"Maximum: {max(after_vals)}"
+    after += f"Maximum: {max(after_vals)}\n"
+    after += f"Minimum: {min(after_vals)}\n"
+    after += f"Range: {max(after_vals) - min(after_vals)}"
     print(after)
     print(f"Time elapsed = {end - start}\n")
 
@@ -380,6 +384,8 @@ def print_avg_benchmark(
         for i in range(len(partition)):
             before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
         before += f"Maximum: {max(before_vals)}\n"
+        before += f"Minimum: {min(before_vals)}\n"
+        before += f"Range: {max(before_vals) - min(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -390,6 +396,8 @@ def print_avg_benchmark(
     after_vals: list[float] = mwlp_avg_benchmark(g, res)
     for i in range(len(res)):
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"Maximum: {max(after_vals)}"
+    after += f"Maximum: {max(after_vals)}\n"
+    after += f"Minimum: {min(after_vals)}\n"
+    after += f"Range: {max(after_vals) - min(after_vals)}"
     print(after)
     print(f"Time elapsed = {end - start}\n")

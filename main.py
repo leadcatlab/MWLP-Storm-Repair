@@ -20,7 +20,7 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 30
+    n: int = 24
     k: int = 4
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = Graph.create_agent_partition(g, k)

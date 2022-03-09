@@ -20,8 +20,8 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 32
-    k: int = 4
+    n: int = 10
+    k: int = 2
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
@@ -31,11 +31,11 @@ def main() -> None:
     f = algos.nearest_neighbor
     benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    # f = algos.held_karp
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    f = algos.held_karp
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    # f = algos.brute_force_mwlp
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    f = algos.brute_force_mwlp
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     benchmark.print_avg_benchmark(g, partition, print_before=False)
 
@@ -51,16 +51,18 @@ def main() -> None:
     # print(f"Maximum: {maximum}")
     # print(f"Time elapsed = {end - start}")
 
-    # n: int = 10
+    # n: int = 8
     # g = Graph.random_complete(n, edge_w=(1.0, 1.0), node_w=(0, 10), directed=False)
 
     # # shortcut???
-    # pairs = algos.choose2(n)
-    # shortcut = 0.0
+    # pairs: list[tuple[int, int]] = algos.choose2(n)
+    # shortcut: float = 0.0
     # for node in range(1, n):
     #     for i, j in pairs:
-    #         shortcut += g.node_weight[node] * g.edge_weight[i][j] * (n - 2)
-    # print(shortcut * math.factorial(n - 3))
+    #         shortcut += (
+    #             g.node_weight[node] * g.edge_weight[i][j] * math.factorial(n - 2)
+    #         )
+    # print(shortcut)
 
     # # Brute Force
     # nodes: list[int] = list(range(1, n))

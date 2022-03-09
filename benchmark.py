@@ -5,6 +5,17 @@ from typing import Callable
 import algos
 from graph import Graph
 
+# https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 def benchmark_single(
     n: int,
@@ -311,7 +322,9 @@ def benchmark_multi(
 
 
 def mwlp_heuristic_benchmark(
-    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+    g: Graph,
+    partition: list[set[int]],
+    f: Callable[..., list[int]] = algos.brute_force_mwlp,
 ) -> list[float]:
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
@@ -333,12 +346,12 @@ def print_heuristic_benchmark(
 ) -> None:
     if print_before:
         before: str = "Before:\n"
-        before_vals: list[float] = mwlp_heuristic_benchmark(g, partition, f)
+        before_vals: list[float] = mwlp_heuristic_benchmark(g, partition)
         for i in range(len(partition)):
             before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
-        before += f"Maximum: {max(before_vals)}\n"
-        before += f"Minimum: {min(before_vals)}\n"
-        before += f"Range: {max(before_vals) - min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -346,14 +359,14 @@ def print_heuristic_benchmark(
     end: float = timeit.default_timer()
 
     after: str = f"After {f.__name__}:\n"
-    after_vals: list[float] = mwlp_heuristic_benchmark(g, res, f)
+    after_vals: list[float] = mwlp_heuristic_benchmark(g, res)
     for i in range(len(res)):
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"Maximum: {max(after_vals)}\n"
-    after += f"Minimum: {min(after_vals)}\n"
-    after += f"Range: {max(after_vals) - min(after_vals)}"
+    after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
+    after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
+    after += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}"
     print(after)
-    print(f"Time elapsed = {end - start}\n")
+    print(f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n")
 
 
 def mwlp_avg_benchmark(
@@ -383,9 +396,9 @@ def print_avg_benchmark(
         before_vals: list[float] = mwlp_avg_benchmark(g, partition)
         for i in range(len(partition)):
             before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
-        before += f"Maximum: {max(before_vals)}\n"
-        before += f"Minimum: {min(before_vals)}\n"
-        before += f"Range: {max(before_vals) - min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -396,8 +409,8 @@ def print_avg_benchmark(
     after_vals: list[float] = mwlp_avg_benchmark(g, res)
     for i in range(len(res)):
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"Maximum: {max(after_vals)}\n"
-    after += f"Minimum: {min(after_vals)}\n"
-    after += f"Range: {max(after_vals) - min(after_vals)}"
+    after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
+    after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
+    after += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}"
     print(after)
-    print(f"Time elapsed = {end - start}\n")
+    print(f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n")

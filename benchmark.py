@@ -325,15 +325,18 @@ def benchmark_multi(
 
 def mwlp_heuristic_benchmark(
     g: Graph,
-    partition: list[set[int]],
+    part: list[set[int]],
     f: Callable[..., list[int]] = algos.brute_force_mwlp,
 ) -> list[float]:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
+
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
     res: list[float] = []
-    for part in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(part))
+    for p in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(p))
         val: float = algos.wlp(g, f(sub_g))
         res.append(val)
 
@@ -347,8 +350,8 @@ def print_heuristic_benchmark(
     print_before: bool = True,
 ) -> None:
     # creating a deep copy to be safe
-    partition: list[set[int]] = list(set(s) for s in part)
-    
+    partition: list[set[int]] = [set(s) for s in part]
+
     if print_before:
         before: str = "Before:\n"
         before_vals: list[float] = mwlp_heuristic_benchmark(g, partition)
@@ -373,7 +376,9 @@ def print_heuristic_benchmark(
     after += (
         f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
     )
-    after += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    after += (
+        f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    )
     after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
     print(after)
 
@@ -384,14 +389,14 @@ def mwlp_avg_benchmark(
     f: Callable[..., list[int]] = algos.brute_force_mwlp,
 ) -> list[float]:
     # creating a deep copy to be safe
-    partition: list[set[int]] = list(set(s) for s in part)
+    partition: list[set[int]] = [set(s) for s in part]
 
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
     res: list[float] = []
-    for part in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(part))
+    for p in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(p))
         val: float = algos.wlp(g, f(sub_g))
         res.append(val)
 
@@ -400,9 +405,12 @@ def mwlp_avg_benchmark(
 
 def print_avg_benchmark(
     g: Graph,
-    partition: list[set[int]],
+    part: list[set[int]],
     print_before: bool = True,
 ) -> None:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
+
     if print_before:
         before: str = "Before:\n"
         before_vals: list[float] = mwlp_avg_benchmark(g, partition)
@@ -427,6 +435,8 @@ def print_avg_benchmark(
     after += (
         f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
     )
-    after += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    after += (
+        f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    )
     after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
     print(after)

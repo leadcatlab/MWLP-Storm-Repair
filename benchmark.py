@@ -5,17 +5,19 @@ from typing import Callable
 import algos
 from graph import Graph
 
+
 # https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    OKBLUE = "\033[94m"
+    OKCYAN = "\033[96m"
+    OKGREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
+
 
 def benchmark_single(
     n: int,
@@ -340,10 +342,13 @@ def mwlp_heuristic_benchmark(
 
 def print_heuristic_benchmark(
     g: Graph,
-    partition: list[set[int]],
+    part: list[set[int]],
     f: Callable[..., list[int]],
     print_before: bool = True,
 ) -> None:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = list(set(s) for s in part)
+    
     if print_before:
         before: str = "Before:\n"
         before_vals: list[float] = mwlp_heuristic_benchmark(g, partition)
@@ -352,6 +357,7 @@ def print_heuristic_benchmark(
         before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
         before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
         before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(before_vals) / len(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -364,16 +370,22 @@ def print_heuristic_benchmark(
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
     after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
     after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
-    after += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}"
+    after += (
+        f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
+    )
+    after += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
     print(after)
-    print(f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n")
 
 
 def mwlp_avg_benchmark(
     g: Graph,
-    partition: list[set[int]],
+    part: list[set[int]],
     f: Callable[..., list[int]] = algos.brute_force_mwlp,
 ) -> list[float]:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = list(set(s) for s in part)
+
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
@@ -399,6 +411,7 @@ def print_avg_benchmark(
         before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
         before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
         before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
+        before += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(before_vals) / len(before_vals)}\n"
         print(before)
 
     start: float = timeit.default_timer()
@@ -411,6 +424,9 @@ def print_avg_benchmark(
         after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
     after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
     after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
-    after += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}"
+    after += (
+        f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
+    )
+    after += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
+    after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
     print(after)
-    print(f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n")

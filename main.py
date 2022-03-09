@@ -20,13 +20,13 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 10
-    k: int = 2
+    n: int = 30
+    k: int = 5
     g = Graph.random_complete_metric(n, directed=False)
     partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
     f: Callable[..., list[int]] = algos.greedy
-    benchmark.print_heuristic_benchmark(g, partition, f, print_before=True)
+    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     f = algos.nearest_neighbor
     benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
@@ -34,8 +34,8 @@ def main() -> None:
     f = algos.held_karp
     benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    f = algos.brute_force_mwlp
-    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # f = algos.brute_force_mwlp
+    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     benchmark.print_avg_benchmark(g, partition, print_before=False)
 

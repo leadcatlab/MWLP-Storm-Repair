@@ -20,24 +20,24 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    n: int = 30
-    k: int = 5
-    g = Graph.random_complete_metric(n, directed=False)
-    partition: list[set[int]] = Graph.create_agent_partition(g, k)
+    # n: int = 30
+    # k: int = 5
+    # g = Graph.random_complete_metric(n, directed=False)
+    # partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
-    f: Callable[..., list[int]] = algos.greedy
-    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # f: Callable[..., list[int]] = algos.greedy
+    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    f = algos.nearest_neighbor
-    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # f = algos.nearest_neighbor
+    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    f = algos.held_karp
-    benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # f = algos.held_karp
+    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
     # f = algos.brute_force_mwlp
     # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
 
-    benchmark.print_avg_benchmark(g, partition, print_before=False)
+    # benchmark.print_avg_benchmark(g, partition, print_before=False)
 
     # start: float = timeit.default_timer()
     # _, parts = algos.partition_heuristic(g, f, k)
@@ -71,6 +71,13 @@ def main() -> None:
     #     brute += algos.wlp(g, [0] + list(order))
     # print(brute)
 
+    n: int = 100
+    k: int = 10
+    g = Graph.random_complete_metric(n, directed=False)
+    partition: list[set[int]] = Graph.create_agent_partition(g, k)
+    res = algos.transfers_and_swaps_mwlp_with_average(g, partition)
+    for i in range(len(res)):
+        print(f"Agent {i}: {res[i]}")
 
 if __name__ == "__main__":
     main()

@@ -71,13 +71,29 @@ def main() -> None:
     #     brute += algos.wlp(g, [0] + list(order))
     # print(brute)
 
-    n: int = 100
-    k: int = 10
-    g = Graph.random_complete_metric(n, directed=False)
-    partition: list[set[int]] = Graph.create_agent_partition(g, k)
-    res = algos.transfers_and_swaps_mwlp_with_average(g, partition)
-    for i in range(len(res)):
-        print(f"Agent {i}: {res[i]}")
+    # n: int = 100
+    # k: int = 10
+    # g = Graph.random_complete_metric(n, directed=False)
+    # partition: list[set[int]] = Graph.create_agent_partition(g, k)
+    # res = algos.transfers_and_swaps_mwlp_with_average(g, partition)
+    # for i in range(len(res)):
+    #     print(f"Agent {i}: {res[i]}")
+
+    n: int = 15
+    k: int = 2
+    g = Graph.random_complete(n, edge_w=(10.0, 25.0), directed=False)
+    res = algos.uconn_strat_1(g, k)
+    for i, part in enumerate(res):
+        print(f"Agent {i}: {part}:")
+        sub, _, _ = Graph.subgraph(g, part)
+        print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
+    print()
+    res = algos.uconn_strat_2(g, k, 15.0)
+    for i, part in enumerate(res):
+        print(f"Agent {i}: {part}:")
+        sub, _, _ = Graph.subgraph(g, part)
+        print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
+    print()
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,7 @@
 from collections import deque
 from itertools import combinations, permutations
 from typing import Callable, Deque, Optional
+import random
 
 import numpy as np
 from more_itertools import set_partitions
@@ -555,6 +556,52 @@ def optimal_number_of_agents(
             best_order = order_for_k
 
     return minimum, best_order
+
+
+# TODO: Give these better names
+def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    nodes: list[int] = list(range(g.num_nodes))
+    nodes = sorted(nodes, key=lambda x: g.node_weight[x], reverse=True)
+    paths: list[list[int]] = [[] for _ in range(k)]
+
+    for i, node in enumerate(nodes):
+        paths[i % k].append(node)
+
+    return paths
+
+
+def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+    
+    group1: list[bool] = [True if i % 2 == 0 else False for i in range(k)]
+    paths: list[list[int]] = [[] for _ in range(k)]
+    unvisited: set[int] = set(range(g.num_nodes))
+    idx: int = 0
+    while len(unvisited) > 0:
+        if group1[idx] is True:
+            highest_weight: int = max(unvisited, key=lambda x: g.node_weight[x])
+            paths[idx].append(highest_weight)
+            unvisited.remove(highest_weight)
+        else:
+            choices: list[int] = [i for i in unvisited if g.edge_weight[i][idx] <= r]
+            if len(choices) == 0:
+                nearest_neighbor: int = min(unvisited, key=lambda x: g.edge_weight[x][idx])
+                paths[idx].append(nearest_neighbor)
+                unvisited.remove(nearest_neighbor)
+            else:
+                choice: int = random.choice(choices)
+                paths[idx].append(choice)
+                unvisited.remove(choice)
+
+        idx = (idx + 1) % k
+
+    return paths
 
 
 def choose2(n: int) -> list[tuple[int, int]]:

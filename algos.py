@@ -1,7 +1,7 @@
+import random
 from collections import deque
 from itertools import combinations, permutations
 from typing import Callable, Deque, Optional
-import random
 
 import numpy as np
 from more_itertools import set_partitions
@@ -578,7 +578,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
         raise ValueError("Passed graph is not complete")
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
-    
+
     group1: list[bool] = [True if i % 2 == 0 else False for i in range(k)]
     paths: list[list[int]] = [[] for _ in range(k)]
     unvisited: set[int] = set(range(g.num_nodes))
@@ -591,7 +591,9 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
         else:
             choices: list[int] = [i for i in unvisited if g.edge_weight[i][idx] <= r]
             if len(choices) == 0:
-                nearest_neighbor: int = min(unvisited, key=lambda x: g.edge_weight[x][idx])
+                nearest_neighbor: int = min(
+                    unvisited, key=lambda x: g.edge_weight[x][idx]
+                )
                 paths[idx].append(nearest_neighbor)
                 unvisited.remove(nearest_neighbor)
             else:
@@ -619,8 +621,11 @@ def choose2(n: int) -> list[tuple[int, int]]:
 
 
 def transfers_and_swaps_mwlp(
-    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -811,8 +816,12 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
 
 
 def transfers_and_swaps_mwlp_with_average(
-    g: Graph, partition: list[set[int]]
+    g: Graph, part: list[set[int]]
 ) -> list[set[int]]:
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 

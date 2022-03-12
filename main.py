@@ -20,24 +20,51 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    # n: int = 30
-    # k: int = 5
-    # g = Graph.random_complete_metric(n, directed=False)
-    # partition: list[set[int]] = Graph.create_agent_partition(g, k)
+    n: int = 50
+    k: int = 5
+    g = Graph.random_complete_metric(n, upper=10.0, directed=False)
+    partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
-    # f: Callable[..., list[int]] = algos.greedy
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # print("Initial:")
+    # res = benchmark.solve_partition(g, partition)
+    # benchmark.benchmark_partition(g, res)
 
-    # f = algos.nearest_neighbor
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    print("Greedy:")
+    f: Callable[..., list[int]] = algos.greedy
+    transfer_res = algos.transfers_and_swaps_mwlp(g, partition, f)
+    res = benchmark.solve_partition(g, transfer_res, f)
+    benchmark.benchmark_partition(g, res)
 
+    print("Nearest Neighbor:")
+    f = algos.nearest_neighbor
+    transfer_res = algos.transfers_and_swaps_mwlp(g, partition, f)
+    res = benchmark.solve_partition(g, transfer_res, f)
+    benchmark.benchmark_partition(g, res)
+
+    # print("TSP:")
     # f = algos.held_karp
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # transfer_res = algos.transfers_and_swaps_mwlp(g, partition, f)
+    # res = benchmark.solve_partition(g, transfer_res, f)
+    # benchmark.benchmark_partition(g, res)
 
+    # print("MWLP")
     # f = algos.brute_force_mwlp
-    # benchmark.print_heuristic_benchmark(g, partition, f, print_before=False)
+    # transfer_res = algos.transfers_and_swaps_mwlp(g, partition, f)
+    # res = benchmark.solve_partition(g, transfer_res, f)
+    # benchmark.benchmark_partition(g, res)
 
-    # benchmark.print_avg_benchmark(g, partition, print_before=False)
+    print("Average heuristic")
+    transfer_res = algos.transfers_and_swaps_mwlp_with_average(g, partition)
+    res = benchmark.solve_partition(g, transfer_res, f)
+    benchmark.benchmark_partition(g, res)
+
+    print("UConn Greedy")
+    greedy_res = algos.uconn_strat_1(g, k)
+    benchmark.benchmark_partition(g, greedy_res)
+
+    print("UConn Greedy + Random")
+    greedy_and_rand_res = algos.uconn_strat_2(g, k, 2.5)
+    benchmark.benchmark_partition(g, greedy_and_rand_res)
 
     # start: float = timeit.default_timer()
     # _, parts = algos.partition_heuristic(g, f, k)
@@ -79,21 +106,22 @@ def main() -> None:
     # for i in range(len(res)):
     #     print(f"Agent {i}: {res[i]}")
 
-    n: int = 15
-    k: int = 2
-    g = Graph.random_complete(n, edge_w=(10.0, 25.0), directed=False)
-    res = algos.uconn_strat_1(g, k)
-    for i, part in enumerate(res):
-        print(f"Agent {i}: {part}:")
-        sub, _, _ = Graph.subgraph(g, part)
-        print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
-    print()
-    res = algos.uconn_strat_2(g, k, 15.0)
-    for i, part in enumerate(res):
-        print(f"Agent {i}: {part}:")
-        sub, _, _ = Graph.subgraph(g, part)
-        print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
-    print()
+    # n: int = 15
+    # k: int = 2
+    # g = Graph.random_complete(n, edge_w=(10.0, 25.0), directed=False)
+    # res = algos.uconn_strat_1(g, k)
+    # for i, part in enumerate(res):
+    #     print(f"Agent {i}: {part}:")
+    #     sub, _, _ = Graph.subgraph(g, part)
+    #     print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
+    # print()
+    # res = algos.uconn_strat_2(g, k, 15.0)
+    # for i, part in enumerate(res):
+    #     print(f"Agent {i}: {part}:")
+    #     sub, _, _ = Graph.subgraph(g, part)
+    #     print(f"    {algos.wlp(g, algos.brute_force_mwlp(sub))}")
+    # print()
+
 
 if __name__ == "__main__":
     main()

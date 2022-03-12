@@ -1,5 +1,4 @@
 import random
-import timeit
 from typing import Callable
 
 import algos
@@ -323,120 +322,39 @@ def benchmark_multi(
         )
 
 
-def mwlp_heuristic_benchmark(
-    g: Graph,
-    part: list[set[int]],
-    f: Callable[..., list[int]] = algos.brute_force_mwlp,
-) -> list[float]:
+def solve_partition(
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]] = algos.brute_force_mwlp
+) -> list[list[int]]:
+    """
+    Take the output of transfers and swaps and find optimal orders based on heuristic f
+    """
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
-    if Graph.is_agent_partition(g, partition) is False:
-        raise ValueError("Passed partition is invalid")
-
-    res: list[float] = []
+    res: list[list[int]] = []
     for p in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(p))
-        val: float = algos.wlp(g, f(sub_g))
-        res.append(val)
+        sub_g, sto, _ = Graph.subgraph(g, list(p))
+        sub_res: list[int] = f(sub_g)
+        remapped_res: list[int] = [sto[node] for node in sub_res]
+        res.append(remapped_res)
 
     return res
 
 
-def print_heuristic_benchmark(
-    g: Graph,
-    part: list[set[int]],
-    f: Callable[..., list[int]],
-    print_before: bool = True,
-) -> None:
+def benchmark_partition(g: Graph, part: list[list[int]]) -> None:
+    """
+    Take solved partition and print
+    """
+
     # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
+    partition: list[list[int]] = [list(s) for s in part]
 
-    if print_before:
-        before: str = "Before:\n"
-        before_vals: list[float] = mwlp_heuristic_benchmark(g, partition)
-        for i in range(len(partition)):
-            before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
-        before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(before_vals) / len(before_vals)}\n"
-        print(before)
-
-    start: float = timeit.default_timer()
-    res: list[set[int]] = algos.transfers_and_swaps_mwlp(g, partition, f)
-    end: float = timeit.default_timer()
-
-    after: str = f"After {f.__name__}:\n"
-    after_vals: list[float] = mwlp_heuristic_benchmark(g, res)
-    for i in range(len(res)):
-        after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
-    after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
-    after += (
-        f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
-    )
-    after += (
-        f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
-    )
-    after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
-    print(after)
-
-
-def mwlp_avg_benchmark(
-    g: Graph,
-    part: list[set[int]],
-    f: Callable[..., list[int]] = algos.brute_force_mwlp,
-) -> list[float]:
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
-    if Graph.is_agent_partition(g, partition) is False:
-        raise ValueError("Passed partition is invalid")
-
-    res: list[float] = []
-    for p in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(p))
-        val: float = algos.wlp(g, f(sub_g))
-        res.append(val)
-
-    return res
-
-
-def print_avg_benchmark(
-    g: Graph,
-    part: list[set[int]],
-    print_before: bool = True,
-) -> None:
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
-    if print_before:
-        before: str = "Before:\n"
-        before_vals: list[float] = mwlp_avg_benchmark(g, partition)
-        for i in range(len(partition)):
-            before += f"    Agent {i} = {before_vals[i] : >20}: {partition[i]}\n"
-        before += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(before_vals) - min(before_vals)}\n"
-        before += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(before_vals) / len(before_vals)}\n"
-        print(before)
-
-    start: float = timeit.default_timer()
-    res: list[set[int]] = algos.transfers_and_swaps_mwlp_with_average(g, partition)
-    end: float = timeit.default_timer()
-
-    after: str = "After average mwlp heuristic:\n"
-    after_vals: list[float] = mwlp_avg_benchmark(g, res)
-    for i in range(len(res)):
-        after += f"    Agent {i} = {after_vals[i]: >20}: {res[i]}\n"
-    after += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(after_vals)}\n"
-    after += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(after_vals)}\n"
-    after += (
-        f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(after_vals) - min(after_vals)}\n"
-    )
-    after += (
-        f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(after_vals) / len(after_vals)}\n"
-    )
-    after += f"{bcolors.OKGREEN}Time elapsed: {bcolors.ENDC}{end - start}\n"
-    print(after)
+    vals: list[float] = [algos.wlp(g, p) for p in partition]
+    output: str = ""
+    for i in range(len(partition)):
+        output += f"    Agent {i} = {vals[i]: >20}: {partition[i]}\n"
+    output += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(vals)}\n"
+    output += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(vals)}\n"
+    output += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(vals) - min(vals)}\n"
+    output += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(vals) / len(vals)}\n"
+    print(output)

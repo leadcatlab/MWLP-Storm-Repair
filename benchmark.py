@@ -5,8 +5,8 @@ import algos
 from graph import Graph
 
 
-# https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/bcolors.py
-class bcolors:
+# https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/Bcolors.py
+class Bcolors:
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
     OKCYAN = "\033[96m"
@@ -353,8 +353,8 @@ def benchmark_partition(g: Graph, part: list[list[int]]) -> None:
     output: str = ""
     for i in range(len(partition)):
         output += f"    Agent {i} = {vals[i]: >20}: {partition[i]}\n"
-    output += f"{bcolors.OKBLUE}Maximum: {bcolors.ENDC}{max(vals)}\n"
-    output += f"{bcolors.OKBLUE}Minimum: {bcolors.ENDC}{min(vals)}\n"
-    output += f"{bcolors.OKBLUE}Range:   {bcolors.ENDC}{max(vals) - min(vals)}\n"
-    output += f"{bcolors.OKBLUE}Average: {bcolors.ENDC}{sum(vals) / len(vals)}\n"
+    output += f"{Bcolors.OKBLUE}Maximum: {Bcolors.ENDC}{max(vals)}\n"
+    output += f"{Bcolors.OKBLUE}Minimum: {Bcolors.ENDC}{min(vals)}\n"
+    output += f"{Bcolors.OKBLUE}Range:   {Bcolors.ENDC}{max(vals) - min(vals)}\n"
+    output += f"{Bcolors.OKBLUE}Average: {Bcolors.ENDC}{sum(vals) / len(vals)}\n"
     print(output)

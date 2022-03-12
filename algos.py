@@ -853,7 +853,7 @@ def transfers_and_swaps_mwlp_with_average(
 
     # while there are partitions to be checked
     while checks > 0:
-        print(f"{checks = }")
+        # print(f"{checks = }")
         # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers

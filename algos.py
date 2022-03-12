@@ -8,9 +8,16 @@ from more_itertools import set_partitions
 
 from graph import Graph
 
-# TODO: Implement MWLP_DP from Exact algorithms for the minimum latency problem
-# TODO: Implement Christofides' Algorithm
 # TODO: better docstrings
+
+
+def path_length(g: Graph, path: list[int]) -> float:
+    length: float = 0.0
+    for i in range(len(path) - 1):
+        if path[i + 1] not in g.adjacen_list[path[i]]:
+            raise ValueError(f"Edge {path[i]} --> {path[i + 1]} does not exist")
+        length += g.edge_weight[path[i]][path[i + 1]]
+    return length
 
 
 def floyd_warshall(g: Graph) -> list[list[float]]:
@@ -567,8 +574,11 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     nodes = sorted(nodes, key=lambda x: g.node_weight[x], reverse=True)
     paths: list[list[int]] = [[] for _ in range(k)]
 
-    for i, node in enumerate(nodes):
-        paths[i % k].append(node)
+    for node in nodes:
+        # find agent with shortest path
+        agent: int = min(range(k), key=lambda x: path_length(g, paths[x]))
+        # append node to agent
+        paths[agent].append(node)
 
     return paths
 
@@ -579,23 +589,23 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    group1: list[bool] = [True if i % 2 == 0 else False for i in range(k)]
+    group1: set[int] = set(random.sample(range(k), k // 2))
     paths: list[list[int]] = [[] for _ in range(k)]
     unvisited: set[int] = set(range(g.num_nodes))
     idx: int = 0
     while len(unvisited) > 0:
-        if group1[idx] is True:
+        if idx in group1:
             highest_weight: int = max(unvisited, key=lambda x: g.node_weight[x])
-            paths[idx].append(highest_weight)
+            # find agent in group 1 with shortest path
+            agent: int = min(group1, key=lambda x: path_length(g, paths[x]))
+            paths[agent].append(highest_weight)
             unvisited.remove(highest_weight)
         else:
             choices: list[int] = [i for i in unvisited if g.edge_weight[i][idx] <= r]
             if len(choices) == 0:
-                nearest_neighbor: int = min(
-                    unvisited, key=lambda x: g.edge_weight[x][idx]
-                )
-                paths[idx].append(nearest_neighbor)
-                unvisited.remove(nearest_neighbor)
+                nearest: int = min(unvisited, key=lambda x: g.edge_weight[x][idx])
+                paths[idx].append(nearest)
+                unvisited.remove(nearest)
             else:
                 choice: int = random.choice(choices)
                 paths[idx].append(choice)

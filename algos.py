@@ -813,12 +813,12 @@ def transfer_outliers_mwlp(
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
-    if not (0 <= alpha <= 1):
+    if not 0 <= alpha <= 1:
         raise ValueError("Passed alpha threshold is out of range")
 
     outliers: set[int] = set()
-    p_old: dict[int, int] = dict()
-    p_new: dict[int, int] = dict()
+    p_old: dict[int, int] = {}
+    p_new: dict[int, int] = {}
 
     m: int = len(partition)
     for i in range(m):
@@ -833,7 +833,7 @@ def transfer_outliers_mwlp(
             if contribution > alpha:
                 # find minimizer of this
                 destination: int = -1
-                min_total = float('inf')
+                min_total = float("inf")
 
                 for j in range(m):
                     sub_g_j, _, _ = Graph.subgraph(g, list(partition[j]))
@@ -842,17 +842,17 @@ def transfer_outliers_mwlp(
                         destination = j
                         min_total = total
 
-                if j not in {-1, i}:
+                if destination not in {-1, i}:
                     assert node != 0
                     outliers.add(node)
                     p_old[node] = i
-                    p_new[node] = j
+                    p_new[node] = destination
 
     for outlier in outliers:
         partition[p_old[outlier]].remove(outlier)
         partition[p_new[outlier]].add(outlier)
 
-    return partition 
+    return partition
 
 
 def all_possible_wlp_orders_avg(g: Graph) -> float:
@@ -1050,6 +1050,7 @@ def transfers_and_swaps_mwlp_with_average(
         )
     return partition
 
+
 def transfer_outliers_mwlp_with_average(
     g: Graph, part: list[set[int]], alpha: float
 ) -> list[set[int]]:
@@ -1066,12 +1067,12 @@ def transfer_outliers_mwlp_with_average(
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
-    if not (0 <= alpha <= 1):
+    if not 0 <= alpha <= 1:
         raise ValueError("Passed alpha threshold is out of range")
 
     outliers: set[int] = set()
-    p_old: dict[int, int] = dict()
-    p_new: dict[int, int] = dict()
+    p_old: dict[int, int] = {}
+    p_new: dict[int, int] = {}
 
     m: int = len(partition)
     for i in range(m):
@@ -1086,7 +1087,7 @@ def transfer_outliers_mwlp_with_average(
             if contribution > alpha:
                 # find minimizer of this
                 destination: int = -1
-                min_total = float('inf')
+                min_total = float("inf")
 
                 for j in range(m):
                     sub_g_j, _, _ = Graph.subgraph(g, list(partition[j]))
@@ -1095,70 +1096,14 @@ def transfer_outliers_mwlp_with_average(
                         destination = j
                         min_total = total
 
-                if j not in {-1, i}:
+                if destination not in {-1, i}:
                     assert node != 0
                     outliers.add(node)
                     p_old[node] = i
-                    p_new[node] = j
+                    p_new[node] = destination
 
     for outlier in outliers:
         partition[p_old[outlier]].remove(outlier)
         partition[p_new[outlier]].add(outlier)
 
-    return partition 
-    g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
-) -> list[set[int]]:
-
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
-    if Graph.is_complete(g) is False:
-        raise ValueError("Passed graph is not complete")
-
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
-
-    if Graph.is_agent_partition(g, partition) is False:
-        raise ValueError("Passed partition is invalid")
-
-    if not (0 <= alpha <= 1):
-        raise ValueError("Passed alpha threshold is out of range")
-
-    outliers: set[int] = set()
-    p_old: dict[int, int] = dict()
-    p_new: dict[int, int] = dict()
-
-    m: int = len(partition)
-    for i in range(m):
-        for node in set(v for v in partition[i] if v != 0):
-            # determine if outlier
-            sub_g, _, _ = Graph.subgraph(g, list(partition[i]))
-            remove_node: list[int] = list(v for v in partition[i] if v != node)
-            sub_g_without_node, _, _ = Graph.subgraph(g, remove_node)
-            with_node: float = wlp(sub_g, f(sub_g))
-            without_node: float = wlp(sub_g_without_node, f(sub_g_without_node))
-            contribution: float = (with_node - without_node) / with_node
-            if contribution > alpha:
-                # find minimizer of this
-                destination: int = -1
-                min_total = float('inf')
-
-                for j in range(m):
-                    sub_g_j, _, _ = Graph.subgraph(g, list(partition[j]))
-                    total: float = wlp(sub_g_j, f(sub_g_j))
-                    if total < min_total:
-                        destination = j
-                        min_total = total
-
-                if j not in {-1, i}:
-                    assert node != 0
-                    outliers.add(node)
-                    p_old[node] = i
-                    p_new[node] = j
-
-    for outlier in outliers:
-        partition[p_old[outlier]].remove(outlier)
-        partition[p_new[outlier]].add(outlier)
-
-    return partition 
-
+    return partition

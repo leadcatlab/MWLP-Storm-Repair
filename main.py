@@ -67,7 +67,7 @@ def main() -> None:
     # start = timeit.default_timer()
     # transfer_res = algos.transfers_and_swaps_mwlp_with_average(g, partition)
     # end = timeit.default_timer()
-    # res = benchmark.solve_partition(g, transfer_res, f)
+    # res = benchmark.solve_partition(g, transfer_res)
     # benchmark.benchmark_partition(g, res)
     # print(f"Time elapsed = {end - start}\n")
 
@@ -100,7 +100,6 @@ def main() -> None:
     # print(f"Time elapsed = {end - start}\n")
 
     alpha: float = 1.0
-
     print("Greedy:")
     f: Callable[..., list[int]] = algos.greedy
     transfer_res = algos.transfer_outliers_mwlp(g, partition, f, alpha)
@@ -125,6 +124,11 @@ def main() -> None:
     # res = benchmark.solve_partition(g, transfer_res, f)
     # benchmark.benchmark_partition(g, res)
 
+    alpha: float = 1.0
+    print("Average heuristic")
+    transfer_res = algos.transfer_outliers_mwlp_with_average(g, partition, alpha)
+    res = benchmark.solve_partition(g, transfer_res)
+    benchmark.benchmark_partition(g, res)
 
 if __name__ == "__main__":
     main()

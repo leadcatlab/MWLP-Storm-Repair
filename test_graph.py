@@ -386,14 +386,6 @@ def test_is_agent_partition_failure() -> None:
     empty_part: list[set[int]] = []
     assert Graph.is_agent_partition(g, empty_part) is False
 
-    # Check that empty subsets are caught
-    has_empty: list[set[int]] = [set(), set(range(n))]
-    assert Graph.is_agent_partition(g, has_empty) is False
-
-    # Check that subsets containing just 0 are caught
-    has_start_only: list[set[int]] = [{0}, set(range(n))]
-    assert Graph.is_agent_partition(g, has_start_only) is False
-
     # Check if 0 is missing
     missing_zero: list[set[int]] = [{1}, {0}]
     missing_zero[1].update(set(range(2, 20)))

@@ -489,7 +489,10 @@ def test_optimal_number_of_agents_too_many() -> None:
 
 def test_choose2_small_n() -> None:
     with pytest.raises(ValueError):
-        algos.choose2(1)
+        algos.choose2(0)
+    
+    with pytest.raises(ValueError):
+        algos.choose2(-1)
 
 
 def test_all_possible_wlp_orders_avg_incomplete() -> None:

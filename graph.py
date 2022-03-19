@@ -473,8 +473,6 @@ class Graph:
 
         nodes: list[bool] = [False] * g.num_nodes
         for subset in partition:
-            if len(subset) == 0 or subset == {0}:
-                return False
             if 0 not in subset:
                 return False
             for n in subset:

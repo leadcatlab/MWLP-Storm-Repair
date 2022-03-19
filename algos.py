@@ -619,7 +619,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 def choose2(n: int) -> list[tuple[int, int]]:
     """Gives all pairs (i, j) for 0 <= i, j < n without order"""
 
-    if n <= 1:
+    if n < 1:
         raise ValueError("Passed n is too small")
 
     pairs: list[tuple[int, int]] = []
@@ -822,7 +822,7 @@ def transfer_outliers_mwlp(
 
     m: int = len(partition)
     for i in range(m):
-        for node in set(v for v in partition[i] if v != 0):
+        for node in {v for v in partition[i] if v != 0}:
             # determine if outlier
             sub_g, _, _ = Graph.subgraph(g, list(partition[i]))
             remove_node: list[int] = list(v for v in partition[i] if v != node)
@@ -852,6 +852,52 @@ def transfer_outliers_mwlp(
         partition[p_old[outlier]].remove(outlier)
         partition[p_new[outlier]].add(outlier)
 
+    return partition
+
+def evaluate_partition_heuristic(g: Graph, partition: list[set[int]], f: Callable[..., list[int]]) -> float:
+    curr_max = float('-inf')
+    for subset in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(subset))
+        curr_max = max(curr_max, wlp(sub_g, f(sub_g)))
+    
+    return curr_max
+
+def find_partition_with_heuristic(g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float) -> list[set[int]]:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
+    
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+    
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+    
+    improved: list[set[int]] = transfers_and_swaps_mwlp(g, partition, f)
+
+    improvements_decreased: bool =  evaluate_partition_heuristic(g, improved, f) < evaluate_partition_heuristic(g, partition, f)
+
+    if improvements_decreased:
+        # print("Found improvement")
+        # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
+        # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+        partition = list(set(subset) for subset in improved)
+
+    while improvements_decreased:
+        improved = list(set(subset) for subset in partition)
+        improved = transfer_outliers_mwlp(g, improved, f, alpha)
+        improved = transfers_and_swaps_mwlp(g, improved, f)
+            
+        if evaluate_partition_heuristic(g, improved, f) < evaluate_partition_heuristic(g, partition, f):
+            # print("Found improvement")
+            # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
+            # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+            partition = [set(subset) for subset in improved]
+        else:
+            improvements_decreased = False
+        
     return partition
 
 
@@ -884,8 +930,8 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
 
 
 def transfers_and_swaps_mwlp_with_average(
-    g: Graph, part: list[set[int]]
-) -> list[set[int]]:
+        g: Graph, part: list[set[int]]
+        ) -> list[set[int]]:
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
@@ -913,11 +959,11 @@ def transfers_and_swaps_mwlp_with_average(
     # determine if pair i, j needs to be checked for swap
     check_swap_pairs: list[bool] = [True] * len(pairs)
     checks: int = (
-        sum(check_transfers)
-        + sum(check_swaps)
-        + sum(check_transfer_pairs)
-        + sum(check_swap_pairs)
-    )
+            sum(check_transfers)
+            + sum(check_swaps)
+            + sum(check_transfer_pairs)
+            + sum(check_swap_pairs)
+            )
 
     # while there are partitions to be checked
     while checks > 0:
@@ -1107,3 +1153,51 @@ def transfer_outliers_mwlp_with_average(
         partition[p_new[outlier]].add(outlier)
 
     return partition
+
+def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> float:
+    curr_max = float('-inf')
+    for subset in partition:
+        sub_g, _, _ = Graph.subgraph(g, list(subset))
+        curr_max = max(curr_max, all_possible_wlp_orders_avg(sub_g))
+    
+    return curr_max
+
+
+def find_partition_with_average(g: Graph, part: list[set[int]], alpha: float) -> list[set[int]]:
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
+    
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+    
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+    
+    improved: list[set[int]] = transfers_and_swaps_mwlp_with_average(g, partition)
+
+    improvements_decreased: bool = evaluate_partition_with_average(g, improved) < evaluate_partition_with_average(g, partition)
+
+    if improvements_decreased:
+        # print("Found improvement")
+        # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
+        # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+        partition = list(set(subset) for subset in improved)
+
+    while improvements_decreased:
+        improved = list(set(subset) for subset in partition)
+        improved = transfer_outliers_mwlp_with_average(g, improved, alpha)
+        improved = transfers_and_swaps_mwlp_with_average(g, improved)
+            
+        if evaluate_partition_with_average(g, improved) < evaluate_partition_with_average(g, partition):
+            # print("Found improvement")
+            # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
+            # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+            partition = [set(subset) for subset in improved]
+        else:
+            improvements_decreased = False
+        
+    return partition
+

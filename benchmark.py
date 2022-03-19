@@ -347,7 +347,7 @@ def benchmark_partition(g: Graph, part: list[list[int]]) -> None:
     """
 
     # creating a deep copy to be safe
-    partition: list[list[int]] = [sorted(list(s)) for s in part]
+    partition: list[list[int]] = [list(s) for s in part]
 
     vals: list[float] = [algos.wlp(g, p) for p in partition]
     output: str = ""

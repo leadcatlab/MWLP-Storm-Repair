@@ -91,7 +91,7 @@ def main() -> None:
     # res = benchmark.solve_partition(g, transfer_res, f)
     # benchmark.benchmark_partition(g, res)
     # print(f"Time elapsed = {end - start}\n")
-   
+
     alpha = 0.75
     print("Average heuristic")
     start = timeit.default_timer()
@@ -100,6 +100,7 @@ def main() -> None:
     res = benchmark.solve_partition(g, transfer_res)
     benchmark.benchmark_partition(g, res)
     print(f"Time elapsed = {end - start}\n")
-    
+
+
 if __name__ == "__main__":
     main()

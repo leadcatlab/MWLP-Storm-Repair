@@ -490,7 +490,7 @@ def test_optimal_number_of_agents_too_many() -> None:
 def test_choose2_small_n() -> None:
     with pytest.raises(ValueError):
         algos.choose2(0)
-    
+
     with pytest.raises(ValueError):
         algos.choose2(-1)
 

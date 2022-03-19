@@ -570,9 +570,9 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    nodes: list[int] = list(range(g.num_nodes))
+    nodes: list[int] = list(range(1, g.num_nodes))
     nodes = sorted(nodes, key=lambda x: g.node_weight[x], reverse=True)
-    paths: list[list[int]] = [[] for _ in range(k)]
+    paths: list[list[int]] = [[0] for _ in range(k)]
 
     for node in nodes:
         # find agent with shortest path
@@ -590,8 +590,8 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
         raise ValueError("Passed graph is not undirected")
 
     group1: set[int] = set(random.sample(range(k), k // 2))
-    paths: list[list[int]] = [[] for _ in range(k)]
-    unvisited: set[int] = set(range(g.num_nodes))
+    paths: list[list[int]] = [[0] for _ in range(k)]
+    unvisited: set[int] = set(range(1, g.num_nodes))
     idx: int = 0
     while len(unvisited) > 0:
         if idx in group1:

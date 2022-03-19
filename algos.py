@@ -8,8 +8,6 @@ from more_itertools import set_partitions
 
 from graph import Graph
 
-# TODO: better docstrings
-
 
 def path_length(g: Graph, path: list[int]) -> float:
     length: float = 0.0
@@ -938,6 +936,9 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
         raise ValueError("Passed graph is not undirected")
 
     n: int = g.num_nodes
+    if n == 1:
+        return 0.0
+
     pairs: list[tuple[int, int]] = choose2(n)
     shortcut: float = 0.0
     weight_sum: int = sum(g.node_weight[1:])

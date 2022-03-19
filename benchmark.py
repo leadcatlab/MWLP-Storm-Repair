@@ -16,6 +16,7 @@ class Bcolors:
     ENDC = "\033[0m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
+    CLEAR_LAST_LINE = "\033[A                             \033[A"
 
 
 def benchmark_single(
@@ -325,9 +326,7 @@ def benchmark_multi(
 def solve_partition(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]] = algos.brute_force_mwlp
 ) -> list[list[int]]:
-    """
-    Take the output of transfers and swaps and find optimal orders based on heuristic f
-    """
+    """Take the output of transfers and swaps and find optimal orders based on heuristic f"""
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
@@ -341,7 +340,9 @@ def solve_partition(
     return res
 
 
-def benchmark_partition(g: Graph, part: list[list[int]]) -> None:
+def benchmark_partition(
+    g: Graph, part: list[list[int]]
+) -> tuple[float, float, float, float]:
     """
     Take solved partition and print
     """
@@ -353,8 +354,161 @@ def benchmark_partition(g: Graph, part: list[list[int]]) -> None:
     output: str = ""
     for i in range(len(partition)):
         output += f"    Agent {i} = {vals[i]: >20}: {partition[i]}\n"
-    output += f"{Bcolors.OKBLUE}Maximum: {Bcolors.ENDC}{max(vals)}\n"
-    output += f"{Bcolors.OKBLUE}Minimum: {Bcolors.ENDC}{min(vals)}\n"
-    output += f"{Bcolors.OKBLUE}Range:   {Bcolors.ENDC}{max(vals) - min(vals)}\n"
-    output += f"{Bcolors.OKBLUE}Average: {Bcolors.ENDC}{sum(vals) / len(vals)}\n"
-    print(output)
+
+    res: tuple[float, float, float, float] = (
+        max(vals),
+        min(vals),
+        max(vals) - min(vals),
+        sum(vals) / len(vals),
+    )
+
+    output += f"{Bcolors.OKBLUE}Maximum: {Bcolors.ENDC}{res[0]}\n"
+    output += f"{Bcolors.OKBLUE}Minimum: {Bcolors.ENDC}{res[1]}\n"
+    output += f"{Bcolors.OKBLUE}Range:   {Bcolors.ENDC}{res[2]}\n"
+    output += f"{Bcolors.OKBLUE}Average: {Bcolors.ENDC}{res[3]}\n"
+    # print(output)
+
+    return res
+
+
+def mass_benchmark(
+    count: int,
+    k: int,
+    alpha: float,
+    avg_alpha: float,
+    n: int,
+    edge_w: tuple[float, float] = (0.0, 1.0),
+    metric: bool = True,
+    upper: float = 1.0,
+    node_w: tuple[int, int] = (0, 100),
+):
+    maximums = {}
+    minimums = {}
+    ranges = {}
+    averages = {}
+
+    for i in range(count):
+        print(i)
+        if metric:
+            g = Graph.random_complete_metric(n, upper, node_w)
+        else:
+            g = Graph.random_complete(n, edge_w, node_w)
+
+        partition: list[set[int]] = Graph.create_agent_partition(g, k)
+
+        # Put all desired heuristics here
+
+        curr = "UConn Greedy"
+        output = algos.uconn_strat_1(g, k)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "UConn Greedy + Random (dist: 2.5)"
+        output = algos.uconn_strat_2(g, k, 2.5)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "UConn Greedy + Random (dist: 5.0)"
+        output = algos.uconn_strat_2(g, k, 5.0)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "UConn Greedy + Random (dist: 7.5)"
+        output = algos.uconn_strat_2(g, k, 7.5)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "Greedy"
+        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, alpha)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "Nearest Neighbor"
+        output = algos.find_partition_with_heuristic(
+            g, partition, algos.nearest_neighbor, alpha
+        )
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        curr = "Average Heuristic"
+        output = algos.find_partition_with_average(g, partition, avg_alpha)
+        res = solve_partition(g, output)
+        maximums[curr] = []
+        minimums[curr] = []
+        ranges[curr] = []
+        averages[curr] = []
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+
+        print(Bcolors.CLEAR_LAST_LINE)
+
+    print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
+    for k, v in maximums.items():
+        print(f"\t{k = :40}{sum(v) / count}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Minimums: {Bcolors.ENDC}")
+    for k, v in minimums.items():
+        print(f"\t{k = :40}{sum(v) / count}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Ranges: {Bcolors.ENDC}")
+    for k, v in ranges.items():
+        print(f"\t{k = :40}{sum(v) / count}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Averages: {Bcolors.ENDC}")
+    for k, v in averages.items():
+        print(f"\t{k = :40}{sum(v) / count}")
+    print()

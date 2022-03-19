@@ -539,7 +539,7 @@ def test_all_possible_wlp_orders_avg_incomplete() -> None:
 
 
 def test_all_possible_wlp_orders_avg_undirected() -> None:
-    g = Graph.random_complete(10)
+    g = Graph.random_complete(10, directed=True)
     with pytest.raises(ValueError):
         algos.all_possible_wlp_orders_avg(g)
 

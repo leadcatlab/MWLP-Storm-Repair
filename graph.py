@@ -4,7 +4,6 @@ import random
 
 from typing_extensions import TypedDict
 
-# TODO: docstring
 graph_dict = TypedDict(
     "graph_dict",
     {
@@ -122,7 +121,7 @@ class Graph:
         n: int,
         edge_w: tuple[float, float] = (0.0, 1.0),
         node_w: tuple[int, int] = (0, 100),
-        directed: bool = True,
+        directed: bool = False,
     ) -> Graph:
         """Create a randomly generated complete weighted undirected graph
 
@@ -173,9 +172,9 @@ class Graph:
     @staticmethod
     def random_complete_metric(
         n: int,
-        upper: float = 1,
+        upper: float = 1.0,
         node_w: tuple[int, int] = (1, 100),
-        directed: bool = True,
+        directed: bool = False,
     ) -> Graph:
         """Create a randomly generated complete weighted undirected metric graph
 

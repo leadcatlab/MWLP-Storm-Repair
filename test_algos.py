@@ -103,9 +103,16 @@ undirected = Graph.from_dict(undirected_graph_dict)
 ### Correctness Tests ###
 
 
+def test_path_length() -> None:
+    g = small_graph
+    assert algos.path_length(g, []) == 0.0
+    assert algos.path_length(g, [0]) == 0.0
+    assert algos.path_length(g, [0, 1]) == 1.0
+    assert algos.path_length(g, [0, 1, 2, 3]) == 9.0
+
+
 def test_fw_empty() -> None:
     dist: list[list[float]] = algos.floyd_warshall(empty)
-
     assert len(dist) == 0
 
 
@@ -348,6 +355,12 @@ def test_all_possible_wlp_orders_avg() -> None:
 ### Error Tests ###
 
 
+def test_path_length_missing_edges() -> None:
+    g = no_edges
+    with pytest.raises(ValueError):
+        algos.path_length(g, [0, 1])
+
+
 def test_wlp_node_not_in_graph() -> None:
     g = random_complete
     n: int = g.num_nodes
@@ -487,6 +500,30 @@ def test_optimal_number_of_agents_too_many() -> None:
         algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
 
 
+def test_uconn_strat_1_incomplete() -> None:
+    g: Graph = almost_complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_1(g, 2)
+
+
+def test_uconn_strat_2_incomplete() -> None:
+    g: Graph = almost_complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_2(g, 2, 1.0)
+
+
+def test_uconn_strat_1_directed() -> None:
+    g: Graph = complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_1(g, 2)
+
+
+def test_uconn_strat_2_directed() -> None:
+    g: Graph = complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_2(g, 2, 1.0)
+
+
 def test_choose2_small_n() -> None:
     with pytest.raises(ValueError):
         algos.choose2(0)
@@ -505,3 +542,149 @@ def test_all_possible_wlp_orders_avg_undirected() -> None:
     g = Graph.random_complete(10)
     with pytest.raises(ValueError):
         algos.all_possible_wlp_orders_avg(g)
+
+
+def test_evaluate_partition_heuristic_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_heuristic(g, [], algos.greedy)
+
+
+def test_evaluate_partition_average_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_with_average(g, [])
+
+
+def test_transfers_and_swaps_mwlp_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, part, algos.greedy)
+
+
+def test_transfers_and_swaps_mwlp_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, part, algos.greedy)
+
+
+def test_transfers_and_swaps_mwlp_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp(g, [], algos.greedy)
+
+
+def test_transfer_outliers_mwlp_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp(g, part, algos.greedy, 0.5)
+
+
+def test_transfer_outliers_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp(g, part, algos.greedy, 0.5)
+
+
+def test_transfer_outliers_mwlp_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp(g, [], algos.greedy, 0.5)
+
+
+def test_transfer_outliers_mwlp_invalid_threshold() -> None:
+    g: Graph = undirected
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp(g, part, algos.greedy, 1.1)
+
+
+def test_find_partition_heuristic_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_heuristic(g, part, algos.greedy, 0.5)
+
+
+def test_find_partition_heuristic_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_heuristic(g, part, algos.greedy, 0.5)
+
+
+def test_find_partition_heuristic_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.find_partition_with_heuristic(g, [], algos.greedy, 0.5)
+
+
+def test_transfers_and_swaps_mwlp_with_average_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp_with_average(g, part)
+
+
+def test_transfers_and_swaps_mwlp_with_average_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp_with_average(g, part)
+
+
+def test_transfers_and_swaps_mwlp_with_average_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.transfers_and_swaps_mwlp_with_average(g, [])
+
+
+def test_transfer_outliers_with_average_mwlp_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp_with_average(g, part, 0.5)
+
+
+def test_transfer_outliers_with_average_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp_with_average(g, part, 0.5)
+
+
+def test_transfer_outliers_mwlp_with_average_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp_with_average(g, [], 0.5)
+
+
+def test_transfer_outliers_with_average_invalid_threshold() -> None:
+    g: Graph = undirected
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.transfer_outliers_mwlp_with_average(g, part, 1.1)
+
+
+def test_find_partition_with_average_incomplete() -> None:
+    g: Graph = almost_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_average(g, part, 0.5)
+
+
+def test_find_partition_with_average_undirected() -> None:
+    g: Graph = complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_average(g, part, 0.5)
+
+
+def test_find_partition_with_average_invalid_partition() -> None:
+    g: Graph = undirected
+    with pytest.raises(ValueError):
+        algos.find_partition_with_average(g, [], 0.5)

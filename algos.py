@@ -569,6 +569,8 @@ def optimal_number_of_agents(
 def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
 
     nodes: list[int] = list(range(1, g.num_nodes))
     nodes = sorted(nodes, key=lambda x: g.node_weight[x], reverse=True)
@@ -580,6 +582,7 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
         # append node to agent
         paths[agent].append(node)
 
+    assert Graph.is_agent_partition(g, [set(subset) for subset in paths])
     return paths
 
 
@@ -613,6 +616,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 
         idx = (idx + 1) % k
 
+    assert Graph.is_agent_partition(g, [set(subset) for subset in paths])
     return paths
 
 
@@ -634,17 +638,17 @@ def transfers_and_swaps_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
 
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     m: int = len(partition)
     pairs: list[tuple[int, int]] = choose2(m)
@@ -801,20 +805,20 @@ def transfer_outliers_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
 
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
 
     if not 0 <= alpha <= 1:
         raise ValueError("Passed alpha threshold is out of range")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     outliers: set[int] = set()
     p_old: dict[int, int] = {}
@@ -858,6 +862,9 @@ def transfer_outliers_mwlp(
 def evaluate_partition_heuristic(
     g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> float:
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+
     curr_max = float("-inf")
     for subset in partition:
         sub_g, _, _ = Graph.subgraph(g, list(subset))
@@ -869,17 +876,17 @@ def evaluate_partition_heuristic(
 def find_partition_with_heuristic(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     improved: list[set[int]] = transfers_and_swaps_mwlp(g, partition, f)
 
@@ -943,17 +950,17 @@ def transfers_and_swaps_mwlp_with_average(
     g: Graph, part: list[set[int]]
 ) -> list[set[int]]:
 
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     m: int = len(partition)
     pairs: list[tuple[int, int]] = choose2(m)
@@ -1111,20 +1118,20 @@ def transfer_outliers_mwlp_with_average(
     g: Graph, part: list[set[int]], alpha: float
 ) -> list[set[int]]:
 
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
 
     if not 0 <= alpha <= 1:
         raise ValueError("Passed alpha threshold is out of range")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     outliers: set[int] = set()
     p_old: dict[int, int] = {}
@@ -1166,6 +1173,9 @@ def transfer_outliers_mwlp_with_average(
 
 
 def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> float:
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
+
     curr_max = float("-inf")
     for subset in partition:
         sub_g, _, _ = Graph.subgraph(g, list(subset))
@@ -1177,17 +1187,17 @@ def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> floa
 def find_partition_with_average(
     g: Graph, part: list[set[int]], alpha: float
 ) -> list[set[int]]:
-    # creating a deep copy to be safe
-    partition: list[set[int]] = [set(s) for s in part]
-
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
-    if Graph.is_agent_partition(g, partition) is False:
+    if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    # creating a deep copy to be safe
+    partition: list[set[int]] = [set(s) for s in part]
 
     improved: list[set[int]] = transfers_and_swaps_mwlp_with_average(g, partition)
 

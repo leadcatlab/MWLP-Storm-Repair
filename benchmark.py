@@ -380,8 +380,6 @@ def benchmark_partition(
 def mass_benchmark(
     count: int,
     k: int,
-    alpha: float,
-    avg_alpha: float,
     n: int,
     edge_w: tuple[float, float] = (0.0, 1.0),
     metric: bool = True,
@@ -459,7 +457,7 @@ def mass_benchmark(
         curr = "Greedy"
         print(curr)
         print("Finding partition")
-        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, alpha)
+        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.24)
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
         res = solve_partition(g, output)
@@ -475,7 +473,7 @@ def mass_benchmark(
         print(curr)
         print("Finding partition")
         output = algos.find_partition_with_heuristic(
-            g, partition, algos.nearest_neighbor, alpha
+            g, partition, algos.nearest_neighbor, 0.15
         )
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
@@ -491,7 +489,7 @@ def mass_benchmark(
         curr = "Average Heuristic"
         print(curr)
         print("Finding partition")
-        output = algos.find_partition_with_average(g, partition, avg_alpha)
+        output = algos.find_partition_with_average(g, partition, 0.22)
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
         res = solve_partition(g, output)
@@ -535,7 +533,7 @@ def alpha_heuristic_search(
     metric: bool = True,
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
-) -> None:
+) -> float:
 
     graph_bank: list[Graph] = []
     for _ in range(count):
@@ -544,12 +542,12 @@ def alpha_heuristic_search(
         else:
             g = Graph.random_complete(n, edge_w, node_w)
         graph_bank.append(g)
-    
+
     partition_bank: list[list[set[int]]] = []
     for g in graph_bank:
         partition: list[set[int]] = Graph.create_agent_partition(g, k)
         partition_bank.append(partition)
-    
+
     averages: dict[float, float] = {}
 
     alpha: float = 0.0
@@ -565,7 +563,8 @@ def alpha_heuristic_search(
         alpha = round(alpha + 0.01, 2)
         print(Bcolors.CLEAR_LAST_LINE)
 
-    return min(averages, key=averages.get)
+    return min(averages.items(), key=lambda x: x[1])[0]
+
 
 def avg_alpha_heuristic_search(
     count: int,
@@ -575,7 +574,7 @@ def avg_alpha_heuristic_search(
     metric: bool = True,
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
-) -> None:
+) -> float:
 
     graph_bank: list[Graph] = []
     for _ in range(count):
@@ -584,12 +583,12 @@ def avg_alpha_heuristic_search(
         else:
             g = Graph.random_complete(n, edge_w, node_w)
         graph_bank.append(g)
-    
+
     partition_bank: list[list[set[int]]] = []
     for g in graph_bank:
         partition: list[set[int]] = Graph.create_agent_partition(g, k)
         partition_bank.append(partition)
-    
+
     averages: dict[float, float] = {}
 
     alpha: float = 0.0
@@ -605,5 +604,4 @@ def avg_alpha_heuristic_search(
         alpha = round(alpha + 0.01, 2)
         print(Bcolors.CLEAR_LAST_LINE)
 
-    return min(averages, key=averages.get)
-
+    return min(averages.items(), key=lambda x: x[1])[0]

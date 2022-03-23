@@ -544,5 +544,66 @@ def alpha_heuristic_search(
         else:
             g = Graph.random_complete(n, edge_w, node_w)
         graph_bank.append(g)
+    
+    partition_bank: list[list[set[int]]] = []
+    for g in graph_bank:
+        partition: list[set[int]] = Graph.create_agent_partition(g, k)
+        partition_bank.append(partition)
+    
+    averages: dict[float, float] = {}
 
-    pass
+    alpha: float = 0.0
+    while alpha <= 1.0:
+        print(alpha)
+        maximums: list[float] = []
+        for g, partition in zip(graph_bank, partition_bank):
+            output = algos.find_partition_with_heuristic(g, partition, f, alpha)
+            res = solve_partition(g, output)
+            curr_max, _, _, _ = benchmark_partition(g, res)
+            maximums.append(curr_max)
+        averages[alpha] = sum(maximums) / count
+        alpha = round(alpha + 0.01, 2)
+        print(Bcolors.CLEAR_LAST_LINE)
+
+    return min(averages, key=averages.get)
+
+def avg_alpha_heuristic_search(
+    count: int,
+    k: int,
+    n: int,
+    edge_w: tuple[float, float] = (0.0, 1.0),
+    metric: bool = True,
+    upper: float = 1.0,
+    node_w: tuple[int, int] = (0, 100),
+) -> None:
+
+    graph_bank: list[Graph] = []
+    for _ in range(count):
+        if metric:
+            g = Graph.random_complete_metric(n, upper, node_w)
+        else:
+            g = Graph.random_complete(n, edge_w, node_w)
+        graph_bank.append(g)
+    
+    partition_bank: list[list[set[int]]] = []
+    for g in graph_bank:
+        partition: list[set[int]] = Graph.create_agent_partition(g, k)
+        partition_bank.append(partition)
+    
+    averages: dict[float, float] = {}
+
+    alpha: float = 0.0
+    while alpha <= 1.0:
+        print(alpha)
+        maximums: list[float] = []
+        for g, partition in zip(graph_bank, partition_bank):
+            output = algos.find_partition_with_average(g, partition, alpha)
+            res = solve_partition(g, output)
+            curr_max, _, _, _ = benchmark_partition(g, res)
+            maximums.append(curr_max)
+        averages[alpha] = sum(maximums) / count
+        alpha = round(alpha + 0.01, 2)
+        print(Bcolors.CLEAR_LAST_LINE)
+
+    return min(averages, key=averages.get)
+

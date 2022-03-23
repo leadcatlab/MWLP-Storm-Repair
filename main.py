@@ -101,10 +101,23 @@ def main() -> None:
     # benchmark.benchmark_partition(g, res)
     # print(f"Time elapsed = {end - start}\n")
 
-    benchmark.mass_benchmark(
-        count=100, k=4, alpha=0.5, avg_alpha=0.25, n=20, metric=True, upper=10.0
+    # benchmark.mass_benchmark(
+    #     count=100, k=4, alpha=0.5, avg_alpha=0.25, n=20, metric=True, upper=10.0
+    # )
+    
+    best_for_greedy: float = benchmark.alpha_heuristic_search(
+        f=algos.greedy, count=10, k=2, n=10, metric=True, upper=10.0
     )
-
-
+    print(best_for_greedy)
+    
+    best_for_nn: float = benchmark.alpha_heuristic_search(
+        f=algos.nearest_neighbor, count=10, k=2, n=10, metric=True, upper=10.0
+    )
+    print(best_for_nn)
+    
+    best_for_avg: float = benchmark.avg_alpha_heuristic_search(
+        count=10, k=2, n=10, metric=True, upper=10.0
+    )
+    print(best_for_av)
 if __name__ == "__main__":
     main()

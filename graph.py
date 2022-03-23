@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-
 from typing import Collection
 
 from typing_extensions import TypedDict
@@ -218,9 +217,9 @@ class Graph:
         """
 
         for n in nodes:
-            if n >= g.num_nodes:
+            if n >= g.num_nodes or n < 0:
                 raise ValueError(
-                    f"Passed in {nodes = } contains nodes not in passed in graph"
+                    f"Passed in {nodes = } contains nodes not in passed g ({n = })"
                 )
 
         new_node_list = list(range(len(nodes)))
@@ -228,18 +227,18 @@ class Graph:
         # mapping for original -> subgraph
         ots: dict[int, int] = dict(zip(nodes, new_node_list))
         # mapping for subgraph -> original
-        sto: dict[int, int] = dict(zip(new_node_list, nodes))
+        sto: dict[int, int] = {v: k for k, v in ots.items()}
 
-        subg = Graph(len(nodes))
+        sub_g = Graph(len(nodes))
         for n in new_node_list:
-            subg.set_node_weight(n, g.node_weight[sto[n]])
+            sub_g.set_node_weight(n, g.node_weight[sto[n]])
 
         for i in nodes:
             for j in nodes:
                 if i != j and j in g.adjacen_list[i]:
-                    subg.add_edge(ots[i], ots[j], g.edge_weight[i][j])
+                    sub_g.add_edge(ots[i], ots[j], g.edge_weight[i][j])
 
-        return subg, sto, ots
+        return sub_g, sto, ots
 
     def add_node(self, node_weight: int = 0) -> None:
         """Adds a node to the graph

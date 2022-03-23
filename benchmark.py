@@ -1,10 +1,10 @@
 import random
+from collections import defaultdict
 from typing import Callable
-import json
+
 import algos
 from graph import Graph
 
-from collections import defaultdict
 
 # https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/Bcolors.py
 class Bcolors:
@@ -17,7 +17,9 @@ class Bcolors:
     ENDC = "\033[0m"
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
-    CLEAR_LAST_LINE = "\033[A                             \033[A"
+    CLEAR_LAST_LINE = (
+        "\033[A                                                             \033[A"
+    )
 
 
 def benchmark_single(
@@ -327,7 +329,10 @@ def benchmark_multi(
 def solve_partition(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]] = algos.brute_force_mwlp
 ) -> list[list[int]]:
-    """Take the output of transfers and swaps and find optimal orders based on heuristic f"""
+    """
+    Take the output of transfers and swaps and
+    find optimal orders based on heuristic f
+    """
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
@@ -382,7 +387,7 @@ def mass_benchmark(
     metric: bool = True,
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
-):
+) -> None:
     maximums = defaultdict(list)
     minimums = defaultdict(list)
     ranges = defaultdict(list)
@@ -394,49 +399,63 @@ def mass_benchmark(
             g = Graph.random_complete_metric(n, upper, node_w)
         else:
             g = Graph.random_complete(n, edge_w, node_w)
-        
-        d = Graph.dict_from_graph(g)
-        json.dump(d, open('minimum_ex.json', 'w'))
+
         partition: list[set[int]] = Graph.create_agent_partition(g, k)
 
         # Put all desired heuristics here
 
         curr = "UConn Greedy"
-        output = algos.uconn_strat_1(g, k)
-        res = solve_partition(g, output)
+        print(curr)
+        res = algos.uconn_strat_1(g, k)
+        # print("Solving partition")
+        # res = solve_partition(g, output)
+        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
 
         curr = "UConn Greedy + Random (dist: 2.5)"
-        output = algos.uconn_strat_2(g, k, 2.5)
-        res = solve_partition(g, output)
+        print(curr)
+        res = algos.uconn_strat_2(g, k, 2.5)
+        # print("Solving partition")
+        # res = solve_partition(g, output)
+        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
 
         curr = "UConn Greedy + Random (dist: 5.0)"
-        output = algos.uconn_strat_2(g, k, 5.0)
-        res = solve_partition(g, output)
+        print(curr)
+        res = algos.uconn_strat_2(g, k, 5.0)
+        # print("Solving partition")
+        # res = solve_partition(g, output)
+        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
 
         curr = "UConn Greedy + Random (dist: 7.5)"
-        output = algos.uconn_strat_2(g, k, 7.5)
-        res = solve_partition(g, output)
+        print(curr)
+        res = algos.uconn_strat_2(g, k, 7.5)
+        # print("Solving partition")
+        # res = solve_partition(g, output)
+        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
-        
+        print(Bcolors.CLEAR_LAST_LINE)
+
         curr = "Greedy"
         print(curr)
         print("Finding partition")
@@ -487,22 +506,43 @@ def mass_benchmark(
         print(Bcolors.CLEAR_LAST_LINE)
 
     print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
-    for k, v in maximums.items():
-        print(f"\t{k = :40}{sum(v) / count}")
+    for key, val in maximums.items():
+        print(f"\t{key = :40}{sum(val) / count}")
     print()
 
     print(f"{Bcolors.OKBLUE}Minimums: {Bcolors.ENDC}")
-    for k, v in minimums.items():
-        print(f"\t{k = :40}{sum(v) / count}")
+    for key, val in minimums.items():
+        print(f"\t{key = :40}{sum(val) / count}")
     print()
 
     print(f"{Bcolors.OKBLUE}Ranges: {Bcolors.ENDC}")
-    for k, v in ranges.items():
-        print(f"\t{k = :40}{sum(v) / count}")
+    for key, val in ranges.items():
+        print(f"\t{key = :40}{sum(val) / count}")
     print()
 
     print(f"{Bcolors.OKBLUE}Averages: {Bcolors.ENDC}")
-    for k, v in averages.items():
-        print(f"\t{k = :40}{sum(v) / count}")
+    for key, val in averages.items():
+        print(f"\t{key = :40}{sum(val) / count}")
     print()
 
+
+def alpha_heuristic_search(
+    f: Callable[..., list[int]],
+    count: int,
+    k: int,
+    n: int,
+    edge_w: tuple[float, float] = (0.0, 1.0),
+    metric: bool = True,
+    upper: float = 1.0,
+    node_w: tuple[int, int] = (0, 100),
+) -> None:
+
+    graph_bank: list[Graph] = []
+    for _ in range(count):
+        if metric:
+            g = Graph.random_complete_metric(n, upper, node_w)
+        else:
+            g = Graph.random_complete(n, edge_w, node_w)
+        graph_bank.append(g)
+
+    pass

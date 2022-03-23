@@ -2,11 +2,12 @@ import random
 from collections import deque
 from itertools import combinations, permutations
 from typing import Callable, Deque, Optional
-import json
+
 import numpy as np
 from more_itertools import set_partitions
 
 from graph import Graph
+
 
 class Bcolors:
     HEADER = "\033[95m"
@@ -659,6 +660,14 @@ def transfers_and_swaps_mwlp(
 
     m: int = len(partition)
     pairs: list[tuple[int, int]] = choose2(m)
+
+    # This is a deterministic algorithm
+    # Thus if we get to a partition that we have seen before, we have hit a loop
+    # Convert sets to frozensets for hashability
+    # Convert lists to frozensets for the same reason
+    seen: set[frozenset[frozenset[int]]] = set()
+    no_repeats: bool = True
+
     # Use these arrays as "hashmaps" of indicator variables
     # to see if a pair needs to be checked
 
@@ -678,25 +687,24 @@ def transfers_and_swaps_mwlp(
     )
 
     # while there are partitions to be checked
-    while checks > 0:
-        # TODO: SWAPS DO NOT ALWAYS GO DOWN
-        #       WHY?????
-        print(f"{checks = }")
-        print(f"{sum(check_transfers) = }")
-        print(f"{sum(check_transfer_pairs) = }")
-        print(f"{sum(check_swaps) = }")
-        print(f"{sum(check_swap_pairs) = }")
+    while checks > 0 and no_repeats is True:
+        # TODO: Determine if this check should go somewhere else
+        curr_partition: frozenset[frozenset[int]] = frozenset(
+            frozenset(s) for s in partition
+        )
+        if curr_partition in seen:
+            no_repeats = False
+        else:
+            seen.add(curr_partition)
+
         # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers
             if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
-                g_i, g_j = partition[i], partition[j]
+                g_i, g_j = set(partition[i]), set(partition[j])
 
-                assert 0 in g_i
-                assert 0 in g_j
-
-                sub_i, _, _ = Graph.subgraph(g, list(g_i))
-                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+                sub_i, _, _ = Graph.subgraph(g, g_i)
+                sub_j, _, _ = Graph.subgraph(g, g_j)
 
                 size_i: float = wlp(sub_i, f(sub_i))
                 size_j: float = wlp(sub_j, f(sub_j))
@@ -716,11 +724,8 @@ def transfers_and_swaps_mwlp(
                         new_j = set(g_j)
                         new_j.add(v)
 
-                        assert 0 in new_i
-                        assert 0 in new_j
-                        
-                        new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
-                        new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+                        new_sub_i, _, _ = Graph.subgraph(g, new_i)
+                        new_sub_j, _, _ = Graph.subgraph(g, new_j)
                         new_size_i = wlp(new_sub_i, f(new_sub_i))
                         new_size_j = wlp(new_sub_j, f(new_sub_j))
 
@@ -732,8 +737,8 @@ def transfers_and_swaps_mwlp(
                     g_i.remove(v_star)
                     g_j.add(v_star)
 
-                    partition[i] = g_i
-                    partition[j] = g_j
+                    partition[i] = set(g_i)
+                    partition[j] = set(g_j)
 
                     check_transfer_pairs[idx] = True
                     check_transfers[i] = True
@@ -744,9 +749,11 @@ def transfers_and_swaps_mwlp(
                     check_transfers[j] = False
 
             # swaps
-            elif check_swap_pairs[idx] is True or check_swaps[i] is True or check_swaps[j] is True:
-                print("Checking for swaps")
-                print(i, j)
+            elif (
+                check_swap_pairs[idx] is True
+                or check_swaps[i] is True
+                or check_swaps[j] is True
+            ):
                 g_i, g_j = set(partition[i]), set(partition[j])
 
                 sub_i, _, _ = Graph.subgraph(g, g_i)
@@ -754,13 +761,12 @@ def transfers_and_swaps_mwlp(
 
                 size_i = wlp(sub_i, f(sub_i))
                 size_j = wlp(sub_j, f(sub_j))
-                
+
                 size_max = max(size_i, size_j)
                 v_i_star, v_j_star = -1, -1
                 for v in set(node for node in g_i if node != 0):
                     for v_prime in set(node for node in g_j if node != 0):
                         # swap v and v_prime
-                        print(size_max)
                         new_i = set(g_i)
                         new_i.remove(v)
                         new_i.add(v_prime)
@@ -772,11 +778,10 @@ def transfers_and_swaps_mwlp(
                         new_sub_j, _, _ = Graph.subgraph(g, new_j)
                         new_size_i = wlp(new_sub_i, f(new_sub_i))
                         new_size_j = wlp(new_sub_j, f(new_sub_j))
-                        
+
                         if (curr_max := max(new_size_i, new_size_j)) < size_max:
                             size_max = curr_max
                             v_i_star, v_j_star = v, v_prime
-                        print(Bcolors.CLEAR_LAST_LINE)
                 if v_i_star != -1 and v_j_star != -1:
                     g_i.remove(v_i_star)
                     g_i.add(v_j_star)
@@ -793,21 +798,12 @@ def transfers_and_swaps_mwlp(
                     check_swap_pairs[idx] = False
                     check_swaps[i] = False
                     check_swaps[j] = False
-                print(Bcolors.CLEAR_LAST_LINE)
-                print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-         
         checks = (
             check_transfers.count(True)
             + check_swaps.count(True)
             + check_transfer_pairs.count(True)
             + check_swap_pairs.count(True)
         )
-
     return partition
 
 
@@ -975,6 +971,13 @@ def transfers_and_swaps_mwlp_with_average(
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
+    # This is a deterministic algorithm
+    # Thus if we get to a partition that we have seen before, we have hit a loop
+    # Convert sets to frozensets for hashability
+    # Convert lists to frozensets for the same reason
+    seen: set[frozenset[frozenset[int]]] = set()
+    no_repeats: bool = True
+
     m: int = len(partition)
     pairs: list[tuple[int, int]] = choose2(m)
     # Use these arrays as "hashmaps" of indicator variables
@@ -989,30 +992,31 @@ def transfers_and_swaps_mwlp_with_average(
     # determine if pair i, j needs to be checked for swap
     check_swap_pairs: list[bool] = [True] * len(pairs)
     checks: int = (
-        sum(check_transfers)
-        + sum(check_swaps)
-        + sum(check_transfer_pairs)
-        + sum(check_swap_pairs)
+        check_transfers.count(True)
+        + check_swaps.count(True)
+        + check_transfer_pairs.count(True)
+        + check_swap_pairs.count(True)
     )
 
     # while there are partitions to be checked
-    while checks > 0:
-        print(f"{checks = }")
-        print(f"{sum(check_transfers) = }")
-        print(f"{sum(check_transfer_pairs) = }")
-        print(f"{sum(check_swaps) = }")
-        print(f"{sum(check_swap_pairs) = }")
+    while checks > 0 and no_repeats is True:
+        # TODO: Determine if this check should go somewhere else
+        curr_partition: frozenset[frozenset[int]] = frozenset(
+            frozenset(s) for s in partition
+        )
+        if curr_partition in seen:
+            no_repeats = False
+        else:
+            seen.add(curr_partition)
+
         # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers
             if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
-                g_i, g_j = partition[i], partition[j]
+                g_i, g_j = set(partition[i]), set(partition[j])
 
-                assert 0 in g_i
-                assert 0 in g_j
-
-                sub_i, _, _ = Graph.subgraph(g, list(g_i))
-                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+                sub_i, _, _ = Graph.subgraph(g, g_i)
+                sub_j, _, _ = Graph.subgraph(g, g_j)
 
                 size_i: float = all_possible_wlp_orders_avg(sub_i)
                 size_j: float = all_possible_wlp_orders_avg(sub_j)
@@ -1032,12 +1036,8 @@ def transfers_and_swaps_mwlp_with_average(
                         new_j = set(g_j)
                         new_j.add(v)
 
-                        assert 0 in new_i
-                        assert 0 in new_j
-
-                        # NOTE: This order is random, needs to be fixed in some way
-                        new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
-                        new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+                        new_sub_i, _, _ = Graph.subgraph(g, new_i)
+                        new_sub_j, _, _ = Graph.subgraph(g, new_j)
 
                         new_size_i = all_possible_wlp_orders_avg(new_sub_i)
                         new_size_j = all_possible_wlp_orders_avg(new_sub_j)
@@ -1051,8 +1051,8 @@ def transfers_and_swaps_mwlp_with_average(
                     g_i.remove(v_star)
                     g_j.add(v_star)
 
-                    partition[i] = g_i
-                    partition[j] = g_j
+                    partition[i] = set(g_i)
+                    partition[j] = set(g_j)
 
                     check_transfer_pairs[idx] = True
                     check_transfers[i] = True
@@ -1064,11 +1064,10 @@ def transfers_and_swaps_mwlp_with_average(
 
             # swaps
             elif check_swap_pairs[idx] or check_swaps[i] or check_swaps[j]:
-                print("Checking for swaps")
-                g_i, g_j = partition[i], partition[j]
+                g_i, g_j = set(partition[i]), set(partition[j])
 
-                sub_i, _, _ = Graph.subgraph(g, list(g_i))
-                sub_j, _, _ = Graph.subgraph(g, list(g_j))
+                sub_i, _, _ = Graph.subgraph(g, g_i)
+                sub_j, _, _ = Graph.subgraph(g, g_j)
 
                 size_i = all_possible_wlp_orders_avg(sub_i)
                 size_j = all_possible_wlp_orders_avg(sub_j)
@@ -1087,12 +1086,9 @@ def transfers_and_swaps_mwlp_with_average(
                             new_j.remove(v_prime)
                             new_j.add(v)
 
-                            assert 0 in new_i
-                            assert 0 in new_j
-
                             # NOTE: This order is random, needs to be fixed in some way
-                            new_sub_i, _, _ = Graph.subgraph(g, list(new_i))
-                            new_sub_j, _, _ = Graph.subgraph(g, list(new_j))
+                            new_sub_i, _, _ = Graph.subgraph(g, new_i)
+                            new_sub_j, _, _ = Graph.subgraph(g, new_j)
 
                             new_size_i = all_possible_wlp_orders_avg(new_sub_i)
                             new_size_j = all_possible_wlp_orders_avg(new_sub_j)
@@ -1102,7 +1098,7 @@ def transfers_and_swaps_mwlp_with_average(
                                 size_max = curr_max
                                 v_i_star, v_j_star = v, v_prime
 
-                if v_i_star > 0 and v_j_star > 0:
+                if v_i_star != -1 and v_j_star != -1:
                     # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
 
                     g_i.remove(v_i_star)
@@ -1110,8 +1106,8 @@ def transfers_and_swaps_mwlp_with_average(
                     g_j.remove(v_j_star)
                     g_j.add(v_i_star)
 
-                    partition[i] = g_i
-                    partition[j] = g_j
+                    partition[i] = set(g_i)
+                    partition[j] = set(g_j)
 
                     check_swap_pairs[idx] = True
                     check_swaps[i] = True
@@ -1120,17 +1116,11 @@ def transfers_and_swaps_mwlp_with_average(
                     check_swap_pairs[idx] = False
                     check_swaps[i] = False
                     check_swaps[j] = False
-                print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
         checks = (
-            sum(check_transfers)
-            + sum(check_swaps)
-            + sum(check_transfer_pairs)
-            + sum(check_swap_pairs)
+            check_transfers.count(True)
+            + check_swaps.count(True)
+            + check_transfer_pairs.count(True)
+            + check_swap_pairs.count(True)
         )
     return partition
 

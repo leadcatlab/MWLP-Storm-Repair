@@ -102,7 +102,7 @@ def main() -> None:
     # print(f"Time elapsed = {end - start}\n")
 
     benchmark.mass_benchmark(
-        count=50, k=4, alpha=0.5, avg_alpha=0.5, n=16, metric=True, upper=10.0
+        count=100, k=4, alpha=0.5, avg_alpha=0.25, n=20, metric=True, upper=10.0
     )
 
 

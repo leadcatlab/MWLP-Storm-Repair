@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import random
 
+from typing import Collection
+
 from typing_extensions import TypedDict
 
 graph_dict = TypedDict(
@@ -198,7 +200,7 @@ class Graph:
 
     @staticmethod
     def subgraph(
-        g: Graph, nodes: list[int]
+        g: Graph, nodes: Collection[int]
     ) -> tuple[Graph, dict[int, int], dict[int, int]]:
         """Create a subgraph based on a graph and passed list of nodes
 

@@ -1,6 +1,3 @@
-import timeit
-from typing import Callable
-
 from typing_extensions import TypedDict
 
 import algos
@@ -18,7 +15,7 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    benchmark.mass_benchmark(count=100, k=5, n=20, metric=True, upper=10.0)
+    benchmark.mass_benchmark(count=50, k=5, n=30, metric=True, upper=10.0)
 
     # best_for_greedy: float = benchmark.alpha_heuristic_search(
     #    f=algos.greedy, count=10, k=2, n=10, metric=True, upper=10.0

@@ -354,7 +354,7 @@ def benchmark_partition(
     """
 
     # creating a deep copy to be safe
-    partition: list[list[int]] = [list(s) for s in part]
+    partition: list[list[int]] = [list(p) for p in part]
 
     vals: list[float] = [algos.wlp(g, p) for p in partition]
     output: str = ""
@@ -460,7 +460,7 @@ def mass_benchmark(
         output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.24)
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
-        res = solve_partition(g, output)
+        res = solve_partition(g, output, algos.greedy)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
@@ -477,7 +477,7 @@ def mass_benchmark(
         )
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
-        res = solve_partition(g, output)
+        res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)

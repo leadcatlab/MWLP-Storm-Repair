@@ -4,7 +4,6 @@ from itertools import combinations, permutations, product
 from typing import Callable, Deque, Optional
 
 import numpy as np
-from more_itertools import set_partitions
 
 from graph import Graph
 
@@ -442,121 +441,6 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
             best_order = order + [i]
 
     return best_order
-
-
-def partition_heuristic(
-    g: Graph, f: Callable[..., list[int]], k: int
-) -> tuple[float, list[list[int]]]:
-    """Bruteforce multi-agent MWLP
-
-    Generates best partition according to passed heuristic f
-
-    Args:
-        g: input graph
-        f: heuristic
-        k: number of agents
-
-    Returns:
-        float: optimal MWLP value according to heuristic
-        list[list[int]: Best graph partition and order
-            partss in each partition is ordered such tha
-            the best order for each partition is maintained
-
-    """
-
-    # for now assume complete
-    if Graph.is_complete(g) is False:
-        raise ValueError("Passed graph is not complete")
-
-    if k <= 0:
-        raise ValueError(f"Multi-agent case must have non-zero agents ({k})")
-
-    if k > g.num_nodes:
-        raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
-
-    # assume start is at 0
-    nodes = list(range(1, g.num_nodes))
-
-    best_order: list[list[int]] = []
-    minimum = float("inf")
-
-    # iterate through each partition
-    for part in set_partitions(nodes, k):
-        curr: float = 0.0
-        part_order: list[list[int]] = []
-
-        # iterate through each group in partition
-        for nodes in part:
-            # assume starting at 0
-            full_order: list[int] = [0] + list(nodes)
-            sg, sto, _ = Graph.subgraph(g, full_order)
-
-            # calculuate heuristic
-            heuristic_order: list[int] = f(sg)
-            curr += wlp(sg, heuristic_order)
-
-            # collect orders
-            original_order = [sto[n] for n in heuristic_order]
-            part_order.append(original_order)
-
-        if curr < minimum:
-            minimum = curr
-            best_order = part_order
-
-    return minimum, best_order
-
-
-def optimal_number_of_agents(
-    g: Graph, f: Callable[..., list[int]], k_min: int, k_max: int
-) -> tuple[float, list[list[int]]]:
-    """Bruteforce multi-agent MWLP for variable number of agents
-
-    Generates best partition according to passed heuristic f
-    parts in partition maintains best order for each part
-    Length of optimal partition is number of agents used
-
-    Args:
-        g: input graph
-        f: heuristic
-        k_min: minumum number of agents
-            (must be >= 1)
-        k_max: maximum number of agents
-            (k_max <= g.num_nodes - 1 since we don't count start node of 0)
-
-    Returns:
-        float: optimal MWLP value according to heuristic
-        list[list[int]: Optimal graph partition
-            Order of each part is optimal
-            number of agents = number of parts
-
-    """
-
-    # for now assume complete
-    if Graph.is_complete(g) is False:
-        raise ValueError("Passed graph is not complete")
-
-    if k_max <= k_min:
-        raise ValueError("{k_min = } >= {k_max = }")
-
-    if k_min <= 0:
-        raise ValueError(f"Multi-agent case must have non-zero agents ({k_min})")
-
-    if k_max >= g.num_nodes:
-        raise ValueError(
-            f"Multi-agent case cannot have more agents than non-start nodes ({k_max})"
-        )
-
-    best_order: list[list[int]] = []
-    minimum = float("inf")
-
-    # iterate through all possible numbers of agents
-    for k in range(k_min, k_max + 1):
-        min_for_k, order_for_k = partition_heuristic(g, f, k)
-        if min_for_k < minimum:
-            minimum = min_for_k
-            best_order = order_for_k
-
-    return minimum, best_order
 
 
 # TODO: Give these better names

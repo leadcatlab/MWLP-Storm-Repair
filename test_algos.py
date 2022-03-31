@@ -276,25 +276,6 @@ def test_tsp_correctness() -> None:
         assert algos.held_karp(g) == algos.brute_force_tsp(g)
 
 
-def test_partition_heuristic_mwlp_2_agents() -> None:
-    g = complete_two
-    result, partition = algos.partition_heuristic(g, algos.brute_force_mwlp, 2)
-
-    assert result == 52.0
-    assert [0, 1, 2] in partition and [0, 3] in partition
-
-
-def test_optimal_number_of_agents_mwlp() -> None:
-    g = complete_two
-    optimalmwlp, optimal_order = algos.optimal_number_of_agents(
-        g, algos.brute_force_mwlp, 1, 3
-    )
-
-    assert optimalmwlp == 52.0
-    assert len(optimal_order) == 2
-    assert [0, 1, 2] in optimal_order and [0, 3] in optimal_order
-
-
 def test_uconn_strats_agent_partition() -> None:
     g = random_complete_metric
     k = 5
@@ -450,48 +431,6 @@ def test_hk_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.held_karp(g, start=g.num_nodes)
-
-
-def test_partition_incomplete() -> None:
-    g = almost_complete
-    with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.brute_force_tsp, 2)
-
-
-def test_partition_too_few_agents() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.brute_force_tsp, 0)
-
-
-def test_partition_too_many_agents() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.partition_heuristic(g, algos.brute_force_tsp, g.num_nodes + 1)
-
-
-def test_optimal_number_of_agents_incomplete() -> None:
-    g = almost_complete
-    with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, 3)
-
-
-def test_optimal_number_of_agents_invalid_order() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 3, 1)
-
-
-def test_optimal_number_of_agents_too_few() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.brute_force_tsp, -1, 1)
-
-
-def test_optimal_number_of_agents_too_many() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.optimal_number_of_agents(g, algos.brute_force_tsp, 1, g.num_nodes)
 
 
 def test_uconn_strat_1_incomplete() -> None:

@@ -1,15 +1,16 @@
-import random
 from collections import defaultdict
 from typing import Callable
 
 import algos
 from graph import Graph
 
+
 class Bcolors:
     """
     Helper class for adding colors to prints
     https://svn.blender.org/svnroot/bf-blender/trunk/blender/build_files/scons/tools/Bcolors.py
     """
+
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
     OKCYAN = "\033[96m"
@@ -22,6 +23,7 @@ class Bcolors:
     CLEAR_LAST_LINE = (
         "\033[A                                                             \033[A"
     )
+
 
 def solve_partition(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]] = algos.brute_force_mwlp

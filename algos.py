@@ -8,6 +8,7 @@ from more_itertools import set_partitions
 
 from graph import Graph
 
+
 def path_length(g: Graph, path: list[int]) -> float:
     length: float = 0.0
     for i in range(len(path) - 1):
@@ -565,17 +566,19 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
+    # The only valid nodes to visit are non-starting nodes
     nodes: list[int] = list(range(1, g.num_nodes))
+    # Sort the nodes from heaviest to least heavy
     nodes = sorted(nodes, key=lambda x: g.node_weight[x], reverse=True)
+    # All paths must start with the start node
     paths: list[list[int]] = [[0] for _ in range(k)]
 
     for node in nodes:
-        # find agent with shortest path
+        # find agent with shortest path (i.e. the agent who will finish first)
         agent: int = min(range(k), key=lambda x: path_length(g, paths[x]))
-        # append node to agent
+        # append current node (heaviest unvisited) to agent
         paths[agent].append(node)
 
-    assert Graph.is_agent_partition(g, [set(subset) for subset in paths])
     return paths
 
 
@@ -585,46 +588,44 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 
+    # The only valid nodes to visit are non-starting nodes
+    nodes: set[int] = set(range(1, g.num_nodes))
+    # Randomly divide the agents into 2 groups
+    # group1: Finds the heaviest unvisited node
+    # group2: Finds a random node in a certain radius
     group1: set[int] = set(random.sample(range(k), k // 2))
+    # All paths must start with the start node
     paths: list[list[int]] = [[0] for _ in range(k)]
-    unvisited: set[int] = set(range(1, g.num_nodes))
+
     idx: int = 0
-    while len(unvisited) > 0:
+    while len(nodes) > 0:
+        # Greedy agents
         if idx in group1:
-            highest_weight: int = max(unvisited, key=lambda x: g.node_weight[x])
+            # Find heaviest node
+            highest_weight: int = max(nodes, key=lambda x: g.node_weight[x])
             # find agent in group 1 with shortest path
             agent: int = min(group1, key=lambda x: path_length(g, paths[x]))
+            # append current node (heaviest unvisited) to agent
             paths[agent].append(highest_weight)
-            unvisited.remove(highest_weight)
+            nodes.remove(highest_weight)
+        # Random destination agents
         else:
-            choices: list[int] = [i for i in unvisited if g.edge_weight[i][idx] <= r]
+            # Find nodes in the current radius
+            curr_loc: int = paths[idx][-1]
+            choices: list[int] = [i for i in nodes if g.edge_weight[curr_loc][i] <= r]
+            # If there are no nodes in the radius, pick nearest neighbor
             if len(choices) == 0:
-                nearest: int = min(unvisited, key=lambda x: g.edge_weight[x][idx])
+                nearest: int = min(nodes, key=lambda x: g.edge_weight[curr_loc][x])
                 paths[idx].append(nearest)
-                unvisited.remove(nearest)
+                nodes.remove(nearest)
             else:
                 choice: int = random.choice(choices)
                 paths[idx].append(choice)
-                unvisited.remove(choice)
+                nodes.remove(choice)
 
         idx = (idx + 1) % k
 
-    assert Graph.is_agent_partition(g, [set(subset) for subset in paths])
     return paths
-
-
-def choose2(n: int) -> list[tuple[int, int]]:
-    """Gives all pairs (i, j) for 0 <= i, j < n without order"""
-
-    if n < 1:
-        raise ValueError("Passed n is too small")
-
-    pairs: list[tuple[int, int]] = []
-    for i in range(n):
-        for j in range(i + 1, n):
-            pairs.append((i, j))
-
-    return pairs
 
 
 def transfers_and_swaps_mwlp(
@@ -653,7 +654,7 @@ def transfers_and_swaps_mwlp(
     no_repeats: bool = True
 
     m: int = len(partition)
-    pairs: list[tuple[int, int]] = choose2(m)
+    pairs: list[tuple[int, int]] = list(combinations(set(range(m)), 2))
     # Use these arrays as "hashmaps" of indicator variables
     # to see if a pair needs to be checked
 
@@ -924,7 +925,7 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
     if n == 1:
         return 0.0
 
-    pairs: list[tuple[int, int]] = choose2(n)
+    pairs: list[tuple[int, int]] = list(combinations(set(range(n)), 2))
     shortcut: float = 0.0
     weight_sum: int = sum(g.node_weight[1:])
     for i, j in pairs:
@@ -956,7 +957,7 @@ def transfers_and_swaps_mwlp_with_average(
     no_repeats: bool = True
 
     m: int = len(partition)
-    pairs: list[tuple[int, int]] = choose2(m)
+    pairs: list[tuple[int, int]] = list(combinations(set(range(m)), 2))
     # Use these arrays as "hashmaps" of indicator variables
     # to see if a pair needs to be checked
 

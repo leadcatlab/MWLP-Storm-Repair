@@ -9,9 +9,9 @@ from graph import Graph, graph_dict
 
 # Bank of graphs
 empty = Graph()
-no_edges = Graph(6)
-random_complete = Graph.random_complete(6)
-random_complete_metric = Graph.random_complete_metric(6)
+no_edges = Graph(20)
+random_complete = Graph.random_complete(20)
+random_complete_metric = Graph.random_complete_metric(20)
 
 small_graph_dict: graph_dict = {
     "num_nodes": 4,
@@ -295,23 +295,17 @@ def test_optimal_number_of_agents_mwlp() -> None:
     assert [0, 1, 2] in optimal_order and [0, 3] in optimal_order
 
 
-def test_choose2() -> None:
-    pairs: list[tuple[int, int]] = algos.choose2(3)
-    assert (0, 1) in pairs
-    assert (0, 2) in pairs
-    assert (1, 2) in pairs
+def test_uconn_strats_agent_partition() -> None:
+    g = random_complete_metric
+    k = 5
+    strat_1: list[list[int]] = algos.uconn_strat_1(g, k)
+    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_1])
 
-    pairs = algos.choose2(10)
-    assert len(pairs) == 45
+    strat_2_no_rad: list[list[int]] = algos.uconn_strat_2(g, k, 0.0)
+    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2_no_rad])
 
-    pairs = algos.choose2(74)
-    assert len(pairs) == 2701
-
-    pairs = algos.choose2(18)
-    assert len(pairs) == 153
-
-    pairs = algos.choose2(16)
-    assert len(pairs) == 120
+    strat_2: list[list[int]] = algos.uconn_strat_2(g, k, 5.0)
+    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
 
 
 def test_all_possible_wlp_orders_avg() -> None:
@@ -522,14 +516,6 @@ def test_uconn_strat_2_directed() -> None:
     g: Graph = complete
     with pytest.raises(ValueError):
         algos.uconn_strat_2(g, 2, 1.0)
-
-
-def test_choose2_small_n() -> None:
-    with pytest.raises(ValueError):
-        algos.choose2(0)
-
-    with pytest.raises(ValueError):
-        algos.choose2(-1)
 
 
 def test_all_possible_wlp_orders_avg_incomplete() -> None:

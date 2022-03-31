@@ -806,7 +806,7 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
         raise ValueError("Passed graph is not undirected")
 
     n: int = g.num_nodes
-    if n == 1:
+    if n <= 1:
         return 0.0
 
     pairs: list[tuple[int, int]] = list(combinations(set(range(n)), 2))

@@ -290,7 +290,11 @@ def test_uconn_strats_agent_partition() -> None:
 
 
 def test_all_possible_wlp_orders_avg() -> None:
-    n: int = 4
+    n: int = 0
+    g = Graph.random_complete(n, directed=False)
+    assert algos.all_possible_wlp_orders_avg(g) == 0.0
+
+    n = 4
     g = Graph.random_complete(n, directed=False)
     avg: float = algos.all_possible_wlp_orders_avg(g)
     brute: float = 0.0

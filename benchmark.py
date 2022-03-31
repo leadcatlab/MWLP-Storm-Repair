@@ -405,9 +405,6 @@ def mass_benchmark(
         curr = "UConn Greedy"
         print(curr)
         res = algos.uconn_strat_1(g, k)
-        # print("Solving partition")
-        # res = solve_partition(g, output)
-        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
@@ -418,9 +415,6 @@ def mass_benchmark(
         curr = "UConn Greedy + Random (dist: 2.5)"
         print(curr)
         res = algos.uconn_strat_2(g, k, 2.5)
-        # print("Solving partition")
-        # res = solve_partition(g, output)
-        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
@@ -431,9 +425,6 @@ def mass_benchmark(
         curr = "UConn Greedy + Random (dist: 5.0)"
         print(curr)
         res = algos.uconn_strat_2(g, k, 5.0)
-        # print("Solving partition")
-        # res = solve_partition(g, output)
-        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
@@ -444,9 +435,6 @@ def mass_benchmark(
         curr = "UConn Greedy + Random (dist: 7.5)"
         print(curr)
         res = algos.uconn_strat_2(g, k, 7.5)
-        # print("Solving partition")
-        # res = solve_partition(g, output)
-        # print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
@@ -491,8 +479,24 @@ def mass_benchmark(
         print("Finding partition")
         output = algos.find_partition_with_average(g, partition, 0.22)
         print(Bcolors.CLEAR_LAST_LINE)
+        print(Bcolors.CLEAR_LAST_LINE)
+
+        curr = "Average Heuristic: Greedy"
+        print(curr)
         print("Solving partition")
-        res = solve_partition(g, output)
+        res = solve_partition(g, output, algos.greedy)
+        print(Bcolors.CLEAR_LAST_LINE)
+        curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        maximums[curr].append(curr_max)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
+
+        curr = "Average Heuristic: Nearest Neighbor"
+        print(curr)
+        print("Solving partition")
+        res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
         maximums[curr].append(curr_max)

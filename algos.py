@@ -1,6 +1,6 @@
 import random
 from collections import deque
-from itertools import combinations, permutations
+from itertools import combinations, permutations, product
 from typing import Callable, Deque, Optional
 
 import numpy as np
@@ -130,7 +130,6 @@ def wlp(g: Graph, order: list[int]) -> float:
     return sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
 
 
-# TODO: Allow for more variable start of list of nodes for all heuristic functions
 def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """Calculate minumum weighted latency
 
@@ -658,16 +657,17 @@ def transfers_and_swaps_mwlp(
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
-    m: int = len(partition)
-    pairs: list[tuple[int, int]] = choose2(m)
-
     # This is a deterministic algorithm
     # Thus if we get to a partition that we have seen before, we have hit a loop
+    # When this occurs we return the current partition since in pratice this current
+    #   was very close to the local minimum (somewhere in the loop)
     # Convert sets to frozensets for hashability
     # Convert lists to frozensets for the same reason
     seen: set[frozenset[frozenset[int]]] = set()
     no_repeats: bool = True
 
+    m: int = len(partition)
+    pairs: list[tuple[int, int]] = choose2(m)
     # Use these arrays as "hashmaps" of indicator variables
     # to see if a pair needs to be checked
 
@@ -719,21 +719,21 @@ def transfers_and_swaps_mwlp(
                 v_star: int = -1
                 for v in g_i:
                     if v != 0:
-                        new_i = set(g_i)
+                        new_i: set[int] = set(g_i)
                         new_i.remove(v)
-                        new_j = set(g_j)
+                        new_j: set[int] = set(g_j)
                         new_j.add(v)
 
                         new_sub_i, _, _ = Graph.subgraph(g, new_i)
                         new_sub_j, _, _ = Graph.subgraph(g, new_j)
-                        new_size_i = wlp(new_sub_i, f(new_sub_i))
-                        new_size_j = wlp(new_sub_j, f(new_sub_j))
+                        new_size_i: float = wlp(new_sub_i, f(new_sub_i))
+                        new_size_j: float = wlp(new_sub_j, f(new_sub_j))
 
                         if (curr_max := max(new_size_i, new_size_j)) < size_max:
                             size_max = curr_max
                             v_star = v
 
-                if v_star > 0:
+                if v_star != -1:
                     g_i.remove(v_star)
                     g_j.add(v_star)
 
@@ -749,11 +749,7 @@ def transfers_and_swaps_mwlp(
                     check_transfers[j] = False
 
             # swaps
-            elif (
-                check_swap_pairs[idx] is True
-                or check_swaps[i] is True
-                or check_swaps[j] is True
-            ):
+            elif check_swap_pairs[idx] or check_swaps[i] or check_swaps[j]:
                 g_i, g_j = set(partition[i]), set(partition[j])
 
                 sub_i, _, _ = Graph.subgraph(g, g_i)
@@ -764,8 +760,9 @@ def transfers_and_swaps_mwlp(
 
                 size_max = max(size_i, size_j)
                 v_i_star, v_j_star = -1, -1
-                for v in set(node for node in g_i if node != 0):
-                    for v_prime in set(node for node in g_j if node != 0):
+
+                for (v, v_prime) in product(g_i, g_j):
+                    if v != 0 and v_prime != 0:
                         # swap v and v_prime
                         new_i = set(g_i)
                         new_i.remove(v)
@@ -782,6 +779,7 @@ def transfers_and_swaps_mwlp(
                         if (curr_max := max(new_size_i, new_size_j)) < size_max:
                             size_max = curr_max
                             v_i_star, v_j_star = v, v_prime
+
                 if v_i_star != -1 and v_j_star != -1:
                     g_i.remove(v_i_star)
                     g_i.add(v_j_star)
@@ -798,12 +796,14 @@ def transfers_and_swaps_mwlp(
                     check_swap_pairs[idx] = False
                     check_swaps[i] = False
                     check_swaps[j] = False
+
         checks = (
             check_transfers.count(True)
             + check_swaps.count(True)
             + check_transfer_pairs.count(True)
             + check_swap_pairs.count(True)
         )
+
     return partition
 
 
@@ -832,10 +832,10 @@ def transfer_outliers_mwlp(
 
     m: int = len(partition)
     for i in range(m):
-        for node in {v for v in partition[i] if v != 0}:
+        for node in set(v for v in partition[i] if v != 0):
             # determine if outlier
-            sub_g, _, _ = Graph.subgraph(g, list(partition[i]))
-            remove_node: list[int] = list(v for v in partition[i] if v != node)
+            sub_g, _, _ = Graph.subgraph(g, partition[i])
+            remove_node: list[int] = [v for v in partition[i] if v != node]
             sub_g_without_node, _, _ = Graph.subgraph(g, remove_node)
             with_node: float = wlp(sub_g, f(sub_g))
             without_node: float = wlp(sub_g_without_node, f(sub_g_without_node))
@@ -846,14 +846,14 @@ def transfer_outliers_mwlp(
                 min_total = float("inf")
 
                 for j in range(m):
-                    sub_g_j, _, _ = Graph.subgraph(g, list(partition[j]))
+                    # Find where adding outlier node minimizes contribution
+                    sub_g_j, _, _ = Graph.subgraph(g, partition[j] | {node})
                     total: float = wlp(sub_g_j, f(sub_g_j))
                     if total < min_total:
                         destination = j
                         min_total = total
 
                 if destination not in {-1, i}:
-                    assert node != 0
                     outliers.add(node)
                     p_old[node] = i
                     p_new[node] = destination
@@ -873,7 +873,7 @@ def evaluate_partition_heuristic(
 
     curr_max = float("-inf")
     for subset in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(subset))
+        sub_g, _, _ = Graph.subgraph(g, subset)
         curr_max = max(curr_max, wlp(sub_g, f(sub_g)))
 
     return curr_max
@@ -893,33 +893,24 @@ def find_partition_with_heuristic(
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
+    before: float = evaluate_partition_heuristic(g, partition, f)
 
     improved: list[set[int]] = transfers_and_swaps_mwlp(g, partition, f)
+    after: float = evaluate_partition_heuristic(g, improved, f)
 
-    improvements_decreased: bool = evaluate_partition_heuristic(
-        g, improved, f
-    ) < evaluate_partition_heuristic(g, partition, f)
-
-    if improvements_decreased:
-        # print("Found improvement")
-        # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
-        # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
-        partition = list(set(subset) for subset in improved)
+    if improvements_decreased := (after < before):
+        partition = [set(subset) for subset in improved]
 
     while improvements_decreased:
-        improved = list(set(subset) for subset in partition)
+        before = evaluate_partition_heuristic(g, partition, f)
+
+        improved = [set(subset) for subset in partition]
         improved = transfer_outliers_mwlp(g, improved, f, alpha)
         improved = transfers_and_swaps_mwlp(g, improved, f)
+        after = evaluate_partition_heuristic(g, improved, f)
 
-        if evaluate_partition_heuristic(g, improved, f) < evaluate_partition_heuristic(
-            g, partition, f
-        ):
-            # print("Found improvement")
-            # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
-            # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+        if improvements_decreased := (after < before):
             partition = [set(subset) for subset in improved]
-        else:
-            improvements_decreased = False
 
     return partition
 
@@ -1022,7 +1013,7 @@ def transfers_and_swaps_mwlp_with_average(
                 size_j: float = all_possible_wlp_orders_avg(sub_j)
 
                 # we presume size_i => size_j
-                if size_i <= size_j:
+                if size_i < size_j:
                     g_i, g_j = g_j, g_i
                     sub_i, sub_j = sub_j, sub_i
                     size_i, size_j = size_j, size_i
@@ -1042,12 +1033,11 @@ def transfers_and_swaps_mwlp_with_average(
                         new_size_i = all_possible_wlp_orders_avg(new_sub_i)
                         new_size_j = all_possible_wlp_orders_avg(new_sub_j)
 
-                        curr_max = max(new_size_i, new_size_j)
-                        if curr_max < size_max:
+                        if (curr_max := max(new_size_i, new_size_j)) < size_max:
                             size_max = curr_max
                             v_star = v
 
-                if v_star > 0:
+                if v_star != -1:
                     g_i.remove(v_star)
                     g_j.add(v_star)
 
@@ -1075,32 +1065,26 @@ def transfers_and_swaps_mwlp_with_average(
                 size_max = max(size_i, size_j)
                 v_i_star, v_j_star = -1, -1
 
-                for v in g_i:
-                    for v_prime in g_j:
-                        if v != 0 and v_prime != 0:
-                            # swap v and v_prime
-                            new_i = set(g_i)
-                            new_i.remove(v)
-                            new_i.add(v_prime)
-                            new_j = set(g_j)
-                            new_j.remove(v_prime)
-                            new_j.add(v)
+                for (v, v_prime) in product(g_i, g_j):
+                    if v != 0 and v_prime != 0:
+                        # swap v and v_prime
+                        new_i = set(g_i)
+                        new_i.remove(v)
+                        new_i.add(v_prime)
+                        new_j = set(g_j)
+                        new_j.remove(v_prime)
+                        new_j.add(v)
 
-                            # NOTE: This order is random, needs to be fixed in some way
-                            new_sub_i, _, _ = Graph.subgraph(g, new_i)
-                            new_sub_j, _, _ = Graph.subgraph(g, new_j)
+                        new_sub_i, _, _ = Graph.subgraph(g, new_i)
+                        new_sub_j, _, _ = Graph.subgraph(g, new_j)
+                        new_size_i = all_possible_wlp_orders_avg(new_sub_i)
+                        new_size_j = all_possible_wlp_orders_avg(new_sub_j)
 
-                            new_size_i = all_possible_wlp_orders_avg(new_sub_i)
-                            new_size_j = all_possible_wlp_orders_avg(new_sub_j)
-
-                            curr_max = max(new_size_i, new_size_j)
-                            if curr_max < size_max:
-                                size_max = curr_max
-                                v_i_star, v_j_star = v, v_prime
+                        if (curr_max := max(new_size_i, new_size_j)) < size_max:
+                            size_max = curr_max
+                            v_i_star, v_j_star = v, v_prime
 
                 if v_i_star != -1 and v_j_star != -1:
-                    # print(f"swapping {v_i_star} to {i} and {v_j_star} to {j}")
-
                     g_i.remove(v_i_star)
                     g_i.add(v_j_star)
                     g_j.remove(v_j_star)
@@ -1122,6 +1106,7 @@ def transfers_and_swaps_mwlp_with_average(
             + check_transfer_pairs.count(True)
             + check_swap_pairs.count(True)
         )
+
     return partition
 
 
@@ -1164,14 +1149,13 @@ def transfer_outliers_mwlp_with_average(
                 min_total = float("inf")
 
                 for j in range(m):
-                    sub_g_j, _, _ = Graph.subgraph(g, list(partition[j]))
+                    sub_g_j, _, _ = Graph.subgraph(g, partition[j] | {node})
                     total: float = all_possible_wlp_orders_avg(sub_g_j)
                     if total < min_total:
                         destination = j
                         min_total = total
 
                 if destination not in {-1, i}:
-                    assert node != 0
                     outliers.add(node)
                     p_old[node] = i
                     p_new[node] = destination
@@ -1189,7 +1173,7 @@ def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> floa
 
     curr_max = float("-inf")
     for subset in partition:
-        sub_g, _, _ = Graph.subgraph(g, list(subset))
+        sub_g, _, _ = Graph.subgraph(g, subset)
         curr_max = max(curr_max, all_possible_wlp_orders_avg(sub_g))
 
     return curr_max
@@ -1209,32 +1193,23 @@ def find_partition_with_average(
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
+    before: float = evaluate_partition_with_average(g, partition)
 
     improved: list[set[int]] = transfers_and_swaps_mwlp_with_average(g, partition)
+    after: float = evaluate_partition_with_average(g, improved)
 
-    improvements_decreased: bool = evaluate_partition_with_average(
-        g, improved
-    ) < evaluate_partition_with_average(g, partition)
-
-    if improvements_decreased:
-        # print("Found improvement")
-        # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
-        # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
-        partition = list(set(subset) for subset in improved)
+    if improvements_decreased := (after < before):
+        partition = [set(subset) for subset in improved]
 
     while improvements_decreased:
+        before = evaluate_partition_with_average(g, partition)
+
         improved = list(set(subset) for subset in partition)
         improved = transfer_outliers_mwlp_with_average(g, improved, alpha)
         improved = transfers_and_swaps_mwlp_with_average(g, improved)
+        after = evaluate_partition_with_average(g, improved)
 
-        if evaluate_partition_with_average(
-            g, improved
-        ) < evaluate_partition_with_average(g, partition):
-            # print("Found improvement")
-            # print(f"Before: {evaluate_partition_heuristic(g, partition, f)}")
-            # print(f"After:  {evaluate_partition_heuristic(g, improved, f)}")
+        if improvements_decreased := (after < before):
             partition = [set(subset) for subset in improved]
-        else:
-            improvements_decreased = False
 
     return partition

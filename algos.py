@@ -225,7 +225,7 @@ def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
         visited[n] = True
 
     # Use queue to remember current node
-    order: list[int] = list(start)
+    order: list[int] = start
     q: Deque[int] = deque()
     q.appendleft(order[-1])
 
@@ -276,7 +276,7 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
         visited[n] = True
 
     # Use queue to remember current node
-    order: list[int] = list(start)
+    order: list[int] = start
 
     while len(order) != g.num_nodes:
         curr: int = order[-1]
@@ -443,7 +443,6 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     return best_order
 
 
-# TODO: Give these better names
 def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -568,7 +567,6 @@ def transfers_and_swaps_mwlp(
         else:
             seen.add(curr_partition)
 
-        # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers
             if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
@@ -871,7 +869,6 @@ def transfers_and_swaps_mwlp_with_average(
         else:
             seen.add(curr_partition)
 
-        # TODO: Formal justification of these conditions
         for idx, (i, j) in enumerate(pairs):
             # transfers
             if check_transfer_pairs[idx] or check_transfers[i] or check_transfers[j]:
@@ -1008,8 +1005,8 @@ def transfer_outliers_mwlp_with_average(
     for i in range(m):
         for node in set(v for v in partition[i] if v != 0):
             # determine if outlier
-            sub_g, _, _ = Graph.subgraph(g, list(partition[i]))
-            remove_node: list[int] = list(v for v in partition[i] if v != node)
+            sub_g, _, _ = Graph.subgraph(g, partition[i])
+            remove_node: list[int] = [v for v in partition[i] if v != node]
             sub_g_without_node, _, _ = Graph.subgraph(g, remove_node)
             with_node: float = all_possible_wlp_orders_avg(sub_g)
             without_node: float = all_possible_wlp_orders_avg(sub_g_without_node)
@@ -1075,7 +1072,7 @@ def find_partition_with_average(
     while improvements_decreased:
         before = evaluate_partition_with_average(g, partition)
 
-        improved = list(set(subset) for subset in partition)
+        improved = [set(subset) for subset in partition]
         improved = transfer_outliers_mwlp_with_average(g, improved, alpha)
         improved = transfers_and_swaps_mwlp_with_average(g, improved)
         after = evaluate_partition_with_average(g, improved)

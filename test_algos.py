@@ -200,24 +200,6 @@ def test_brute_force_mwlp_seq_start() -> None:
         assert algos.brute_force_mwlp(g, start=order[: i + 1]) == order
 
 
-def test_cost() -> None:
-    g = complete
-    assert algos.cost(g, [0, 1, 2]) == 59.0
-
-    rand: list[int] = algos.random_order(g)
-    assert algos.cost(g, rand) == algos.wlp(g, rand)
-
-    g = random_complete
-    rand = algos.random_order(g)
-    assert algos.cost(g, rand) == algos.wlp(g, rand)
-
-
-def test_cost_small_orders() -> None:
-    g = random_complete
-    assert algos.cost(g, []) == 0.0
-    assert algos.cost(g, [0]) == 0.0
-
-
 def test_nearest_neighbor() -> None:
     g = complete
     assert algos.nearest_neighbor(g) == [0, 1, 2, 3]
@@ -363,19 +345,6 @@ def test_brute_force_mwlp_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.brute_force_mwlp(g, start=[g.num_nodes])
-
-
-def test_cost_invalid_nodes() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.cost(g, [0, g.num_nodes])
-
-
-def test_cost_invalid_edges() -> None:
-    g = almost_complete
-    with pytest.raises(ValueError):
-        algos.cost(g, [2, 1, 0])
-
 
 def test_nearest_neighbor_incomplete() -> None:
     g = almost_complete

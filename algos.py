@@ -9,8 +9,32 @@ from graph import Graph
 
 
 def path_length(g: Graph, path: list[int]) -> float:
+    """
+    Get the length of a path in a graph
+
+    Runtime: O(n)
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+
+    path: list[int]
+        The path along the graph
+        Assertions:
+            Edges in path must be present in the graph/ 
+
+    Returns
+    -------
+    float
+        Path length. 0.0 if the length is less then 2 nodes
+
+    """
+    
     length: float = 0.0
+    # Iterate through all edges
     for i in range(len(path) - 1):
+        # Raise error if edge does not exist
         if path[i + 1] not in g.adjacen_list[path[i]]:
             raise ValueError(f"Edge {path[i]} --> {path[i + 1]} does not exist")
         length += g.edge_weight[path[i]][path[i + 1]]
@@ -18,14 +42,19 @@ def path_length(g: Graph, path: list[int]) -> float:
 
 
 def floyd_warshall(g: Graph) -> list[list[float]]:
-    """Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
+    """
+    Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
 
     Runtime: O(n^3)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
 
-    Returns:
+    Returns
+    -------
+    list[list[float]]
         2D array of distances
         dist[i][j] = distance from i -> j
         if no path exists, value is float('inf')
@@ -43,29 +72,33 @@ def floyd_warshall(g: Graph) -> list[list[float]]:
                 dist[i][j] = g.edge_weight[i][j]
 
     # if dist[i][k] + dist[k][j] < dist[i][j]: update
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+    for (k, i, j) in product(range(n), range(n), range(n)):
+        dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
 
     return dist
 
 
 def create_metric_from_graph(g: Graph) -> Graph:
-    """Create metric graph from input graph
+    """
+    Create metric graph from input graph
     Using Floyd-Warshall we can solve the APSP problem.
     This gives edge weights that satisfy the triangle inequality
 
     Runtime: O(n^3)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
 
-    Returns:
-        Graph satisfying the triangle inequality (Metric Graph)
+    Returns
+    -------
+    Graph
+        Graph with edgeweights based off of Floyd-Warshall Algorithm
+        i.e. len(u -> v) = shortest distance from u to v
 
     """
-
+    
     n: int = g.num_nodes
 
     metric = Graph(n)
@@ -73,61 +106,80 @@ def create_metric_from_graph(g: Graph) -> Graph:
     metric.adjacen_list = g.adjacen_list
 
     metric_weights: list[list[float]] = floyd_warshall(g)
-    for i in range(n):
-        for j in range(n):
-            if (
-                i != j
-                and g.edge_weight[i][j] != -1
-                and metric_weights[i][j] != float("inf")
-            ):
-                metric.edge_weight[i][j] = metric_weights[i][j]
+    for (i, j) in product(range(n), range(n)):
+        if (i != j and g.edge_weight[i][j] != -1 and metric_weights[i][j] != float("inf")):
+            metric.edge_weight[i][j] = metric_weights[i][j]
 
     return metric
 
 
-def wlp(g: Graph, order: list[int]) -> float:
-    """Calculate the weighted latency of a given path
-
+def wlp(g: Graph, path: list[int]) -> float:
+    """
+    Calculate the weighted latency of a given path
+    Sums of weights of node * length along path from start to node
+    
     Runtime: O(n)
 
-    Args:
-        g: input graph
-        order: sequence of nodes visited starting at 0
+    Parameters
+    ----------
+    g: Graph
+        Input graph
 
-    Returns:
-        float: the weighted latency
+    path: list[int]
+        The path along the graph
+        Assertions:
+            Edges in path must be present in the graph/ 
+
+    Returns
+    -------
+    float
+        Weighted Latency over the path in g
+
     """
 
+
     # check nodes in order are actually valid nodes
-    for node in order:
+    for node in path:
         if node >= g.num_nodes or node < 0:
             raise ValueError(f"Node {node} is not in passed graph")
 
-    if len(order) <= 1:
+    if len(path) <= 1:
         return 0.0
 
-    path_len: list[float] = [0.0] * len(order)
-    for i in range(1, len(order)):
-        if order[i] not in g.adjacen_list[order[i - 1]]:
-            raise ValueError(f"Edge {order[i - 1]} --> {order[i]} does not exist")
-        path_len[i] = path_len[i - 1] + g.edge_weight[order[i - 1]][order[i]]
+    path_len: list[float] = [0.0] * len(path)
+    for i in range(0, len(path) - 1):
+        if order[i + 1] not in g.adjacen_list[path[i]]:
+            raise ValueError(f"Edge {path[i]} --> {path[i + 1]} does not exist")
+        path_len[i + 1] = path_len[i] + g.edge_weight[path[i]][path[i + 1]]
 
     # sum over sequence [v_0, v_1, ..., v_n] of w(v_i) * L(0, v_i)
-    return sum(g.node_weight[order[i]] * path_len[i] for i in range(len(order)))
+    return sum(g.node_weight[path[i]] * path_len[i] for i in range(len(path)))
 
 
 def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
-    """Calculate minumum weighted latency
-
+    """
+    Calculate minumum weighted latency
     Iterates over all possible paths and solves in brute force manner
 
     Runtime: O(n!)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Returns:
-        list[int[: Path order for the minumum weighted latency
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
+
+    Returns
+    -------
+    list[int]
+        Path order for minimum weighted latency
+
     """
 
     # for now assume complete
@@ -163,47 +215,29 @@ def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
     return best
 
-
-def cost(g: Graph, order: list[int]) -> float:
-    """cost function used for MWLP_DP algorithm
-
-    from "Polynomial time algorithms for some minimum latency problems" (Wu)
-    c(order) = Latency(order) + (w(g) + w(order))*Length(order)
-
-    Runtime: O(n)
-
-    Args:
-        g: input graph
-        order: list of nodes in subtour
-
-    Return:
-        float: output of cost function c(order)
-    """
-
-    # check nodes in order are actually valid nodes
-    for node in order:
-        if node >= g.num_nodes:
-            raise ValueError(f"Node {node} is not in passed graph")
-
-    latency: float = wlp(g, order)
-    length: float = 0.0
-    for i in range(len(order) - 1):
-        length += g.edge_weight[order[i]][order[i + 1]]
-
-    weight_order: int = sum(g.node_weight[n] for n in order)
-    return latency + (sum(g.node_weight) - weight_order) * length
-
-
 def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
-    """Approximates MWLP using nearest neighbor heuristic
+    """
+    Approximates MWLP using nearest neighbor heuristic
+    Starts from a node and goes to the nearest unvisited neighbor
 
-    Generates sequence starting from 0 going to the nearest node
+    Runtime: O(n^2)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Returns:
-        list[int]: nearest neighbor order
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
+
+    Returns
+    -------
+    list[int]
+        Path order for minimum weighted latency according to nearest neighbor
 
     """
 
@@ -246,15 +280,28 @@ def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
 
 def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
-    """Approximates MWLP using greedy heuristic
+    """
+    Approximates MWLP using greedy heuristic
+    Starts from a node and goes to the heaviest unvisited neighbor
 
-    Generates sequence starting from 0 going to the node of greatest weight
+    Runtime: O(n^2)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Returns:
-        list[int]: greedy order
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
+
+    Returns
+    -------
+    list[int]
+        Path order for minimum weighted latency according to greedy
 
     """
 
@@ -294,16 +341,27 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
 
 def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
-    """Random order generator
+    """
+    Creates a random order of unvisited nodes
 
-    Generates random sequence starting from start or starting from seq_start -> start
-    Essentially a wrapper around np.random.permutation
+    Runtime: O(n) (?)
 
-    Args:
-        g: input graph
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Returns:
-        list[int]: greedy order
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
+
+    Returns
+    -------
+    list[int]
+        Random path order
 
     """
 
@@ -330,17 +388,28 @@ def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 
 
 def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
+    """
+    Bruteforce solves the Travelling Salesman Problem to generate an order
+    Iterates over all possible paths and solves in brute force manner
 
-    """Brute Force TSP
+    Runtime: O(n!)
 
-    Generates sequence that solves travelling salesman. Solved via
-    pure brute force of all possible orders.
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Args:
-        g: input graph
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
 
-    Returns:
-        list[int]: Solution to the Travelling Salesman Problem
+    Returns
+    -------
+    list[int]
+        Path order according to best TSP solution over g
 
     """
 
@@ -373,17 +442,26 @@ def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
 
 
 def held_karp(g: Graph, start: int = 0) -> list[int]:
-    """TSP via Held-Karp
+    """
+    Solves the Travelling Salesman Problem to generate an order
+    Uses Held Karp algorithm
+    
+    Runtime: O(n^2 2^n)
 
-    Generate the solution to TSP via dynamic programming using Held-Karp
-    Variable names closely follow wikipedia.org/wiki/Held-Karp_algorithm
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
 
-    Args:
-        g: input graph
-        start: start node
+    start: int
+        Optional start node of path (allows for partial solving)
 
-    Returns:
-        list[int]: Solution to the Travelling Salesman Problem
+    Returns
+    -------
+    list[int]
+        Path order according to best TSP solution over g
 
     """
 

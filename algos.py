@@ -608,6 +608,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
+
     if Graph.is_undirected(g) is False:
         raise ValueError("Passed graph is not undirected")
 

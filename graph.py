@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import random
+from itertools import product
 from typing import Collection
 
 from typing_extensions import TypedDict
@@ -30,10 +31,22 @@ class Graph:
     """
 
     def __init__(self, n: int = 0):
-        """Inits Graph with n nodes
+        """
+        Creates a graph with n nodes
 
-        Args:
-            n: number of nodes (by default graph is empty)
+        Parameters
+        ----------
+        n: int
+            Number of nodes in the graph
+            Default: 0
+            Assertions:
+                Assertion 1
+                Assertion 2
+
+        Returns
+        -------
+        Graph
+            Graph with n nodes and no edges or node weights
 
         """
 
@@ -49,13 +62,24 @@ class Graph:
 
     @staticmethod
     def from_dict(gd: graph_dict) -> Graph:
-        """Alternate constructor using dictionary
+        """
+        Alternate constructor using dictionary
 
-        Args:
-            gd: graph_dict containing the needed information for a graph
+        Parameters
+        ----------
+        gd: graph_dict
+            Contains the needed information for a graph
+            Assertions:
+                Number of nodes must be >= 0
+                List of node weights must be correct length
+                Node weights must be all >= 0
+                Edges must be between nodes that exist
 
-        Returns:
-            Graph with the same information as gd
+        Returns
+        -------
+        Graph
+            Graph with nodes and edges as described by the dictionary
+
         """
 
         if gd["num_nodes"] < 0:
@@ -76,11 +100,11 @@ class Graph:
         g.node_weight = gd["node_weight"]
 
         for (start_node, end_node, node_weight) in gd["edges"]:
-            if start_node >= g.num_nodes:
+            if start_node >= g.num_nodes or g.num_nodes < 0:
                 raise ValueError(
                     f"Starting node {start_node} is out of range [0, {g.num_nodes - 1}]"
                 )
-            if end_node >= g.num_nodes:
+            if end_node >= g.num_nodes or g.num_nodes < 0:
                 raise ValueError(
                     f"Ending node {end_node} is out of range [0, {g.num_nodes - 1}]"
                 )
@@ -91,23 +115,28 @@ class Graph:
 
     @staticmethod
     def dict_from_graph(g: Graph) -> graph_dict:
-        """create graph_dict from Graph
+        """
+        Create graph_dict from passed Graph
 
-        Args:
-            g: input graph
+        Parameters
+        ----------
+        g: Graph
+            Graph to be encoded into a dictionary
 
-        Returns:
-            graph_dict gd such that Graph.from_dict(gd) == g
+        Returns
+        -------
+        graph_dict
+            Dictionary that can be transformed back into passed graph
+
         """
 
         num_nodes: int = g.num_nodes
         node_weight: list[int] = g.node_weight
 
         edges: list[tuple[int, int, float]] = []
-        for i in range(num_nodes):
-            for j in range(num_nodes):
-                if i != j and j in g.adjacen_list[i]:
-                    edges.append((i, j, g.edge_weight[i][j]))
+        for (i, j) in product(range(num_nodes), range(num_nodes)):
+            if i != j and j in g.adjacen_list[i]:
+                edges.append((i, j, g.edge_weight[i][j]))
 
         gd: graph_dict = {
             "num_nodes": num_nodes,
@@ -124,20 +153,47 @@ class Graph:
         node_w: tuple[int, int] = (0, 100),
         directed: bool = False,
     ) -> Graph:
-        """Create a randomly generated complete weighted undirected graph
+        """
+        Creates a complete graph with randomly weighted edges and nodes
 
-        Creates a complete undirected graph with randomly weighted edges and nodes
+        Runtime: (if applicable)
 
-        Args:
-            n: number of nodes
-            edge_w: the interval that edge weights can be in
-            node_w: the interval that node weights can be in
+        Parameters
+        ----------
+        n: int
+            Number of nodes
+            Assertions:
+                Number of nodes must be  >= 0
 
-        Returns:
-            Graph
+        edge_w: tuple[float, float]
+            Range of edge weights
+            Default: (0.0, 1.0)
+            Assertions:
+                Edge weights must be non-negative
+                Edge weights must be passed in the correct order
+
+        node_w: tuple[int, int]
+            Range of node weights
+            Default: (0, 100)
+            Assertions:
+                Int weights must be non-negative
+                Int weights must be passed in the correct order
+
+        directed: bool
+            Set if created graph is directed or undirected
+            Default: False
+
+        Returns
+        -------
+        Graph
+            Randomly created graph based on the passed parameters
+
         """
 
         g = Graph(n)
+
+        if n < 0:
+            raise ValueError(f"Number of nodes passed in is negative: {n}")
 
         if node_w[0] < 0 or node_w[1] < 0:
             raise ValueError(
@@ -145,6 +201,7 @@ class Graph:
             )
         if node_w[1] < node_w[0]:
             raise ValueError(f"Passed node weight range is in wrong order: {node_w}")
+
         if edge_w[0] < 0.0 or node_w[1] < 0.0:
             raise ValueError(
                 f"Passed edge weight range contains negative values: {edge_w}"
@@ -174,46 +231,93 @@ class Graph:
     def random_complete_metric(
         n: int,
         upper: float = 1.0,
-        node_w: tuple[int, int] = (1, 100),
+        node_w: tuple[int, int] = (0, 100),
         directed: bool = False,
     ) -> Graph:
-        """Create a randomly generated complete weighted undirected metric graph
-
-        Creates a complete undirected graph with randomly weighted edges and nodes
-        Edges satisfy the inequality l(u, w) + l(w, v) >= l(u, v) for all nodes u, v, w
-
-        Args:
-            n: number of nodes
-            upper: used to create the edge weight interval (upper / 2, upper)
-            node_w: the interval that node weights can be in
-
-        Returns:
-            Graph
         """
+        Creates a complete metric graph with randomly weighted edges and nodes
+        The metric property is guarenteed by the following:
+            Suppose the edge weights range between (x, 2x)
+            We have that x + x = 2x <= 2x for all x
+            Thus the triangle inequality is always satisfied
+
+        Parameters
+        ----------
+        n: int
+            Number of nodes
+            Assertions:
+                Number of nodes must be  >= 0
+
+        upper: float
+            Upper bound of edge weight
+            Default: 1.0
+            Assertions:
+                Must be non-negative
+
+        node_w: tuple[int, int]
+            Range of node weights
+            Default: (0, 100)
+            Assertions:
+                Int weights must be non-negative
+                Int weights must be passed in the correct order
+
+        directed: bool
+            Set if created graph is directed or undirected
+            Default: False
+
+        Returns
+        -------
+        Graph
+            Randomly created metric graph based on the passed parameters
+
+        """
+
+        if n < 0:
+            raise ValueError(f"Number of nodes passed in is negative: {n}")
+
+        if node_w[0] < 0 or node_w[1] < 0:
+            raise ValueError(
+                f"Passed node weight range contains negative values: {node_w}"
+            )
+        if node_w[1] < node_w[0]:
+            raise ValueError(f"Passed node weight range is in wrong order: {node_w}")
+
+        if upper < 0.0:
+            raise ValueError(f"Passed edge weight upper bound is negative: {upper}")
 
         g = Graph.random_complete(
             n, edge_w=(upper / 2, upper), node_w=node_w, directed=directed
         )
-        assert Graph.is_metric(g)
+
         return g
 
     @staticmethod
     def subgraph(
         g: Graph, nodes: Collection[int]
     ) -> tuple[Graph, dict[int, int], dict[int, int]]:
-        """Create a subgraph based on a graph and passed list of nodes
-
+        """
         Creates a subgraph of the original graph plus a set of dictionaries
-        which relates the nodes from one graph with another
+        which relates the nodes between the original graph and subgraph
 
-        Args:
-            g: passed in graph to based subgraph off of
-            nodes: list of nodes to use in original graph for subgraph
+        Parameters
+        ----------
+        g: Graph
+            Original graph
 
-        Returns:
-            subgraph and two dictionaries:
-            sto is a dictionary mapping nodes from subgraph to original
-            ots is a dictionary mapping nodes from original to subgraph
+        nodes: Collection[int]
+            Nodes to create a subgraph out of
+            Assertions:
+                Nodes in collection must be in the graph
+
+        Returns
+        -------
+        Graph
+            Subgraph
+        dict[int, int]
+            Dictionary mapping nodes from subgraph to original
+        dict[int, int]
+            ictionary mapping nodes from original to subgraph
+
         """
 
         for n in nodes:
@@ -241,10 +345,17 @@ class Graph:
         return sub_g, sto, ots
 
     def add_node(self, node_weight: int = 0) -> None:
-        """Adds a node to the graph
+        """
+        Add a node to a graph
 
-        Args:
-            node_weight: weight of the new node
+        Parameters
+        ----------
+        node_weight: int
+            Node weight of new node
+            Default: 0
+            Assertions:
+                Node weight must be >= 0
+
         """
 
         if node_weight < 0:
@@ -262,20 +373,36 @@ class Graph:
         self.edge_weight.append([-1.0 for _ in range(self.num_nodes)])
 
     def add_edge(self, start: int, end: int, weight: float = 0.0) -> None:
-        """Adds a directed edge to the graph
+        """
+        Add an edge to a graph
 
-        Args:
-            start
-            end
-            weight: l(start, end) = weight
+        Parameters
+        ----------
+        start: int
+            Start node of edge
+            Assertions:
+                Node must be in the graph
+
+        end: int
+            End node of edge
+            Assertions:
+                Node must be in the graph
+
+        Assertion:
+            Edge cannot already exist
+
+        weight: float
+            Weight of edge start -> end
+            Default: 0.0
+
         """
 
         # ensure nodes exist
-        if start >= self.num_nodes:
+        if start >= self.num_nodes or start < 0:
             raise ValueError(
                 f"Starting node {start} is out of range [0, {self.num_nodes - 1}]"
             )
-        if end >= self.num_nodes:
+        if end >= self.num_nodes or end < 0:
             raise ValueError(
                 f"Ending node {end} is out of range [0, {self.num_nodes - 1}]"
             )
@@ -291,14 +418,24 @@ class Graph:
         self.edge_weight[start][end] = weight
 
     def set_node_weight(self, node: int, node_weight: int) -> None:
-        """Set the weight of a node in a graph
+        """
+        Change node weight of a desired node
 
-        Args:
-            node: the node whose weight is to be set
-            weight: the new weight
+        Parameters
+        ----------
+        node: int
+            Node whose weight is being changed
+            Assertions:
+                Node must be in the graph
+
+        node_weight: int
+            New node weight of node
+            Assertions:
+                Node weight must be >= 0
+
         """
 
-        if node >= self.num_nodes:
+        if node >= self.num_nodes or node < 0:
             raise ValueError(f"Node {node} is out of range [0, {self.num_nodes - 1}]")
 
         if node_weight < 0:
@@ -309,12 +446,27 @@ class Graph:
     def set_edge_weight(
         self, start_node: int, end_node: int, edge_weight: float
     ) -> None:
-        """Set the weight of a directed edge in the graph
+        """
+        Change edge weight of an edge in the graph
 
-        Args:
-            start_node: u
-            end_node: v
-            edge_weight: l(u, v) = weight
+        Parameters
+        ----------
+        start_node: int
+            Start node of edge
+            Assertions:
+                Node must be in the graph
+
+        end_node: int
+            End node of edge
+            Assertions:
+                Node must be in the graph
+
+        Assertion:
+            Edge must exist
+
+        edge_weight: float
+            New weight of edge start -> end
+
         """
 
         # ensure nodes exist
@@ -337,13 +489,19 @@ class Graph:
 
     @staticmethod
     def is_undirected(g: Graph) -> bool:
-        """Checks if a graph is undirected
+        """
+        Determine if a graph is undirected
 
-        Args:
-            cls: the graph to check
+        Parameters
+        ----------
+        g: Graph
+            Input graph
 
-        Returns:
-            bool: True if undirected, false O.W.
+        Returns
+        -------
+        bool
+            True if undirected, False if directed
+
         """
 
         for u in range(g.num_nodes):
@@ -359,13 +517,19 @@ class Graph:
 
     @staticmethod
     def is_complete(g: Graph) -> bool:
-        """Checks if a graph is complete
+        """
+        Determine if a graph is complete
 
-        Args:
-            cls: the graph to check
+        Parameters
+        ----------
+        g: Graph
+            Input graph
 
-        Returns:
-            bool: True if complete, false O.W.
+        Returns
+        -------
+        bool
+            True if complete, False otherwise
+
         """
 
         for u in range(g.num_nodes):
@@ -377,62 +541,51 @@ class Graph:
 
     @staticmethod
     def is_metric(g: Graph) -> bool:
-        """Checks if a graph is metric
+        """
+        Determine if a graph maintains the triangle inequality
 
-        Checks triangle inequality for all nodes  u, v, w in the graph
-        l(u, w) + l(w, v) >= l(u, v)
+        Parameters
+        ----------
+        g: Graph
+            Input graph
 
-        Args:
-            cls: the graph to check
+        Returns
+        -------
+        bool
+            True if metric, False otherwise
 
-        Returns:
-            bool: True if metric, false O.W.
         """
 
-        for u in range(g.num_nodes):
-            for v in range(g.num_nodes):
-                if u != v and v in g.adjacen_list[u]:
-                    for w in range(g.num_nodes):
-                        if w in g.adjacen_list[u] and v in g.adjacen_list[w]:
-                            if (
-                                g.edge_weight[u][w] + g.edge_weight[w][v]
-                                < g.edge_weight[u][v]
-                            ):
-                                return False
-
-        return True
-
-    @staticmethod
-    def is_partition(g: Graph, partition: list[set[int]]) -> bool:
-        """Determines if a partition of graph nodes is valid"""
-
-        nodes: list[bool] = [False] * g.num_nodes
-        for subset in partition:
-            if len(subset) == 0:
-                return False
-            for n in subset:
-                if n >= g.num_nodes or n < 0:
-                    return False
-                if nodes[n] is True:
-                    return False
-                nodes[n] = True
-
-        for n in range(g.num_nodes):
-            if nodes[n] is False:
-                return False
+        for u, v in product(range(g.num_nodes), range(g.num_nodes)):
+            if u != v and v in g.adjacen_list[u]:
+                for w in range(g.num_nodes):
+                    if w in g.adjacen_list[u] and v in g.adjacen_list[w]:
+                        if (
+                            g.edge_weight[u][w] + g.edge_weight[w][v]
+                            < g.edge_weight[u][v]
+                        ):
+                            return False
 
         return True
 
     @staticmethod
     def create_agent_partition(g: Graph, k: int) -> list[set[int]]:
-        """Creates agent partition for algorithms
+        """
+        Creates a random agent partition for k agents over a graph
 
-        Agent partition:
-        ---------------
-        k agents, each starting from start note 0
-        Distribute notes [1, n] to the k agents
-        Each node other than 0 is used only one
-        Each agent gets partitions that contain more nodes than just {0}
+        Parameters
+        ----------
+        g: Graph
+            Input graph
+
+        k: int
+            Number of agents
+
+        Returns
+        -------
+        list[set[int]]
+            Random agent partition
+
         """
 
         n: int = g.num_nodes
@@ -466,7 +619,28 @@ class Graph:
 
     @staticmethod
     def is_agent_partition(g: Graph, partition: list[set[int]]) -> bool:
-        """Determines if a partition of graph nodes is a valid agent partition"""
+        """
+        Determines if a partition of graph nodes is a valid agent partition
+
+        Agent partition:
+            k agents, each starting from start note 0
+            Distribute notes [1, n] to the k agents
+            Each node other than 0 is used only one
+
+        Parameters
+        ----------
+        g: Graph
+            Input graph
+
+        partition: list[set[int]]
+            Input partition to check
+
+        Returns
+        -------
+        bool
+            True if valid, False otherwise
+
+        """
 
         if len(partition) == 0:
             return False
@@ -489,7 +663,9 @@ class Graph:
         return True
 
     def __str__(self) -> str:  # pragma: no cover
-        """String representation of the graph"""
+        """
+        String representation of the graph
+        """
 
         to_print: str = ""
         for start, current_list in enumerate(self.adjacen_list):

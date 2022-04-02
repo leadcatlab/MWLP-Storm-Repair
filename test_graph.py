@@ -1,5 +1,3 @@
-import random
-
 import pytest
 
 from graph import Graph, graph_dict
@@ -124,13 +122,6 @@ def test_is_metric() -> None:
 def test_random_complete_metric_is_both() -> None:
     g = Graph.random_complete_metric(10)
     assert Graph.is_complete(g) and Graph.is_metric(g)
-
-
-def test_is_partition() -> None:
-    n: int = 10
-    g = Graph.random_complete(n)
-    partition: list[set[int]] = [set(range(0, 3)), set(range(3, 7)), set(range(7, n))]
-    assert Graph.is_partition(g, partition)
 
 
 def test_is_agent_partition() -> None:
@@ -342,40 +333,6 @@ def test_is_metric_failure() -> None:
     g = Graph.from_dict(gd)
 
     assert Graph.is_metric(g) is False
-
-
-def test_is_partition_failure() -> None:
-    n = 20
-    k = 3
-    g = Graph(n)
-
-    has_empty_set: list[set[int]] = [set(), set(range(n)), set()]
-    assert Graph.is_partition(g, has_empty_set) is False
-
-    has_invalid_nodes: list[set[int]] = [
-        set(range(0, 3)),
-        set(range(3, 7)),
-        set(range(7, n)),
-    ]
-    for i in range(n):
-        has_invalid_nodes[random.randint(0, 1000) % k].add(i)
-    has_invalid_nodes[0].add(n)
-    assert Graph.is_partition(g, has_invalid_nodes) is False
-
-    has_repeated_nodes: list[set[int]] = [
-        set(range(0, 3)),
-        set(range(3, 7)),
-        set(range(7, n)),
-    ]
-    has_repeated_nodes[1].add(0)
-    assert Graph.is_partition(g, has_repeated_nodes) is False
-
-    has_missing_nodes: list[set[int]] = [
-        set(range(1, 3)),
-        set(range(3, 7)),
-        set(range(7, n)),
-    ]
-    assert Graph.is_partition(g, has_missing_nodes) is False
 
 
 def test_is_agent_partition_failure() -> None:

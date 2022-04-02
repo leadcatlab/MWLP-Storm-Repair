@@ -99,7 +99,7 @@ class Graph:
 
         g.node_weight = gd["node_weight"]
 
-        for (start_node, end_node, node_weight) in gd["edges"]:
+        for start_node, end_node, node_weight in gd["edges"]:
             if start_node >= g.num_nodes or g.num_nodes < 0:
                 raise ValueError(
                     f"Starting node {start_node} is out of range [0, {g.num_nodes - 1}]"
@@ -212,11 +212,10 @@ class Graph:
         g.node_weight = [random.randint(node_w[0], node_w[1]) for _ in range(n)]
 
         if directed:
-            for i in range(n):
-                for j in range(n):
-                    if i != j:
-                        weight: float = random.uniform(edge_w[0], edge_w[1])
-                        g.add_edge(i, j, weight)
+            for i, j in product(range(n), range(n)):
+                if i != j:
+                    weight: float = random.uniform(edge_w[0], edge_w[1])
+                    g.add_edge(i, j, weight)
         else:
             for i in range(n):
                 for j in range(i + 1, n):
@@ -224,7 +223,6 @@ class Graph:
                     g.add_edge(i, j, weight)
                     g.add_edge(j, i, weight)
 
-        assert Graph.is_complete(g)
         return g
 
     @staticmethod
@@ -337,10 +335,9 @@ class Graph:
         for n in new_node_list:
             sub_g.set_node_weight(n, g.node_weight[sto[n]])
 
-        for i in nodes:
-            for j in nodes:
-                if i != j and j in g.adjacen_list[i]:
-                    sub_g.add_edge(ots[i], ots[j], g.edge_weight[i][j])
+        for i, j in product(nodes, nodes):
+            if i != j and j in g.adjacen_list[i]:
+                sub_g.add_edge(ots[i], ots[j], g.edge_weight[i][j])
 
         return sub_g, sto, ots
 
@@ -532,10 +529,9 @@ class Graph:
 
         """
 
-        for u in range(g.num_nodes):
-            for v in range(g.num_nodes):
-                if u != v and v not in g.adjacen_list[u]:
-                    return False
+        for u, v in product(range(g.num_nodes), range(g.num_nodes)):
+            if u != v and v not in g.adjacen_list[u]:
+                return False
 
         return True
 
@@ -656,9 +652,8 @@ class Graph:
                     return False
                 nodes[n] = True
 
-        for n in range(g.num_nodes):
-            if nodes[n] is False:
-                return False
+        if False in nodes:
+            return False
 
         return True
 

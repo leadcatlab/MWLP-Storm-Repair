@@ -22,7 +22,7 @@ def path_length(g: Graph, path: list[int]) -> float:
     path: list[int]
         The path along the graph
         Assertions:
-            Edges in path must be present in the graph/ 
+            Edges in path must be present in the graph/
 
     Returns
     -------
@@ -30,7 +30,7 @@ def path_length(g: Graph, path: list[int]) -> float:
         Path length. 0.0 if the length is less then 2 nodes
 
     """
-    
+
     length: float = 0.0
     # Iterate through all edges
     for i in range(len(path) - 1):
@@ -98,7 +98,7 @@ def create_metric_from_graph(g: Graph) -> Graph:
         i.e. len(u -> v) = shortest distance from u to v
 
     """
-    
+
     n: int = g.num_nodes
 
     metric = Graph(n)
@@ -107,7 +107,11 @@ def create_metric_from_graph(g: Graph) -> Graph:
 
     metric_weights: list[list[float]] = floyd_warshall(g)
     for (i, j) in product(range(n), range(n)):
-        if (i != j and g.edge_weight[i][j] != -1 and metric_weights[i][j] != float("inf")):
+        if (
+            i != j
+            and g.edge_weight[i][j] != -1
+            and metric_weights[i][j] != float("inf")
+        ):
             metric.edge_weight[i][j] = metric_weights[i][j]
 
     return metric
@@ -117,7 +121,7 @@ def wlp(g: Graph, path: list[int]) -> float:
     """
     Calculate the weighted latency of a given path
     Sums of weights of node * length along path from start to node
-    
+
     Runtime: O(n)
 
     Parameters
@@ -128,7 +132,7 @@ def wlp(g: Graph, path: list[int]) -> float:
     path: list[int]
         The path along the graph
         Assertions:
-            Edges in path must be present in the graph/ 
+            Edges in path must be present in the graph/
 
     Returns
     -------
@@ -136,7 +140,6 @@ def wlp(g: Graph, path: list[int]) -> float:
         Weighted Latency over the path in g
 
     """
-
 
     # check nodes in order are actually valid nodes
     for node in path:
@@ -148,7 +151,7 @@ def wlp(g: Graph, path: list[int]) -> float:
 
     path_len: list[float] = [0.0] * len(path)
     for i in range(0, len(path) - 1):
-        if order[i + 1] not in g.adjacen_list[path[i]]:
+        if path[i + 1] not in g.adjacen_list[path[i]]:
             raise ValueError(f"Edge {path[i]} --> {path[i + 1]} does not exist")
         path_len[i + 1] = path_len[i] + g.edge_weight[path[i]][path[i + 1]]
 
@@ -214,6 +217,7 @@ def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
             best = full_order
 
     return best
+
 
 def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
@@ -445,7 +449,7 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     """
     Solves the Travelling Salesman Problem to generate an order
     Uses Held Karp algorithm
-    
+
     Runtime: O(n^2 2^n)
 
     Parameters
@@ -522,6 +526,31 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
 
 
 def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
+    """
+    Greedy algorithm from "Predicting Outage Restoration..."
+    Finds the agent with the current shortest path
+    Assigns them the heaviest unvisited node
+
+    Runtime: (if applicable)
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    k: int
+        Number of agents
+
+    Returns
+    -------
+    list[list[int]]
+        Assigned targets and order of targets for each agent.
+
+    """
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
     if Graph.is_undirected(g) is False:
@@ -544,6 +573,39 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
 
 
 def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
+    """
+    Greedy + Random algorithm from "Predicting Outage Restoration..."
+    Group agents into two groups:
+        Group 1: Greedy
+        Group 2: Random neighbor
+    If the agent with the current shortest path is in Group 1, assign
+    the heaviest node
+    Otherwise find a random node in the radius r from the end of their path
+    If no node exists, send them to the nearest neighbor
+
+    Runtime: (if applicable)
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    k: int
+        Number of agents
+
+    r: float
+        Radius of random seach
+
+    Returns
+    -------
+    list[list[int]]
+        Assigned targets and order of targets for each agent.
+
+    """
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
     if Graph.is_undirected(g) is False:
@@ -558,8 +620,8 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
     # All paths must start with the start node
     paths: list[list[int]] = [[0] for _ in range(k)]
 
-    idx: int = 0
     while len(nodes) > 0:
+        idx: int = min(range(k), key=lambda x: path_length(g, paths[x]))
         # Greedy agents
         if idx in group1:
             # Find heaviest node
@@ -584,14 +646,40 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
                 paths[idx].append(choice)
                 nodes.remove(choice)
 
-        idx = (idx + 1) % k
-
     return paths
 
 
 def transfers_and_swaps_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
+    """
+    Algorithm 1: Improve Partition from "Balanced Task Allocation..."
+    Transfers and swaps nodes from one agent to another based on the passed heuristic
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    f: Callable[..., list[int]]
+        Passed heuristic
+        Assertions:
+            Must be an agent partition
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after transfer and swaps
+
+    """
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -757,6 +845,40 @@ def transfers_and_swaps_mwlp(
 def transfer_outliers_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
+    """
+    Algorithm 2: Transfer Outliers from "Balanced Task Allocation..."
+    Identifies outliers in each partition and moves them to a more ideal agent
+    Uses passed heuristic and alpha threshold to determine if a node needs to move
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    f: Callable[..., list[int]]
+        Passed heuristic
+        Assertions:
+            Must be an agent partition
+
+    alpha: float
+        Threshold for detecting outliers
+        Assertions:
+            0 <= alpha <= 1
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after transferring outliers
+
+    """
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -815,6 +937,41 @@ def transfer_outliers_mwlp(
 def evaluate_partition_heuristic(
     g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> float:
+    """
+    Function to evaluate a given partition of agents using a heuristic
+    Returns partition with the largest weighted latency
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Unordered assignment of nodes for each agent
+
+    f: Callable[..., list[int]]
+        Passed heuristic
+        Assertions:
+            Must be an agent partition
+
+    Returns
+    -------
+    float:
+        max over all s in partition of wlp(g, f(s))
+
+    """
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
@@ -829,6 +986,41 @@ def evaluate_partition_heuristic(
 def find_partition_with_heuristic(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
+    """
+    Adaptation of Algorithm 3: AHP from "Balanced Task Allocation..."
+    Runs iterations of Algorithm 1 and 2 using the passed heuristic
+    Runs iterations until there are no more improvements to be made
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    f: Callable[..., list[int]]
+        Passed heuristic
+        Assertions:
+            Must be an agent partition
+
+    alpha: float
+        Threshold for detecting outliers
+        Assertions:
+            0 <= alpha <= 1
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after iterations
+
+    """
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
@@ -837,6 +1029,9 @@ def find_partition_with_heuristic(
 
     if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    if not 0 <= alpha <= 1:
+        raise ValueError("Passed alpha threshold is out of range")
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
@@ -864,15 +1059,24 @@ def find_partition_with_heuristic(
 
 def all_possible_wlp_orders_avg(g: Graph) -> float:
     """
-    Heuristic for average weighted latency
+    Calculate the average weighted latency in a graph
+    Uses a shortcut rather than testing all (n - 1)! possibilities
 
-    Consider all possible node orderings that start with 0
-    Calculate the wlp for each order
-    Sum them together, divide by (n - 1)!
+    Runtime: TBD
 
-    This calculates this in O(n^3) rather than O(n!)
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
 
-    TODO: figure out why this shortcut works
+    Returns
+    -------
+    float:
+        average weighted latency of g
+
     """
 
     if Graph.is_complete(g) is False:
@@ -896,6 +1100,29 @@ def all_possible_wlp_orders_avg(g: Graph) -> float:
 def transfers_and_swaps_mwlp_with_average(
     g: Graph, part: list[set[int]]
 ) -> list[set[int]]:
+    """
+    Algorithm 1: Improve Partition from "Balanced Task Allocation..."
+    Transfers and swaps nodes from one agent to another based on average heuristic
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after transfer and swaps
+
+    """
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -1059,6 +1286,35 @@ def transfers_and_swaps_mwlp_with_average(
 def transfer_outliers_mwlp_with_average(
     g: Graph, part: list[set[int]], alpha: float
 ) -> list[set[int]]:
+    """
+    Algorithm 2: Transfer Outliers from "Balanced Task Allocation..."
+    Identifies outliers in each partition and moves them to a more ideal agent
+    Uses average heuristic and alpha threshold to determine if a node needs to move
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    alpha: float
+        Threshold for detecting outliers
+        Assertions:
+            0 <= alpha <= 1
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after transferring outliers
+
+    """
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
@@ -1114,6 +1370,37 @@ def transfer_outliers_mwlp_with_average(
 
 
 def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> float:
+    """
+    Function to evaluate a given partition of agents using average heuristic
+    Returns partition with the largest weighted latency
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Unordered assignment of nodes for each agent
+
+
+    Returns
+    -------
+    float:
+        max over all s in partition of wlp(g, avg(s))
+
+    """
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
     if Graph.is_agent_partition(g, partition) is False:
         raise ValueError("Passed partition is invalid")
 
@@ -1128,6 +1415,36 @@ def evaluate_partition_with_average(g: Graph, partition: list[set[int]]) -> floa
 def find_partition_with_average(
     g: Graph, part: list[set[int]], alpha: float
 ) -> list[set[int]]:
+    """
+    Adaptation of Algorithm 3: AHP from "Balanced Task Allocation..."
+    Runs iterations of Algorithm 1 and 2 using average heuristic
+    Runs iterations until there are no more improvements to be made
+
+    Runtime: TBD
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+
+    alpha: float
+        Threshold for detecting outliers
+        Assertions:
+            0 <= alpha <= 1
+
+    Returns
+    -------
+    list[set[int]]
+        Resulting unordered assignment of nodes after iterations
+
+    """
+
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
@@ -1136,6 +1453,9 @@ def find_partition_with_average(
 
     if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
+
+    if not 0 <= alpha <= 1:
+        raise ValueError("Passed alpha threshold is out of range")
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]

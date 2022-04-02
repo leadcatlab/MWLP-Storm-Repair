@@ -346,6 +346,7 @@ def test_brute_force_mwlp_invalid_start() -> None:
     with pytest.raises(ValueError):
         algos.brute_force_mwlp(g, start=[g.num_nodes])
 
+
 def test_nearest_neighbor_incomplete() -> None:
     g = almost_complete
     with pytest.raises(ValueError):

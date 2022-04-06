@@ -89,14 +89,13 @@ class Graph:
         if len(gd["node_weight"]) != g.num_nodes:
             raise ValueError(
                 "node_weight list is incorrect length: "
-                + f"({gd['node_weight']} vs {g.num_nodes})"
+                + f"{gd['node_weight']} vs {g.num_nodes}"
             )
 
         if min(gd["node_weight"]) < 0:
             raise ValueError(
                 f"node_weight list contains negative values: {gd['node_weight']}"
             )
-
         g.node_weight = gd["node_weight"]
 
         for start_node, end_node, node_weight in gd["edges"]:
@@ -108,7 +107,6 @@ class Graph:
                 raise ValueError(
                     f"Ending node {end_node} is out of range [0, {g.num_nodes - 1}]"
                 )
-
             g.add_edge(start_node, end_node, node_weight)
 
         return g
@@ -283,11 +281,9 @@ class Graph:
         if upper < 0.0:
             raise ValueError(f"Passed edge weight upper bound is negative: {upper}")
 
-        g = Graph.random_complete(
+        return Graph.random_complete(
             n, edge_w=(upper / 2, upper), node_w=node_w, directed=directed
         )
-
-        return g
 
     @staticmethod
     def subgraph(
@@ -621,7 +617,7 @@ class Graph:
         Agent partition:
             k agents, each starting from start note 0
             Distribute notes [1, n] to the k agents
-            Each node other than 0 is used only one
+            Each node other than 0 is used only one time
 
         Parameters
         ----------

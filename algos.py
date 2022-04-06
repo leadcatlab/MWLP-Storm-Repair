@@ -669,11 +669,12 @@ def transfers_and_swaps_mwlp(
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent
-
-    f: Callable[..., list[int]]
-        Passed heuristic
         Assertions:
             Must be an agent partition
+
+    f: Callable[..., list[int]]
+        maximum,  minimum, range, average
+        Passed heuristic
 
     Returns
     -------

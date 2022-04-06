@@ -29,9 +29,38 @@ def solve_partition(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]] = algos.brute_force_mwlp
 ) -> list[list[int]]:
     """
-    Take the output of transfers and swaps and
-    find optimal orders based on heuristic f
+    Determine optimal orders for each subset in the partition
+    according to a passed heuristic
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+        Assertions:
+            Must be an agent partition
+
+    f: Callable[..., list[int]]
+        Passed heuristic
+        Default: brute force mwlp
+
+    Returns
+    -------
+    list[list[int]]
+        Solved orders of each agent
+
     """
+
+    if not Graph.is_complete(g):
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
+
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
 
@@ -49,8 +78,32 @@ def benchmark_partition(
     g: Graph, part: list[list[int]]
 ) -> tuple[float, float, float, float]:
     """
-    Take solved partition and print
+    Takes in a partition and path order of agents and benchmarks it
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+
+    part: list[set[int]]
+        Starting unordered assignment of nodes for each agent
+        Assertions:
+            Must be an agent partition
+
+    Returns
+    -------
+    tuple[float, float, float, float]
+        maximum,  minimum, range, average
+
     """
+
+    if not Graph.is_complete(g):
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_agent_partition(g, [set(s) for s in part]) is False:
+        raise ValueError("Passed partition is invalid")
 
     # creating a deep copy to be safe
     partition: list[list[int]] = [list(p) for p in part]
@@ -85,6 +138,38 @@ def mass_benchmark(
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
 ) -> None:
+    """
+    Benchmarks a large number of graphs randomly generated accord to the parameters
+
+    Parameters
+    ----------
+    count: int
+        The number of graphs to benchmark
+
+    k: int
+        The number of agents
+
+    n: int
+        The number of nodes per graph
+
+    edge_w: tuple[float, float]
+        The range of edge weights allowed
+        Default: (0.0, 1.0)
+
+    metric: bool
+        Determine whether to test on metric or non-metric graphs
+        Default: True
+
+    upper: float
+        Upper bound of edge weights for a metric graph
+        Default: 1.0
+
+    node_w: tuple[int, int]
+        The range of node weights allowed
+        Default: (0, 100)
+
+    """
+
     maximums = defaultdict(list)
     minimums = defaultdict(list)
     ranges = defaultdict(list)

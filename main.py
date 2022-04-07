@@ -1,8 +1,9 @@
+"""
+Driver code for testing functions
+"""
 from typing_extensions import TypedDict
 
-import algos
 import benchmark
-from graph import Graph
 
 graph_dict = TypedDict(
     "graph_dict",
@@ -15,7 +16,7 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    benchmark.mass_benchmark(count=100, k=5, n=25, metric=True, upper=10.0)
+    benchmark.mass_benchmark(count=100, k=5, n=15, metric=True, upper=10.0)
 
     # best_for_greedy: float = benchmark.alpha_heuristic_search(
     #    f=algos.greedy, count=10, k=2, n=10, metric=True, upper=10.0

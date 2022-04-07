@@ -1,3 +1,6 @@
+"""
+Graph classv with integer notes, integer node weights, float edge weights
+"""
 from __future__ import annotations
 
 import random
@@ -188,8 +191,6 @@ class Graph:
 
         """
 
-        g = Graph(n)
-
         if n < 0:
             raise ValueError(f"Number of nodes passed in is negative: {n}")
 
@@ -206,6 +207,8 @@ class Graph:
             )
         if edge_w[1] < edge_w[0]:
             raise ValueError(f"Passed edge weight range is in wrong order: {edge_w}")
+
+        g = Graph(n)
 
         g.node_weight = [random.randint(node_w[0], node_w[1]) for _ in range(n)]
 

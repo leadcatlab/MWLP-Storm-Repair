@@ -1,3 +1,6 @@
+"""
+Graph algorithms
+"""
 import random
 from collections import deque
 from itertools import combinations, permutations, product

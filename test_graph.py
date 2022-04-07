@@ -1,3 +1,6 @@
+"""
+Test cases to validate Graph class
+"""
 import pytest
 
 from graph import Graph, graph_dict

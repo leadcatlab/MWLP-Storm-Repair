@@ -1,5 +1,8 @@
+"""
+Benchmark Functions
+"""
 from collections import defaultdict
-from typing import Callable
+from typing import Callable, DefaultDict
 
 import algos
 from graph import Graph
@@ -170,10 +173,11 @@ def mass_benchmark(
 
     """
 
-    maximums = defaultdict(list)
-    minimums = defaultdict(list)
-    ranges = defaultdict(list)
-    averages = defaultdict(list)
+    maximums: DefaultDict[str, list[float]] = defaultdict(list)
+    bests: DefaultDict[str, int] = defaultdict(int)
+    minimums: DefaultDict[str, list[float]] = defaultdict(list)
+    ranges: DefaultDict[str, list[float]] = defaultdict(list)
+    averages: DefaultDict[str, list[float]] = defaultdict(list)
 
     for i in range(count):
         print(i)
@@ -186,10 +190,15 @@ def mass_benchmark(
 
         # Put all desired heuristics here
 
+        best, curr_best = "", float("inf")
+
         curr = "UConn Greedy"
         print(curr)
         res = algos.uconn_strat_1(g, k)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -200,6 +209,9 @@ def mass_benchmark(
         print(curr)
         res = algos.uconn_strat_2(g, k, 2.5)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -210,6 +222,9 @@ def mass_benchmark(
         print(curr)
         res = algos.uconn_strat_2(g, k, 5.0)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -220,6 +235,9 @@ def mass_benchmark(
         print(curr)
         res = algos.uconn_strat_2(g, k, 7.5)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -235,6 +253,9 @@ def mass_benchmark(
         res = solve_partition(g, output, algos.greedy)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -252,6 +273,9 @@ def mass_benchmark(
         res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -271,6 +295,9 @@ def mass_benchmark(
         res = solve_partition(g, output, algos.greedy)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
@@ -283,32 +310,42 @@ def mass_benchmark(
         res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
         curr_max, curr_min, curr_range, curr_avg = benchmark_partition(g, res)
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
         maximums[curr].append(curr_max)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
+        bests[best] += 1
+
         print(Bcolors.CLEAR_LAST_LINE)
 
     print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
-    for key, val in maximums.items():
-        print(f"\t{key = :40}{sum(val) / count}")
+    for key, vals in maximums.items():
+        print(f"\t{key:40}{sum(vals) / count}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Bests: {Bcolors.ENDC}")
+    for key, val in bests.items():
+        print(f"\t{key:40}{val}")
     print()
 
     print(f"{Bcolors.OKBLUE}Minimums: {Bcolors.ENDC}")
-    for key, val in minimums.items():
-        print(f"\t{key = :40}{sum(val) / count}")
+    for key, vals in minimums.items():
+        print(f"\t{key:40}{sum(vals) / count}")
     print()
 
     print(f"{Bcolors.OKBLUE}Ranges: {Bcolors.ENDC}")
-    for key, val in ranges.items():
-        print(f"\t{key = :40}{sum(val) / count}")
+    for key, vals in ranges.items():
+        print(f"\t{key:40}{sum(vals) / count}")
     print()
 
     print(f"{Bcolors.OKBLUE}Averages: {Bcolors.ENDC}")
-    for key, val in averages.items():
-        print(f"\t{key = :40}{sum(val) / count}")
+    for key, vals in averages.items():
+        print(f"\t{key:40}{sum(vals) / count}")
     print()
 
 
@@ -322,6 +359,46 @@ def alpha_heuristic_search(
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
 ) -> float:
+    """
+    Search function to help determine ideal alpha values for transfers and swaps
+    Used for nearest neighbor or greedy or other such heuristics
+
+    Parameters
+    ----------
+    f: Callable[..., list[int]]
+        Passed heuristic
+
+    count: int
+        The number of graphs to benchmark
+
+    k: int
+        The number of agents
+
+    n: int
+        The number of nodes per graph
+
+    edge_w: tuple[float, float]
+        The range of edge weights allowed
+        Default: (0.0, 1.0)
+
+    metric: bool
+        Determine whether to test on metric or non-metric graphs
+        Default: True
+
+    upper: float
+        Upper bound of edge weights for a metric graph
+        Default: 1.0
+
+    node_w: tuple[int, int]
+        The range of node weights allowed
+        Default: (0, 100)
+
+    Returns
+    -------
+    float
+        Ideal alpha
+
+    """
 
     graph_bank: list[Graph] = []
     for _ in range(count):
@@ -355,6 +432,7 @@ def alpha_heuristic_search(
 
 
 def avg_alpha_heuristic_search(
+    f: Callable[..., list[int]],
     count: int,
     k: int,
     n: int,
@@ -363,6 +441,46 @@ def avg_alpha_heuristic_search(
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
 ) -> float:
+    """
+    Search function to help determine ideal alpha values for transfers and swaps
+    Used for average heuristic with partitions solved by passed heuristic
+
+    Parameters
+    ----------
+    f: Callable[..., list[int]]
+        Passed heuristic
+
+    count: int
+        The number of graphs to benchmark
+
+    k: int
+        The number of agents
+
+    n: int
+        The number of nodes per graph
+
+    edge_w: tuple[float, float]
+        The range of edge weights allowed
+        Default: (0.0, 1.0)
+
+    metric: bool
+        Determine whether to test on metric or non-metric graphs
+        Default: True
+
+    upper: float
+        Upper bound of edge weights for a metric graph
+        Default: 1.0
+
+    node_w: tuple[int, int]
+        The range of node weights allowed
+        Default: (0, 100)
+
+    Returns
+    -------
+    float
+        Ideal alpha
+
+    """
 
     graph_bank: list[Graph] = []
     for _ in range(count):
@@ -385,7 +503,7 @@ def avg_alpha_heuristic_search(
         maximums: list[float] = []
         for g, partition in zip(graph_bank, partition_bank):
             output = algos.find_partition_with_average(g, partition, alpha)
-            res = solve_partition(g, output)
+            res = solve_partition(g, output, f)
             curr_max, _, _, _ = benchmark_partition(g, res)
             maximums.append(curr_max)
         averages[alpha] = sum(maximums) / count

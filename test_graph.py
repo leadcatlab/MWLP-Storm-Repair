@@ -423,6 +423,11 @@ def test_from_dict_wrong_node_weight_len() -> None:
         Graph.from_dict(gd)
 
 
+def test_random_complete_negative_num_nodes() -> None:
+    with pytest.raises(ValueError):
+        Graph.random_complete(-1)
+
+
 def test_random_complete_negative_edge_weight_range() -> None:
     with pytest.raises(ValueError):
         Graph.random_complete(10, (-1.0, 3.0))
@@ -441,6 +446,26 @@ def test_random_complete_wrong_node_weight_order() -> None:
 def test_random_complete_negative_node_weight_range() -> None:
     with pytest.raises(ValueError):
         Graph.random_complete(10, (3.0, 6.0), (-1, 4))
+
+
+def test_random_metric_complete_negative_num_nodes() -> None:
+    with pytest.raises(ValueError):
+        Graph.random_complete_metric(-1)
+
+
+def test_random_metric_complete_negative_node_weight_range() -> None:
+    with pytest.raises(ValueError):
+        Graph.random_complete_metric(10, 6.0, (-1, 4))
+
+
+def test_random_metric_complete_wrong_node_weight_order() -> None:
+    with pytest.raises(ValueError):
+        Graph.random_complete_metric(10, 6.0, (4, 1))
+
+
+def test_random_metric_complete_negative_upper_edge_weight() -> None:
+    with pytest.raises(ValueError):
+        Graph.random_complete_metric(10, -1.0)
 
 
 def test_add_node_negative_weight() -> None:

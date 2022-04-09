@@ -274,6 +274,25 @@ def test_uconn_strats_agent_partition() -> None:
     assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
 
 
+def test_evaluate_partition_heuristic() -> None:
+    g = Graph.random_complete(8)
+
+    res: float = algos.wlp(g, algos.brute_force_mwlp(g))
+    assert (
+        algos.evaluate_partition_heuristic(g, [set(range(8))], algos.brute_force_mwlp)
+        == res
+    )
+
+    res = algos.wlp(g, algos.greedy(g))
+    assert algos.evaluate_partition_heuristic(g, [set(range(8))], algos.greedy) == res
+
+    res = algos.wlp(g, algos.nearest_neighbor(g))
+    assert (
+        algos.evaluate_partition_heuristic(g, [set(range(8))], algos.nearest_neighbor)
+        == res
+    )
+
+
 def test_all_possible_wlp_orders_avg() -> None:
     n: int = 0
     g = Graph.random_complete(n, directed=False)
@@ -314,6 +333,18 @@ def test_all_possible_wlp_orders_avg() -> None:
     for order in permutations(nodes):
         brute += algos.wlp(g, [0] + list(order))
     assert avg == approx(brute / math.factorial(n - 1))
+
+
+def test_evaluate_partition_with_average() -> None:
+    n = 4
+    g = Graph.random_complete(n, directed=False)
+    brute: float = 0.0
+    nodes: list[int] = list(range(1, n))
+    for order in permutations(nodes):
+        brute += algos.wlp(g, [0] + list(order))
+    assert algos.evaluate_partition_with_average(g, [{0, 1, 2, 3}]) == approx(
+        brute / math.factorial(n - 1)
+    )
 
 
 ### Error Tests ###
@@ -446,10 +477,34 @@ def test_all_possible_wlp_orders_avg_undirected() -> None:
         algos.all_possible_wlp_orders_avg(g)
 
 
+def test_evaluate_partition_heuristic_incomplete_graph() -> None:
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_heuristic(
+            almost_complete, [{0, 1, 2, 3}], algos.greedy
+        )
+
+
+def test_evaluate_partition_heuristic_directed_graph() -> None:
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_heuristic(complete, [{0, 1, 2, 3}], algos.greedy)
+
+
 def test_evaluate_partition_heuristic_invalid_partition() -> None:
     g: Graph = undirected
     with pytest.raises(ValueError):
         algos.evaluate_partition_heuristic(g, [], algos.greedy)
+
+
+def test_evaluate_partition_average_incomplete_graph() -> None:
+    g: Graph = almost_complete
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_with_average(g, [{0, 1, 2, 3}])
+
+
+def test_evaluate_partition_average_directed_graph() -> None:
+    g: Graph = complete
+    with pytest.raises(ValueError):
+        algos.evaluate_partition_with_average(g, [{0, 1, 2, 3}])
 
 
 def test_evaluate_partition_average_invalid_partition() -> None:
@@ -525,6 +580,13 @@ def test_find_partition_heuristic_invalid_partition() -> None:
         algos.find_partition_with_heuristic(g, [], algos.greedy, 0.5)
 
 
+def test_find_partition_heuristic_invalid_alpha() -> None:
+    g: Graph = random_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_heuristic(g, part, algos.greedy, -0.5)
+
+
 def test_transfers_and_swaps_mwlp_with_average_incomplete() -> None:
     g: Graph = almost_complete
     part: list[set[int]] = Graph.create_agent_partition(g, 2)
@@ -590,3 +652,10 @@ def test_find_partition_with_average_invalid_partition() -> None:
     g: Graph = undirected
     with pytest.raises(ValueError):
         algos.find_partition_with_average(g, [], 0.5)
+
+
+def test_find_partition_with_average_invalid_alpha() -> None:
+    g: Graph = random_complete
+    part: list[set[int]] = Graph.create_agent_partition(g, 2)
+    with pytest.raises(ValueError):
+        algos.find_partition_with_average(g, part, -0.5)

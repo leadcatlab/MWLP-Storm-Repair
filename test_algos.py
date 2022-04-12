@@ -106,6 +106,24 @@ undirected = Graph.from_dict(undirected_graph_dict)
 ### Correctness Tests ###
 
 
+def test_num_visited_along_path() -> None:
+    g = complete
+    assert not algos.num_visited_along_path(g, [])
+    assert algos.num_visited_along_path(g, [0]) == [10]
+    assert algos.num_visited_along_path(g, [0, 1]) == [10, 15]
+    assert algos.num_visited_along_path(g, [0, 1, 2]) == [10, 15, 35]
+    assert algos.num_visited_along_path(g, [0, 1, 2, 3]) == [10, 15, 35, 42]
+
+
+def test_length_along_path() -> None:
+    g = complete
+    assert algos.length_along_path(g, []) == [0.0]
+    assert algos.length_along_path(g, [0]) == [0.0]
+    assert algos.length_along_path(g, [0, 1]) == [0.0, 1.0]
+    assert algos.length_along_path(g, [0, 1, 2]) == [0.0, 1.0, 2.0]
+    assert algos.length_along_path(g, [0, 1, 2, 3]) == [0.0, 1.0, 2.0, 3.0]
+
+
 def test_path_length() -> None:
     g = small_graph
     assert algos.path_length(g, []) == 0.0
@@ -348,6 +366,18 @@ def test_evaluate_partition_with_average() -> None:
 
 
 ### Error Tests ###
+
+
+def test_num_visited_along_path_missing_edges() -> None:
+    g = no_edges
+    with pytest.raises(ValueError):
+        algos.num_visited_along_path(g, [0, 1])
+
+
+def test_length_along_path_missing_edges() -> None:
+    g = no_edges
+    with pytest.raises(ValueError):
+        algos.length_along_path(g, [0, 1])
 
 
 def test_path_length_missing_edges() -> None:

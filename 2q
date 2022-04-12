@@ -50,7 +50,7 @@ def num_visited_along_path(g: Graph, path: list[int]) -> list[int]:
     return visited
 
 
-def length_along_path(g: Graph, path: list[int]) -> list[float]:
+def length_along_path(g: Graph, path: list[int]) -> list[int]:
     """
     Utility function to give total length traveled at each position along a path
 
@@ -76,14 +76,14 @@ def length_along_path(g: Graph, path: list[int]) -> list[float]:
     if len(path) <= 1:
         return [0.0]
 
-    length: list[float] = [0.0]
+    visited: list[int] = [0.0]
     # Iterate through all nodes in path
     for i in range(1, len(path)):
         # Raise error if edge does not exist
         if path[i] not in g.adjacen_list[path[i - 1]]:
             raise ValueError(f"Edge {path[i - 1]} --> {path[i]} does not exist")
-        length.append(length[-1] + g.edge_weight[path[i - 1]][path[i]])
-    return length
+        visited.append(visited[-1] + g.edge_weight[path[i - 1]][path[i]])
+    return visited
 
 
 def path_length(g: Graph, path: list[int]) -> float:

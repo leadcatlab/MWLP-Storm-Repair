@@ -16,22 +16,34 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    benchmark.mass_benchmark(count=5, k=5, n=25, metric=True, upper=10.0)
+    num_graphs: int = 100
+    num_agents: int = 20
+    num_nodes: int = 200
+    upper_bound: float = 10.0
+
+    benchmark.mass_benchmark(
+        count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
+    )
 
     # best_for_greedy: float = benchmark.alpha_heuristic_search(
-    #    f=algos.greedy, count=10, k=2, n=10, metric=True, upper=10.0
+    #    f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
     # )
-    # print(best_for_greedy)
+    # print(f"{best_for_greedy = }")
     #
     # best_for_nn: float = benchmark.alpha_heuristic_search(
-    #    f=algos.nearest_neighbor, count=10, k=2, n=10, metric=True, upper=10.0
+    #    f=algos.nearest_neighbor, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
     # )
-    # print(best_for_nn)
+    # print(f"{best_for_nn = }")
     #
-    # best_for_avg: float = benchmark.avg_alpha_heuristic_search(
-    #    count=10, k=2, n=10, metric=True, upper=10.0
+    # best_for_avg_with_greedy: float = benchmark.avg_alpha_heuristic_search(
+    #    f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
     # )
-    # print(best_for_avg)
+    # print(f"{best_for_avg_with_greedy = }")
+
+    # best_for_avg_with_nn: float = benchmark.avg_alpha_heuristic_search(
+    #    f=algos.nearest_neighbor, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
+    # )
+    # print(f"{best_for_avg_with_nn = }")
 
 
 if __name__ == "__main__":

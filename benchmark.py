@@ -3,7 +3,7 @@ Benchmark Functions
 """
 from collections import defaultdict
 from typing import Callable, DefaultDict
-
+import time
 import algos
 from graph import Graph
 
@@ -101,7 +101,10 @@ def benchmark_partition(
         maximum, average wait, minimum, range, average
 
     """
-
+    
+    # TODO: Add times
+    #   Unsure this is a good idea since it may just invite alot of
+    #   "well actually if you use this obsucre library no one has heard of it's faster"
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
@@ -179,9 +182,11 @@ def mass_benchmark(
 
     """
 
+
     maximums: DefaultDict[str, list[float]] = defaultdict(list)
     # WLP is a weighted average of wait times of sorts
     wait_times: DefaultDict[str, list[float]] = defaultdict(list)
+    times: DefaultDict[str, list[float]] = defaultdict(list)
     minimums: DefaultDict[str, list[float]] = defaultdict(list)
     ranges: DefaultDict[str, list[float]] = defaultdict(list)
     averages: DefaultDict[str, list[float]] = defaultdict(list)
@@ -202,7 +207,9 @@ def mass_benchmark(
 
         curr = "UConn Greedy"
         print(curr)
+        start: float = time.perf_counter_ns()
         res = algos.uconn_strat_1(g, k)
+        end: float = time.perf_counter_ns()
         curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
             g, res
         )
@@ -211,6 +218,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -218,7 +226,9 @@ def mass_benchmark(
 
         curr = "UConn Greedy + Random (dist: 2.5)"
         print(curr)
+        start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 2.5)
+        end = time.perf_counter_ns()
         curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
             g, res
         )
@@ -227,6 +237,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -234,7 +245,9 @@ def mass_benchmark(
 
         curr = "UConn Greedy + Random (dist: 5.0)"
         print(curr)
+        start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 5.0)
+        end = time.perf_counter_ns()
         curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
             g, res
         )
@@ -243,6 +256,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -250,7 +264,9 @@ def mass_benchmark(
 
         curr = "UConn Greedy + Random (dist: 7.5)"
         print(curr)
+        start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 7.5)
+        end = time.perf_counter_ns()
         curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
             g, res
         )
@@ -259,6 +275,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -267,7 +284,9 @@ def mass_benchmark(
         curr = "Greedy"
         print(curr)
         print("Finding partition")
+        start = time.perf_counter_ns()
         output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.24)
+        end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
         res = solve_partition(g, output, algos.greedy)
@@ -280,6 +299,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -288,9 +308,11 @@ def mass_benchmark(
         curr = "Nearest Neighbor"
         print(curr)
         print("Finding partition")
+        start = time.perf_counter_ns()
         output = algos.find_partition_with_heuristic(
             g, partition, algos.nearest_neighbor, 0.15
         )
+        end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
         res = solve_partition(g, output, algos.nearest_neighbor)
@@ -303,6 +325,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
+        times[curr].append(end-start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -311,7 +334,10 @@ def mass_benchmark(
         curr = "Average Heuristic"
         print(curr)
         print("Finding partition")
+        start = time.perf_counter_ns()
         output = algos.find_partition_with_average(g, partition, 0.22)
+        end = time.perf_counter_ns()
+        times[curr].append(end-start)
         print(Bcolors.CLEAR_LAST_LINE)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -365,6 +391,11 @@ def mass_benchmark(
         print(f"\t{key:40}{sum(vals) / count}")
     print()
 
+    print(f"{Bcolors.OKBLUE}Runtime in seconds: {Bcolors.ENDC}")
+    for key, vals in times.items():
+        print(f"\t{key:40}{sum(vals) / (count * (10 ** 9))}")
+    print()
+    
     print(f"{Bcolors.OKBLUE}Bests: {Bcolors.ENDC}")
     for key, val in bests.items():
         print(f"\t{key:40}{val}")

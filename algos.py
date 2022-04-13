@@ -86,6 +86,51 @@ def length_along_path(g: Graph, path: list[int]) -> list[float]:
     return length
 
 
+def generate_path_function(g: Graph, path: list[int]) -> Callable[[float], int]:
+    """
+    Generates a function to get the number of people visited along a given path
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+
+    path: list[int]
+        The path along the graph
+        Assertions:
+            Edges in path must be present in the graph/
+            Non-empty path
+    Returns
+    -------
+    Callable[[float], int]
+        path_function(x) = the number of people visited at distance x along path
+        Assertions:
+            x >= 0.0
+    """
+
+    if len(path) == 0:
+        raise ValueError("Passed path was empty")
+
+    length: list[float] = length_along_path(g, path)
+    visited: list[int] = num_visited_along_path(g, path)
+
+    def path_function(x: float) -> int:
+        if x < 0:
+            raise ValueError("Input was a negative distance")
+
+        # find largest index of length such that length[i] <= x
+        idx: int = 0
+        while idx < len(length) and length[idx] <= x:
+            idx += 1
+        
+        # If we have gone past end of path, we have visited everyone
+        if idx == len(length):
+            return visited[-1]
+
+        return visited[idx]
+
+    return path_function
+
 def path_length(g: Graph, path: list[int]) -> float:
     """
     Get the length of a path in a graph
@@ -722,6 +767,8 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
     return paths
 
 
+# TODO: Make transfers and swaps for all cases into one unified algorithm
+
 def transfers_and_swaps_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
@@ -729,7 +776,7 @@ def transfers_and_swaps_mwlp(
     Algorithm 1: Improve Partition from "Balanced Task Allocation..."
     Transfers and swaps nodes from one agent to another based on the passed heuristic
 
-    Runtime: TBD
+    Runtime: TODO
 
     Parameters
     ----------

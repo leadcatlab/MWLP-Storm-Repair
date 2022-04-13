@@ -1,9 +1,10 @@
 """
 Benchmark Functions
 """
+import time
 from collections import defaultdict
 from typing import Callable, DefaultDict
-import time
+
 import algos
 from graph import Graph
 
@@ -101,7 +102,7 @@ def benchmark_partition(
         maximum, average wait, minimum, range, average
 
     """
-    
+
     # TODO: Add times
     #   Unsure this is a good idea since it may just invite alot of
     #   "well actually if you use this obsucre library no one has heard of it's faster"
@@ -182,7 +183,6 @@ def mass_benchmark(
 
     """
 
-
     maximums: DefaultDict[str, list[float]] = defaultdict(list)
     # WLP is a weighted average of wait times of sorts
     wait_times: DefaultDict[str, list[float]] = defaultdict(list)
@@ -218,7 +218,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -237,7 +237,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -256,7 +256,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -275,7 +275,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -299,7 +299,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -325,7 +325,7 @@ def mass_benchmark(
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
@@ -337,7 +337,7 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         output = algos.find_partition_with_average(g, partition, 0.22)
         end = time.perf_counter_ns()
-        times[curr].append(end-start)
+        times[curr].append(end - start)
         print(Bcolors.CLEAR_LAST_LINE)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -395,7 +395,7 @@ def mass_benchmark(
     for key, vals in times.items():
         print(f"\t{key:40}{sum(vals) / (count * (10 ** 9))}")
     print()
-    
+
     print(f"{Bcolors.OKBLUE}Bests: {Bcolors.ENDC}")
     for key, val in bests.items():
         print(f"\t{key:40}{val}")

@@ -122,7 +122,7 @@ def generate_path_function(g: Graph, path: list[int]) -> Callable[[float], int]:
         idx: int = 0
         while idx < len(length) and length[idx] <= x:
             idx += 1
-        
+
         # If we have gone past end of path, we have visited everyone
         if idx == len(length):
             return visited[-1]
@@ -130,6 +130,7 @@ def generate_path_function(g: Graph, path: list[int]) -> Callable[[float], int]:
         return visited[idx]
 
     return path_function
+
 
 def path_length(g: Graph, path: list[int]) -> float:
     """
@@ -768,6 +769,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 
 
 # TODO: Make transfers and swaps for all cases into one unified algorithm
+
 
 def transfers_and_swaps_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]]

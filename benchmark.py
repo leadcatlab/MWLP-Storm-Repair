@@ -285,7 +285,7 @@ def mass_benchmark(
         print(curr)
         print("Finding partition")
         start = time.perf_counter_ns()
-        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.24)
+        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
         end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
@@ -310,7 +310,7 @@ def mass_benchmark(
         print("Finding partition")
         start = time.perf_counter_ns()
         output = algos.find_partition_with_heuristic(
-            g, partition, algos.nearest_neighbor, 0.15
+            g, partition, algos.nearest_neighbor, 0.18
         )
         end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
@@ -335,7 +335,7 @@ def mass_benchmark(
         print(curr)
         print("Finding partition")
         start = time.perf_counter_ns()
-        output = algos.find_partition_with_average(g, partition, 0.22)
+        output = algos.find_partition_with_average(g, partition, 0.0)
         end = time.perf_counter_ns()
         times[curr].append(end - start)
         print(Bcolors.CLEAR_LAST_LINE)

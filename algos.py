@@ -120,16 +120,42 @@ def generate_path_function(g: Graph, path: list[int]) -> Callable[[float], int]:
 
         # find largest index of length such that length[i] <= x
         idx: int = 0
-        while idx < len(length) and length[idx] <= x:
-            idx += 1
-
-        # If we have gone past end of path, we have visited everyone
-        if idx == len(length):
-            return visited[-1]
+        found: bool = False
+        while not found:
+            next_idx: int = idx + 1
+            if next_idx < len(length) and length[next_idx] <= x:
+                idx = next_idx
+            else:
+                found = True
 
         return visited[idx]
 
     return path_function
+
+
+def generate_partition_path_function(
+    g: Graph, part: list[list[int]]
+) -> Callable[[float], int]:
+    if Graph.is_agent_partition(g, [set(p) for p in part]) is False:
+        raise ValueError("Passed partition is invalid")
+
+    path_functions: list[Callable[[float], int]] = []
+    for path in part:
+        path_functions.append(generate_path_function(g, path))
+
+    def partition_path_function(x: float) -> int:
+        if x < 0:
+            raise ValueError("Input was a negative distance")
+
+        res: int = 0
+        for f in path_functions:
+            res += f(x)
+
+        # Double counting start node (0) many times
+        res -= g.node_weight[0] * (len(path_functions) - 1)
+        return res
+
+    return partition_path_function
 
 
 def path_length(g: Graph, path: list[int]) -> float:

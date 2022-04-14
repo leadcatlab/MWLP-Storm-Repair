@@ -3,6 +3,7 @@ Test cases to validate graph algorithms
 """
 import math
 from itertools import permutations
+from typing import Callable
 
 import pytest
 from pytest import approx
@@ -122,6 +123,27 @@ def test_length_along_path() -> None:
     assert algos.length_along_path(g, [0, 1]) == [0.0, 1.0]
     assert algos.length_along_path(g, [0, 1, 2]) == [0.0, 1.0, 2.0]
     assert algos.length_along_path(g, [0, 1, 2, 3]) == [0.0, 1.0, 2.0, 3.0]
+
+
+def test_path_function() -> None:
+    g = complete
+    path_function: Callable[[float], int] = algos.generate_path_function(
+        g, [0, 1, 2, 3]
+    )
+    assert path_function(0.5) == 10
+    assert path_function(1.5) == 15
+    assert path_function(2.5) == 35
+    assert path_function(3.5) == 42
+
+
+def test_partition_path_function() -> None:
+    g = complete
+    partition_function: Callable[[float], int] = algos.generate_partition_path_function(
+        g, [[0, 1], [0, 2, 3]]
+    )
+    assert partition_function(1.0) == 15
+    assert partition_function(3.5) == 35
+    assert partition_function(5.0) == 42
 
 
 def test_path_length() -> None:
@@ -378,6 +400,36 @@ def test_length_along_path_missing_edges() -> None:
     g = no_edges
     with pytest.raises(ValueError):
         algos.length_along_path(g, [0, 1])
+
+
+def test_path_function_empty() -> None:
+    g = complete
+    with pytest.raises(ValueError):
+        algos.generate_path_function(g, [])
+
+
+def test_path_function_negative_dist() -> None:
+    g = complete
+    path_function: Callable[[float], int] = algos.generate_path_function(
+        g, [0, 1, 2, 3]
+    )
+    with pytest.raises(ValueError):
+        path_function(-0.5)
+
+
+def test_partition_function_empty() -> None:
+    g = complete
+    with pytest.raises(ValueError):
+        algos.generate_partition_path_function(g, [[0]])
+
+
+def test_partition_path_function_negative_dist() -> None:
+    g = complete
+    partition_function: Callable[[float], int] = algos.generate_partition_path_function(
+        g, [[0, 1, 2, 3]]
+    )
+    with pytest.raises(ValueError):
+        partition_function(-0.5)
 
 
 def test_path_length_missing_edges() -> None:

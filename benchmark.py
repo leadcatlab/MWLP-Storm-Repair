@@ -5,6 +5,10 @@ import time
 from collections import defaultdict
 from typing import Callable, DefaultDict
 
+import matplotlib.pyplot as plt  # type: ignore
+import mplcursors  # type: ignore
+import numpy as np
+
 import algos
 from graph import Graph
 
@@ -331,51 +335,54 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Average Heuristic"
-        print(curr)
-        print("Finding partition")
-        start = time.perf_counter_ns()
-        output = algos.find_partition_with_average(g, partition, 0.0)
-        end = time.perf_counter_ns()
-        times[curr].append(end - start)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # Depreciating Average Heuristic stuff since it is considerably worse
+        #   than nearest neighbor and greedy
+        #
+        # curr = "Average Heuristic"
+        # print(curr)
+        # print("Finding partition")
+        # start = time.perf_counter_ns()
+        # output = algos.find_partition_with_average(g, partition, 0.0)
+        # end = time.perf_counter_ns()
+        # times[curr].append(end - start)
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Average Heuristic: Greedy"
-        print(curr)
-        print("Solving partition")
-        res = solve_partition(g, output, algos.greedy)
-        print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-            g, res
-        )
-        if curr_max < curr_best:
-            curr_best = curr_max
-            best = curr
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        averages[curr].append(curr_avg)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # curr = "Average Heuristic: Greedy"
+        # print(curr)
+        # print("Solving partition")
+        # res = solve_partition(g, output, algos.greedy)
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        #     g, res
+        # )
+        # if curr_max < curr_best:
+        #     curr_best = curr_max
+        #     best = curr
+        # maximums[curr].append(curr_max)
+        # wait_times[curr].append(curr_wait)
+        # minimums[curr].append(curr_min)
+        # ranges[curr].append(curr_range)
+        # averages[curr].append(curr_avg)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Average Heuristic: Nearest Neighbor"
-        print(curr)
-        print("Solving partition")
-        res = solve_partition(g, output, algos.nearest_neighbor)
-        print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-            g, res
-        )
-        if curr_max < curr_best:
-            curr_best = curr_max
-            best = curr
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        averages[curr].append(curr_avg)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # curr = "Average Heuristic: Nearest Neighbor"
+        # print(curr)
+        # print("Solving partition")
+        # res = solve_partition(g, output, algos.nearest_neighbor)
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        #     g, res
+        # )
+        # if curr_max < curr_best:
+        #     curr_best = curr_max
+        #     best = curr
+        # maximums[curr].append(curr_max)
+        # wait_times[curr].append(curr_wait)
+        # minimums[curr].append(curr_min)
+        # ranges[curr].append(curr_range)
+        # averages[curr].append(curr_avg)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
         bests[best] += 1
 
@@ -579,3 +586,99 @@ def avg_alpha_heuristic_search(
         print(Bcolors.CLEAR_LAST_LINE)
 
     return min(averages.items(), key=lambda x: x[1])[0]
+
+
+def line_plot(
+    k: int,
+    n: int,
+    edge_w: tuple[float, float] = (0.0, 1.0),
+    metric: bool = True,
+    upper: float = 1.0,
+    node_w: tuple[int, int] = (0, 100),
+    x_range: tuple[int, int] = (0, 10),
+) -> None:
+    """
+    Generate a graph of the given parameters and plot visited nodes
+
+    Parameters
+    ----------
+    k: int
+        The number of agents
+
+    n: int
+        The number of nodes per graph
+
+    edge_w: tuple[float, float]
+        The range of edge weights allowed
+        Default: (0.0, 1.0)
+
+    metric: bool
+        Determine whether to test on metric or non-metric graphs
+        Default: True
+
+    upper: float
+        Upper bound of edge weights for a metric graph
+        Default: 1.0
+
+    node_w: tuple[int, int]
+        The range of node weights allowed
+        Default: (0, 100)
+
+    x_range: tuple[int, int]
+        x-axis bounds for plotting
+        Default: (0, 100)
+    """
+
+    if metric:
+        g = Graph.random_complete_metric(n, upper, node_w)
+    else:
+        g = Graph.random_complete(n, edge_w, node_w)
+    part: list[set[int]] = Graph.create_agent_partition(g, k)
+
+    low, high = x_range
+    x = np.linspace(low, high, high * 10)
+    _, ax = plt.subplots()
+    total = sum(g.node_weight[x] for x in range(n))
+    lines = []
+
+    paths: list[list[int]] = algos.uconn_strat_1(g, k)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="UConn Greedy", color="lightsteelblue")
+    lines.append(line)
+
+    paths = algos.uconn_strat_2(g, k, 2.5)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="UConn Greedy + Rand (2.5)", color="royalblue")
+    lines.append(line)
+
+    paths = algos.uconn_strat_2(g, k, 5.0)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="UConn Greedy + Rand (5.0)", color="blue")
+    lines.append(line)
+
+    paths = algos.uconn_strat_2(g, k, 7.5)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="UConn Greedy + Rand (7.5)", color="mediumslateblue")
+    lines.append(line)
+
+    output = algos.find_partition_with_heuristic(g, part, algos.greedy, 0.02)
+    paths = solve_partition(g, output, algos.greedy)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="Greedy", linewidth=2.0, color="limegreen")
+    lines.append(line)
+
+    output = algos.find_partition_with_heuristic(g, part, algos.nearest_neighbor, 0.18)
+    paths = solve_partition(g, output, algos.nearest_neighbor)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="Nearest Neighbor", linewidth=2.0, color="darkgreen")
+    lines.append(line)
+
+    mplcursors.cursor(lines, highlight=True)
+    plt.legend()
+    plt.show()

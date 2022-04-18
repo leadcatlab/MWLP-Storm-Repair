@@ -488,6 +488,79 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     return order
 
 
+def alternate(g: Graph, start: Optional[list[int]] = None) -> list[int]:
+    """
+    Approximates MWLP using by alternating between two strategies (greedy + NN)
+
+    Runtime: O(n^2)
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+
+    start: list[int]
+        Optional start of path (allows for partial solving)
+        Assertions:
+            Must contain nodes that are in the graph
+
+    Returns
+    -------
+    list[int]
+        Path order for minimum weighted latency according to alternating strategy
+
+    """
+
+    # for now assume complete
+    if not Graph.is_complete(g):
+        raise ValueError("Passed graph is not complete")
+
+    if start is None:
+        start = [0]
+
+    # check validity of start:
+    for n in start:
+        if n >= g.num_nodes or n < 0:
+            raise ValueError(f"Passed {start = } contains nodes not in g")
+
+    # keep track of visited nodes
+    visited: list[bool] = [False] * g.num_nodes
+    for n in start:
+        visited[n] = True
+
+    # Use queue to remember current node
+    order: list[int] = start
+    q: Deque[int] = deque()
+    q.appendleft(order[-1])
+
+    # 0 =  Greedy, 1 = NN
+    counter: int = 0
+    while len(q) != 0:
+        curr: int = q.pop()
+        next_node: int = -1
+        if counter == 0:
+            best_weight = float("-inf")
+            for n in g.adjacen_list[curr]:
+                if not visited[n] and g.node_weight[n] > best_weight:
+                    best_weight = g.node_weight[n]
+                    next_node = n
+        else:
+            dist = float("inf")
+            for n in g.adjacen_list[curr]:
+                if not visited[n] and g.edge_weight[curr][n] < dist:
+                    dist = g.edge_weight[curr][n]
+                    next_node = n
+        if next_node != -1:
+            q.appendleft(next_node)
+            order.append(next_node)
+            visited[next_node] = True
+        counter = (counter + 1) % 2
+
+    return order
+
+
 def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
     Creates a random order of unvisited nodes

@@ -335,6 +335,32 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
+        curr = "Alternate"
+        print(curr)
+        print("Finding partition")
+        start = time.perf_counter_ns()
+        output = algos.find_partition_with_heuristic(
+            g, partition, algos.alternate, 0.18
+        )
+        end = time.perf_counter_ns()
+        print(Bcolors.CLEAR_LAST_LINE)
+        print("Solving partition")
+        res = solve_partition(g, output, algos.alternate)
+        print(Bcolors.CLEAR_LAST_LINE)
+        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+            g, res
+        )
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
+        maximums[curr].append(curr_max)
+        wait_times[curr].append(curr_wait)
+        times[curr].append(end - start)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
+
         bests[best] += 1
 
         print(Bcolors.CLEAR_LAST_LINE)
@@ -546,6 +572,13 @@ def line_plot(
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
     (line,) = ax.plot(x, y, label="Nearest Neighbor", linewidth=2.0, color="darkgreen")
+    lines.append(line)
+
+    output = algos.find_partition_with_heuristic(g, part, algos.alternate, 0.18)
+    paths = solve_partition(g, output, algos.alternate)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label="Alternate", linewidth=2.0, color="mediumspringgreen")
     lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)

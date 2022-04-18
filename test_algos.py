@@ -268,6 +268,20 @@ def test_greedy_start() -> None:
         assert algos.greedy(g, start=order[:i]) == order
 
 
+def test_alternate() -> None:
+    g = complete
+    assert algos.alternate(g) == [0, 2, 3, 1]
+    assert algos.alternate(g, start=[1]) == [1, 2, 3, 0]
+
+
+def test_alternate_start() -> None:
+    g = random_complete
+    order: list[int] = algos.alternate(g)
+
+    for i in range(1, len(order) + 1, 2):
+        assert algos.alternate(g, start=order[:i]) == order
+
+
 def test_random_order() -> None:
     g = random_complete
     rand: list[int] = algos.random_order(g)
@@ -428,6 +442,18 @@ def test_greedy_invalid_start() -> None:
     g = random_complete
     with pytest.raises(ValueError):
         algos.greedy(g, start=[g.num_nodes])
+
+
+def test_alternate_incomplete() -> None:
+    g = almost_complete
+    with pytest.raises(ValueError):
+        algos.alternate(g)
+
+
+def test_alternate_invalid_start() -> None:
+    g = random_complete
+    with pytest.raises(ValueError):
+        algos.alternate(g, start=[g.num_nodes])
 
 
 def test_random_order_incomplete() -> None:

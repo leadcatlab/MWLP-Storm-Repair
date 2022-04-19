@@ -11,8 +11,8 @@ from graph import Graph, graph_dict
 # Bank of graphs
 empty = Graph()
 no_edges = Graph(20)
-random_complete = Graph.random_complete(20)
-random_complete_metric = Graph.random_complete_metric(20)
+random_complete = Graph.random_complete(30)
+random_complete_metric = Graph.random_complete_metric(30)
 
 small_graph_dict: graph_dict = {
     "num_nodes": 4,
@@ -342,6 +342,36 @@ def test_evaluate_partition_heuristic() -> None:
         algos.evaluate_partition_heuristic(g, [set(range(8))], algos.nearest_neighbor)
         == res
     )
+
+
+def test_transfers_and_swaps_maintains_agent_partition() -> None:
+    g: Graph = random_complete_metric
+    k: int = 4
+    part: list[set[int]] = Graph.create_agent_partition(g, k)
+    res: list[set[int]] = algos.transfers_and_swaps_mwlp(
+        g, part, algos.nearest_neighbor
+    )
+    assert Graph.is_agent_partition(g, res)
+
+
+def test_transfer_outliers_maintains_agent_partition() -> None:
+    g: Graph = random_complete_metric
+    k: int = 4
+    part: list[set[int]] = Graph.create_agent_partition(g, k)
+    res: list[set[int]] = algos.transfer_outliers_mwlp(
+        g, part, algos.nearest_neighbor, 0.5
+    )
+    assert Graph.is_agent_partition(g, res)
+
+
+def test_find_partition_maintains_agent_partition() -> None:
+    g: Graph = random_complete_metric
+    k: int = 4
+    part: list[set[int]] = Graph.create_agent_partition(g, k)
+    res: list[set[int]] = algos.find_partition_with_heuristic(
+        g, part, algos.nearest_neighbor, 0.5
+    )
+    assert Graph.is_agent_partition(g, res)
 
 
 ### Error Tests ###

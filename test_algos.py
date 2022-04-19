@@ -11,8 +11,6 @@ from graph import Graph, graph_dict
 # Bank of graphs
 empty = Graph()
 no_edges = Graph(20)
-random_complete = Graph.random_complete(30)
-random_complete_metric = Graph.random_complete_metric(30)
 
 small_graph_dict: graph_dict = {
     "num_nodes": 4,
@@ -169,52 +167,57 @@ def test_fw_no_edges() -> None:
 
 
 def test_fw_complete() -> None:
-    g = random_complete_metric
-    dist: list[list[float]] = algos.floyd_warshall(g)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        dist: list[list[float]] = algos.floyd_warshall(g)
 
-    for i in range(g.num_nodes):
-        for j in range(g.num_nodes):
-            if i == j:
-                assert dist[i][j] == 0.0
-            else:
-                assert dist[i][j] != float("inf")
+        for i in range(g.num_nodes):
+            for j in range(g.num_nodes):
+                if i == j:
+                    assert dist[i][j] == 0.0
+                else:
+                    assert dist[i][j] != float("inf")
 
 
 def test_fw_metric_complete() -> None:
-    g = random_complete_metric
-    dist: list[list[float]] = algos.floyd_warshall(g)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        dist: list[list[float]] = algos.floyd_warshall(g)
 
-    for i in range(g.num_nodes):
-        for j in range(g.num_nodes):
-            if i == j:
-                assert dist[i][j] == 0.0
-            else:
-                assert dist[i][j] == g.edge_weight[i][j]
+        for i in range(g.num_nodes):
+            for j in range(g.num_nodes):
+                if i == j:
+                    assert dist[i][j] == 0.0
+                else:
+                    assert dist[i][j] == g.edge_weight[i][j]
 
 
 def test_create_metric_from_graph_complete() -> None:
-    g = random_complete
-    metric: Graph = algos.create_metric_from_graph(g)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        metric: Graph = algos.create_metric_from_graph(g)
 
-    assert Graph.is_complete(metric)
-    assert Graph.is_metric(metric)
+        assert Graph.is_complete(metric)
+        assert Graph.is_metric(metric)
 
 
 def test_create_metric_from_graph_metric_is_same() -> None:
-    g = random_complete_metric
-    metric: Graph = algos.create_metric_from_graph(g)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        metric: Graph = algos.create_metric_from_graph(g)
 
-    for i in range(g.num_nodes):
-        for j in range(g.num_nodes):
-            if i != j:
-                assert g.edge_weight[i][j] == metric.edge_weight[i][j]
+        for i in range(g.num_nodes):
+            for j in range(g.num_nodes):
+                if i != j:
+                    assert g.edge_weight[i][j] == metric.edge_weight[i][j]
 
 
 def test_wlp_small_orders() -> None:
-    g = random_complete
-    assert algos.wlp(g, []) == 0.0
-    assert algos.wlp(g, [0]) == 0.0
-    assert algos.wlp(g, [1]) == 0.0
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        assert algos.wlp(g, []) == 0.0
+        assert algos.wlp(g, [0]) == 0.0
+        assert algos.wlp(g, [1]) == 0.0
 
 
 def test_wlp() -> None:
@@ -233,11 +236,12 @@ def test_brute_force_mwlp() -> None:
 
 
 def test_brute_force_mwlp_seq_start() -> None:
-    g = Graph.random_complete(5)
-    order: list[int] = algos.brute_force_mwlp(g)
+    for _ in range(5):
+        g = Graph.random_complete(5)
+        order: list[int] = algos.brute_force_mwlp(g)
 
-    for i in range(len(order)):
-        assert algos.brute_force_mwlp(g, start=order[: i + 1]) == order
+        for i in range(len(order)):
+            assert algos.brute_force_mwlp(g, start=order[: i + 1]) == order
 
 
 def test_nearest_neighbor() -> None:
@@ -247,11 +251,12 @@ def test_nearest_neighbor() -> None:
 
 
 def test_nearest_neighbor_start() -> None:
-    g = random_complete
-    order: list[int] = algos.nearest_neighbor(g)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        order: list[int] = algos.nearest_neighbor(g)
 
-    for i in range(1, len(order) + 1):
-        assert algos.nearest_neighbor(g, start=order[:i]) == order
+        for i in range(1, len(order) + 1):
+            assert algos.nearest_neighbor(g, start=order[:i]) == order
 
 
 def test_greedy() -> None:
@@ -261,11 +266,12 @@ def test_greedy() -> None:
 
 
 def test_greedy_start() -> None:
-    g = random_complete
-    order: list[int] = algos.greedy(g)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        order: list[int] = algos.greedy(g)
 
-    for i in range(1, len(order) + 1):
-        assert algos.greedy(g, start=order[:i]) == order
+        for i in range(1, len(order) + 1):
+            assert algos.greedy(g, start=order[:i]) == order
 
 
 def test_alternate() -> None:
@@ -275,24 +281,26 @@ def test_alternate() -> None:
 
 
 def test_alternate_start() -> None:
-    g = random_complete
-    order: list[int] = algos.alternate(g)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        order: list[int] = algos.alternate(g)
 
-    for i in range(1, len(order) + 1, 2):
-        assert algos.alternate(g, start=order[:i]) == order
+        for i in range(1, len(order) + 1, 2):
+            assert algos.alternate(g, start=order[:i]) == order
 
 
 def test_random_order() -> None:
-    g = random_complete
-    rand: list[int] = algos.random_order(g)
-    assert rand[0] == 0
-    for i in range(g.num_nodes):
-        assert i in rand
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        rand: list[int] = algos.random_order(g)
+        assert rand[0] == 0
+        for i in range(g.num_nodes):
+            assert i in rand
 
-    rand_start_at_one: list[int] = algos.random_order(g, start=[1])
-    assert rand_start_at_one[0] == 1
-    for i in range(g.num_nodes):
-        assert i in rand_start_at_one
+        rand_start_at_one: list[int] = algos.random_order(g, start=[1])
+        assert rand_start_at_one[0] == 1
+        for i in range(g.num_nodes):
+            assert i in rand_start_at_one
 
 
 def test_brute_force_tsp() -> None:
@@ -313,16 +321,17 @@ def test_tsp_correctness() -> None:
 
 
 def test_uconn_strats_agent_partition() -> None:
-    g = random_complete_metric
-    k = 5
-    strat_1: list[list[int]] = algos.uconn_strat_1(g, k)
-    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_1])
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        k = 5
+        strat_1: list[list[int]] = algos.uconn_strat_1(g, k)
+        assert Graph.is_agent_partition(g, [set(subset) for subset in strat_1])
 
-    strat_2_no_rad: list[list[int]] = algos.uconn_strat_2(g, k, 0.0)
-    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2_no_rad])
+        strat_2_no_rad: list[list[int]] = algos.uconn_strat_2(g, k, 0.0)
+        assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2_no_rad])
 
-    strat_2: list[list[int]] = algos.uconn_strat_2(g, k, 5.0)
-    assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
+        strat_2: list[list[int]] = algos.uconn_strat_2(g, k, 5.0)
+        assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
 
 
 def test_evaluate_partition_heuristic() -> None:
@@ -345,33 +354,36 @@ def test_evaluate_partition_heuristic() -> None:
 
 
 def test_transfers_and_swaps_maintains_agent_partition() -> None:
-    g: Graph = random_complete_metric
-    k: int = 4
-    part: list[set[int]] = Graph.create_agent_partition(g, k)
-    res: list[set[int]] = algos.transfers_and_swaps_mwlp(
-        g, part, algos.nearest_neighbor
-    )
-    assert Graph.is_agent_partition(g, res)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        k: int = 4
+        part: list[set[int]] = Graph.create_agent_partition(g, k)
+        res: list[set[int]] = algos.transfers_and_swaps_mwlp(
+            g, part, algos.nearest_neighbor
+        )
+        assert Graph.is_agent_partition(g, res)
 
 
 def test_transfer_outliers_maintains_agent_partition() -> None:
-    g: Graph = random_complete_metric
-    k: int = 4
-    part: list[set[int]] = Graph.create_agent_partition(g, k)
-    res: list[set[int]] = algos.transfer_outliers_mwlp(
-        g, part, algos.nearest_neighbor, 0.5
-    )
-    assert Graph.is_agent_partition(g, res)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        k: int = 4
+        part: list[set[int]] = Graph.create_agent_partition(g, k)
+        res: list[set[int]] = algos.transfer_outliers_mwlp(
+            g, part, algos.nearest_neighbor, 0.5
+        )
+        assert Graph.is_agent_partition(g, res)
 
 
 def test_find_partition_maintains_agent_partition() -> None:
-    g: Graph = random_complete_metric
-    k: int = 4
-    part: list[set[int]] = Graph.create_agent_partition(g, k)
-    res: list[set[int]] = algos.find_partition_with_heuristic(
-        g, part, algos.nearest_neighbor, 0.5
-    )
-    assert Graph.is_agent_partition(g, res)
+    for _ in range(5):
+        g = Graph.random_complete_metric(30)
+        k: int = 4
+        part: list[set[int]] = Graph.create_agent_partition(g, k)
+        res: list[set[int]] = algos.find_partition_with_heuristic(
+            g, part, algos.nearest_neighbor, 0.5
+        )
+        assert Graph.is_agent_partition(g, res)
 
 
 ### Error Tests ###
@@ -426,10 +438,11 @@ def test_path_length_missing_edges() -> None:
 
 
 def test_wlp_node_not_in_graph() -> None:
-    g = random_complete
-    n: int = g.num_nodes
-    with pytest.raises(ValueError):
-        algos.wlp(g, [0, 1, 2, n])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        n: int = g.num_nodes
+        with pytest.raises(ValueError):
+            algos.wlp(g, [0, 1, 2, n])
 
 
 def test_wlp_missing_edge() -> None:
@@ -445,9 +458,10 @@ def test_brute_force_mwlp_incomplete() -> None:
 
 
 def test_brute_force_mwlp_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.brute_force_mwlp(g, start=[g.num_nodes])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.brute_force_mwlp(g, start=[g.num_nodes])
 
 
 def test_nearest_neighbor_incomplete() -> None:
@@ -457,9 +471,10 @@ def test_nearest_neighbor_incomplete() -> None:
 
 
 def test_nearest_neighbor_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.nearest_neighbor(g, start=[g.num_nodes])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.nearest_neighbor(g, start=[g.num_nodes])
 
 
 def test_greedy_incomplete() -> None:
@@ -469,9 +484,10 @@ def test_greedy_incomplete() -> None:
 
 
 def test_greedy_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.greedy(g, start=[g.num_nodes])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.greedy(g, start=[g.num_nodes])
 
 
 def test_alternate_incomplete() -> None:
@@ -481,9 +497,10 @@ def test_alternate_incomplete() -> None:
 
 
 def test_alternate_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.alternate(g, start=[g.num_nodes])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.alternate(g, start=[g.num_nodes])
 
 
 def test_random_order_incomplete() -> None:
@@ -493,9 +510,10 @@ def test_random_order_incomplete() -> None:
 
 
 def test_random_order_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.random_order(g, start=[g.num_nodes])
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.random_order(g, start=[g.num_nodes])
 
 
 def test_tsp_incomplete() -> None:
@@ -505,9 +523,10 @@ def test_tsp_incomplete() -> None:
 
 
 def test_tsp_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.brute_force_tsp(g, start=g.num_nodes)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.brute_force_tsp(g, start=g.num_nodes)
 
 
 def test_hk_incomplete() -> None:
@@ -517,9 +536,10 @@ def test_hk_incomplete() -> None:
 
 
 def test_hk_invalid_start() -> None:
-    g = random_complete
-    with pytest.raises(ValueError):
-        algos.held_karp(g, start=g.num_nodes)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        with pytest.raises(ValueError):
+            algos.held_karp(g, start=g.num_nodes)
 
 
 def test_uconn_strat_1_incomplete() -> None:
@@ -632,7 +652,8 @@ def test_find_partition_heuristic_invalid_partition() -> None:
 
 
 def test_find_partition_heuristic_invalid_alpha() -> None:
-    g: Graph = random_complete
-    part: list[set[int]] = Graph.create_agent_partition(g, 2)
-    with pytest.raises(ValueError):
-        algos.find_partition_with_heuristic(g, part, algos.greedy, -0.5)
+    for _ in range(5):
+        g = Graph.random_complete(30)
+        part: list[set[int]] = Graph.create_agent_partition(g, 2)
+        with pytest.raises(ValueError):
+            algos.find_partition_with_heuristic(g, part, algos.greedy, -0.5)

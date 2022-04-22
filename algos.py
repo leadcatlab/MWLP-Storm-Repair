@@ -844,10 +844,8 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
         if idx in group1:
             # Find heaviest node
             highest_weight: int = max(nodes, key=lambda x: g.node_weight[x])
-            # find agent in group 1 with shortest path
-            agent: int = min(group1, key=lambda x: path_length(g, paths[x]))
             # append current node (heaviest unvisited) to agent
-            paths[agent].append(highest_weight)
+            paths[idx].append(highest_weight)
             nodes.remove(highest_weight)
         # Random destination agents
         else:
@@ -863,6 +861,56 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
                 choice: int = random.choice(choices)
                 paths[idx].append(choice)
                 nodes.remove(choice)
+
+    return paths
+
+
+def uconn_strat_3(g: Graph, k: int) -> list[list[int]]:
+    """
+    Greedy + Random algorithm from "Agent Based Model to Estimate..."
+    Find the agent with the current shortest path.
+    Assign them the nerest unvisited neighbor
+
+    Runtime: (if applicable)
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+        Assertions:
+            g must be a complete graph
+            g must be an undirected graph
+
+    k: int
+        Number of agents
+
+    Returns
+    -------
+    list[list[int]]
+        Assigned targets and order of targets for each agent.
+
+    """
+
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    # The only valid nodes to visit are non-starting nodes
+    nodes: set[int] = set(range(1, g.num_nodes))
+    # All paths must start with the start node
+    paths: list[list[int]] = [[0] for _ in range(k)]
+
+    while len(nodes) > 0:
+        # Find agent with the current shortest path
+        idx: int = min(range(k), key=lambda x: path_length(g, paths[x]))
+        # Find closest node
+        curr_loc: int = paths[idx][-1]
+        closest: int = min(nodes, key=lambda x: g.edge_weight[curr_loc][x])
+        # append current node to agent
+        paths[idx].append(closest)
+        nodes.remove(closest)
 
     return paths
 

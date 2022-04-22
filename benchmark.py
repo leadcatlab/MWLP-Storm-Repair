@@ -228,6 +228,25 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
+        curr = "UConn Nearest Neighbor"
+        print(curr)
+        start = time.perf_counter_ns()
+        res = algos.uconn_strat_3(g, k)
+        end = time.perf_counter_ns()
+        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+            g, res
+        )
+        if curr_max < curr_best:
+            curr_best = curr_max
+            best = curr
+        maximums[curr].append(curr_max)
+        wait_times[curr].append(curr_wait)
+        times[curr].append(end - start)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
+
         curr = "UConn Greedy + Random (dist: 2.5)"
         print(curr)
         start = time.perf_counter_ns()
@@ -357,10 +376,6 @@ def mass_benchmark(
         ranges[curr].append(curr_range)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
-
-
-
-
 
         curr = "Alternate"
         print(curr)
@@ -562,13 +577,21 @@ def line_plot(
     _, ax = plt.subplots()
     total = sum(g.node_weight[x] for x in range(n))
     lines = []
-    
+
     curr: str = "UConn Greedy"
     paths: list[list[int]] = algos.uconn_strat_1(g, k)
     curr_max: float = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="lightsteelblue")
+    lines.append(line)
+
+    curr = "UConn Nearest Neighbor"
+    paths = algos.uconn_strat_1(g, k)
+    curr_max = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="aqua")
     lines.append(line)
 
     curr = "UConn Greedy + Rand (2.5)"
@@ -601,7 +624,9 @@ def line_plot(
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="limegreen")
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="limegreen"
+    )
     lines.append(line)
 
     curr = "Nearest Neighbor"
@@ -610,9 +635,11 @@ def line_plot(
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="darkgreen")
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="darkgreen"
+    )
     lines.append(line)
-    
+
     curr = "Optimal After NN"
     paths = solve_partition(g, output, algos.brute_force_mwlp)
     curr_max = max(algos.wlp(g, path) for path in paths)
@@ -620,16 +647,17 @@ def line_plot(
     y = [total - f(i) for i in x]
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
     lines.append(line)
-    
+
     curr = "Alternate"
     output = algos.find_partition_with_heuristic(g, part, algos.alternate, 0.18)
     paths = solve_partition(g, output, algos.alternate)
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="mediumspringgreen")
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="mediumspringgreen"
+    )
     lines.append(line)
-    
 
     mplcursors.cursor(lines, highlight=True)
     plt.legend()

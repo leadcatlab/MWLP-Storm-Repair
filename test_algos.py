@@ -333,6 +333,9 @@ def test_uconn_strats_agent_partition() -> None:
         strat_2: list[list[int]] = algos.uconn_strat_2(g, k, 5.0)
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
 
+        strat_3: list[list[int]] = algos.uconn_strat_3(g, k)
+        assert Graph.is_agent_partition(g, [set(subset) for subset in strat_3])
+
 
 def test_evaluate_partition_heuristic() -> None:
     g = Graph.random_complete(8)
@@ -554,6 +557,12 @@ def test_uconn_strat_2_incomplete() -> None:
         algos.uconn_strat_2(g, 2, 1.0)
 
 
+def test_uconn_strat_3_incomplete() -> None:
+    g: Graph = almost_complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_3(g, 2)
+
+
 def test_uconn_strat_1_directed() -> None:
     g: Graph = complete
     with pytest.raises(ValueError):
@@ -564,6 +573,12 @@ def test_uconn_strat_2_directed() -> None:
     g: Graph = complete
     with pytest.raises(ValueError):
         algos.uconn_strat_2(g, 2, 1.0)
+
+
+def test_uconn_strat_3_directed() -> None:
+    g: Graph = complete
+    with pytest.raises(ValueError):
+        algos.uconn_strat_3(g, 2)
 
 
 def test_evaluate_partition_heuristic_incomplete_graph() -> None:

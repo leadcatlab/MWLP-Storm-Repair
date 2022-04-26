@@ -578,9 +578,23 @@ def line_plot(
     total = sum(g.node_weight[x] for x in range(n))
     lines = []
 
-    curr: str = "UConn Greedy"
-    paths: list[list[int]] = algos.uconn_strat_1(g, k)
+    # List of matplotlib colors
+    #   https://matplotlib.org/3.5.0/_images/sphx_glr_named_colors_003.png
+
+    curr: str = "Random"
+    output: list[set[int]] = [set(s) for s in part]
+    paths: list[list[int]] = solve_partition(g, output, algos.random_order)
     curr_max: float = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="darkviolet"
+    )
+    lines.append(line)
+
+    curr = "UConn Greedy"
+    paths = algos.uconn_strat_1(g, k)
+    curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="lightsteelblue")
@@ -629,6 +643,17 @@ def line_plot(
     )
     lines.append(line)
 
+    curr = "Alternate"
+    output = algos.find_partition_with_heuristic(g, part, algos.alternate, 0.18)
+    paths = solve_partition(g, output, algos.alternate)
+    curr_max = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="mediumspringgreen"
+    )
+    lines.append(line)
+
     curr = "Nearest Neighbor"
     output = algos.find_partition_with_heuristic(g, part, algos.nearest_neighbor, 0.18)
     paths = solve_partition(g, output, algos.nearest_neighbor)
@@ -648,14 +673,13 @@ def line_plot(
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
     lines.append(line)
 
-    curr = "Alternate"
-    output = algos.find_partition_with_heuristic(g, part, algos.alternate, 0.18)
-    paths = solve_partition(g, output, algos.alternate)
+    curr = "TSP After NN"
+    paths = solve_partition(g, output, algos.held_karp)
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
     (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="mediumspringgreen"
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
     )
     lines.append(line)
 

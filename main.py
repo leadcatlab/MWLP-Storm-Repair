@@ -42,8 +42,8 @@ def main() -> None:
     # print(f"{best_for_nn = }")
 
     # Messing with plotting
-    n = 40
-    k = 5
+    n = 90
+    k = 15
     benchmark.line_plot(k, n)
 
 

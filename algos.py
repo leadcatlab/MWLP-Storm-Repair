@@ -991,7 +991,6 @@ def transfers_and_swaps_mwlp(
 
     # while there are partitions to be checked
     while checks > 0 and no_repeats is True:
-        # TODO: Determine if this check should go somewhere else
         curr_partition: frozenset[frozenset[int]] = frozenset(
             frozenset(s) for s in partition
         )

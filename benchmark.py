@@ -107,7 +107,6 @@ def benchmark_partition(
 
     """
 
-    # TODO: Add times
     #   Unsure this is a good idea since it may just invite alot of
     #   "well actually if you use this obsucre library no one has heard of it's faster"
     if not Graph.is_complete(g):
@@ -673,15 +672,16 @@ def line_plot(
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
     lines.append(line)
 
-    curr = "TSP After NN"
-    paths = solve_partition(g, output, algos.held_karp)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
-    )
-    lines.append(line)
+    # This ended up performing poorly
+    # curr = "TSP After NN"
+    # paths = solve_partition(g, output, algos.held_karp)
+    # curr_max = max(algos.wlp(g, path) for path in paths)
+    # f = algos.generate_partition_path_function(g, paths)
+    # y = [total - f(i) for i in x]
+    # (line,) = ax.plot(
+    #     x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
+    # )
+    # lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)
     plt.legend()

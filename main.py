@@ -2,7 +2,7 @@
 Driver code for testing functions
 """
 from typing_extensions import TypedDict
-
+from graph import Graph
 import benchmark
 
 graph_dict = TypedDict(
@@ -43,8 +43,14 @@ def main() -> None:
 
     # Messing with plotting
     n = 100
-    k = 20
-    benchmark.line_plot(k, n)
+    k = 10
+    g: Graph = Graph.random_complete_metric(n)
+    
+    print("drawing graph")
+    benchmark.draw_graph(g)
+    part: list[set[int]] = Graph.create_agent_partition(g, k)
+    print("graphing visits")
+    benchmark.line_plot(g, part)
 
 
 if __name__ == "__main__":

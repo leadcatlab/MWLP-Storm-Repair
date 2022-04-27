@@ -4,11 +4,11 @@ Benchmark Functions
 import time
 from collections import defaultdict
 from typing import Callable, DefaultDict
-
+import networkx as nx
 import matplotlib.pyplot as plt  # type: ignore
 import mplcursors  # type: ignore
 import numpy as np
-
+from itertools import product
 import algos
 from graph import Graph
 
@@ -525,12 +525,8 @@ def alpha_heuristic_search(
 
 
 def line_plot(
-    k: int,
-    n: int,
-    edge_w: tuple[float, float] = (0.0, 1.0),
-    metric: bool = True,
-    upper: float = 1.0,
-    node_w: tuple[int, int] = (0, 100),
+    g: Graph ,
+    part: list[set[int]],
     x_range: tuple[int, int] = (0, 10),
 ) -> None:
     """
@@ -538,39 +534,34 @@ def line_plot(
 
     Parameters
     ----------
-    k: int
-        The number of agents
+    g: Graph
+        Input graph
+        Assertions:
+            Must be complete
+            Must be undirected
 
-    n: int
-        The number of nodes per graph
-
-    edge_w: tuple[float, float]
-        The range of edge weights allowed
-        Default: (0.0, 1.0)
-
-    metric: bool
-        Determine whether to test on metric or non-metric graphs
-        Default: True
-
-    upper: float
-        Upper bound of edge weights for a metric graph
-        Default: 1.0
-
-    node_w: tuple[int, int]
-        The range of node weights allowed
-        Default: (0, 100)
+    part: list[set[int]]
+        Starting agent partition
+        Assertions:
+            Must be an agent partition
 
     x_range: tuple[int, int]
         x-axis bounds for plotting
         Default: (0, 100)
     """
 
-    if metric:
-        g = Graph.random_complete_metric(n, upper, node_w)
-    else:
-        g = Graph.random_complete(n, edge_w, node_w)
-    part: list[set[int]] = Graph.create_agent_partition(g, k)
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
 
+    if Graph.is_undirected(g) is False:
+        raise ValueError("Passed graph is not undirected")
+
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
+
+
+    n: int = g.num_nodes
+    k: int = len(part)
     low, high = x_range
     x = np.linspace(low, high, high * 10)
     _, ax = plt.subplots()
@@ -664,13 +655,13 @@ def line_plot(
     )
     lines.append(line)
 
-    curr = "Optimal After NN"
-    paths = solve_partition(g, output, algos.brute_force_mwlp)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
-    lines.append(line)
+    # curr = "Optimal After NN"
+    # paths = solve_partition(g, output, algos.brute_force_mwlp)
+    # curr_max = max(algos.wlp(g, path) for path in paths)
+    # f = algos.generate_partition_path_function(g, paths)
+    # y = [total - f(i) for i in x]
+    # (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
+    # lines.append(line)
 
     # This ended up performing poorly
     # curr = "TSP After NN"
@@ -686,3 +677,26 @@ def line_plot(
     mplcursors.cursor(lines, highlight=True)
     plt.legend()
     plt.show()
+
+def draw_graph(g: Graph) -> None:
+    """
+    If anything this is demonstration of a mistake of trying to 
+        roll my own graph class rather than use networkx
+
+
+    """
+
+    n: int = g.num_nodes
+    G = nx.DiGraph()
+    for i in range(n):
+        G.add_node(i)
+
+    for u, v in product(range(n), range(n)):
+        if u != v:
+            G.add_edge(u, v, weight=g.edge_weight[u][v])
+
+    # Turns out complete graphs have alot of edges. They are omitted for clarity
+    # Since the graph is complete we know what all the edges are
+    nx.draw(G, arrows=False, width=0.0)
+
+    # TODO: Find a way to draw partitions / orders onto the graph

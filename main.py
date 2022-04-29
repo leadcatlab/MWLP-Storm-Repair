@@ -1,9 +1,12 @@
 """
 Driver code for testing functions
 """
+import matplotlib.pyplot as plt  # type: ignore
 from typing_extensions import TypedDict
-from graph import Graph
+
+import algos
 import benchmark
+from graph import Graph
 
 graph_dict = TypedDict(
     "graph_dict",
@@ -16,10 +19,10 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
-    # # Mass benchmark of graphs given parameters
-    # num_graphs: int = 10
-    # num_agents: int = 5
-    # num_nodes: int = 40
+    # Mass benchmark of graphs given parameters
+    # num_graphs: int = 1
+    # num_agents: int = 50
+    # num_nodes: int = 100
     # upper_bound: float = 10.0
 
     # benchmark.mass_benchmark(
@@ -43,14 +46,21 @@ def main() -> None:
 
     # Messing with plotting
     n = 100
-    k = 10
+    k = 8
     g: Graph = Graph.random_complete_metric(n)
-    
-    print("drawing graph")
-    benchmark.draw_graph(g)
+    nx_g = Graph.to_networkx(g)
+
     part: list[set[int]] = Graph.create_agent_partition(g, k)
-    print("graphing visits")
-    benchmark.line_plot(g, part)
+
+    initial_assignment: list[list[int]] = benchmark.solve_partition(
+        g, part, algos.nearest_neighbor
+    )
+    benchmark.draw_graph_with_partitions(nx_g, initial_assignment, "Initial")
+
+    output = algos.find_partition_with_heuristic(g, part, algos.nearest_neighbor, 0.18)
+    final_assignment = benchmark.solve_partition(g, output, algos.nearest_neighbor)
+    benchmark.draw_graph_with_partitions(nx_g, final_assignment, "Nearest Neighbor")
+    plt.show()
 
 
 if __name__ == "__main__":

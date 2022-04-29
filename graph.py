@@ -1,12 +1,13 @@
 """
-Graph classv with integer notes, integer node weights, float edge weights
+Graph class with integer nodes, integer node weights, float edge weights
 """
 from __future__ import annotations
 
 import random
 from itertools import product
-from typing import Collection
+from typing import Collection, no_type_check
 
+import networkx as nx  # type: ignore
 from typing_extensions import TypedDict
 
 graph_dict = TypedDict(
@@ -146,6 +147,36 @@ class Graph:
         }
 
         return gd
+
+    @staticmethod
+    @no_type_check
+    def to_networkx(g: Graph):
+        """
+        Creates a complete graph with randomly weighted edges and nodes
+
+        Runtime: (if applicable)
+
+        Parameters
+        ----------
+        g: Graph
+            Input graph
+
+        Returns
+        -------
+        nx.DiGraph()
+            networkx graph equivalent to passed input graph
+
+        """
+        n: int = g.num_nodes
+        nx_g = nx.DiGraph()
+        for i, w in enumerate(g.node_weight):
+            nx_g.add_node(i, weight=w)
+
+        for u, v in product(range(n), range(n)):
+            if u != v:
+                nx_g.add_edge(u, v, weight=g.edge_weight[u][v])
+
+        return nx_g
 
     @staticmethod
     def random_complete(

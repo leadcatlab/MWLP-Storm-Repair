@@ -3,12 +3,13 @@ Benchmark Functions
 """
 import time
 from collections import defaultdict
-from typing import Callable, DefaultDict
-import networkx as nx
+from typing import Callable, DefaultDict, no_type_check
+
 import matplotlib.pyplot as plt  # type: ignore
 import mplcursors  # type: ignore
+import networkx as nx  # type: ignore
 import numpy as np
-from itertools import product
+
 import algos
 from graph import Graph
 
@@ -303,29 +304,29 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Greedy"
-        print(curr)
-        print("Finding partition")
-        start = time.perf_counter_ns()
-        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
-        end = time.perf_counter_ns()
-        print(Bcolors.CLEAR_LAST_LINE)
-        print("Solving partition")
-        res = solve_partition(g, output, algos.greedy)
-        print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-            g, res
-        )
-        if curr_max < curr_best:
-            curr_best = curr_max
-            best = curr
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        times[curr].append(end - start)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        averages[curr].append(curr_avg)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # curr = "Greedy"
+        # print(curr)
+        # print("Finding partition")
+        # start = time.perf_counter_ns()
+        # output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
+        # end = time.perf_counter_ns()
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # print("Solving partition")
+        # res = solve_partition(g, output, algos.greedy)
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        #     g, res
+        # )
+        # if curr_max < curr_best:
+        #     curr_best = curr_max
+        #     best = curr
+        # maximums[curr].append(curr_max)
+        # wait_times[curr].append(curr_wait)
+        # times[curr].append(end - start)
+        # minimums[curr].append(curr_min)
+        # ranges[curr].append(curr_range)
+        # averages[curr].append(curr_avg)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
         curr = "Nearest Neighbor"
         print(curr)
@@ -525,7 +526,7 @@ def alpha_heuristic_search(
 
 
 def line_plot(
-    g: Graph ,
+    g: Graph,
     part: list[set[int]],
     x_range: tuple[int, int] = (0, 10),
 ) -> None:
@@ -558,7 +559,6 @@ def line_plot(
 
     if Graph.is_agent_partition(g, part) is False:
         raise ValueError("Passed partition is invalid")
-
 
     n: int = g.num_nodes
     k: int = len(part)
@@ -655,13 +655,13 @@ def line_plot(
     )
     lines.append(line)
 
-    # curr = "Optimal After NN"
-    # paths = solve_partition(g, output, algos.brute_force_mwlp)
-    # curr_max = max(algos.wlp(g, path) for path in paths)
-    # f = algos.generate_partition_path_function(g, paths)
-    # y = [total - f(i) for i in x]
-    # (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
-    # lines.append(line)
+    curr = "Optimal After NN"
+    paths = solve_partition(g, output, algos.brute_force_mwlp)
+    curr_max = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
+    lines.append(line)
 
     # This ended up performing poorly
     # curr = "TSP After NN"
@@ -678,25 +678,45 @@ def line_plot(
     plt.legend()
     plt.show()
 
-def draw_graph(g: Graph) -> None:
+
+@no_type_check
+def draw_graph_with_partitions(nx_g, assignments: list[list[int]], name=None) -> None:
     """
-    If anything this is demonstration of a mistake of trying to 
-        roll my own graph class rather than use networkx
+    Draws a graph using networkx
+    Not all edges are drawn. Just the ones pertaining to the passted edges
 
+
+    Parameters
+    ----------
+    nx_g: nx.DiGraph()
+        Input Networkx Graph
+
+    assignments: list[list[int]]
+        Input agent assignment
+        Assertions:
+            Is agent assignment
+
+    name: str
+        Used to name output plot
+        Default: None
 
     """
 
-    n: int = g.num_nodes
-    G = nx.DiGraph()
-    for i in range(n):
-        G.add_node(i)
+    # Color the nodes
+    idx: int = 0
+    color_list = plt.cm.get_cmap("tab20", 20)
+    color_map = [None] * len(nx_g.nodes)
+    for assignment in assignments:
+        for node in assignment:
+            color_map[node] = color_list.colors[idx]
+        idx = (idx + 1) % 20
 
-    for u, v in product(range(n), range(n)):
-        if u != v:
-            G.add_edge(u, v, weight=g.edge_weight[u][v])
+    # Choose edges
+    edges = []
+    for assignment in assignments:
+        for (u, v) in zip(assignment, assignment[1:]):
+            edges.append((u, v))
 
-    # Turns out complete graphs have alot of edges. They are omitted for clarity
-    # Since the graph is complete we know what all the edges are
-    nx.draw(G, arrows=False, width=0.0)
-
-    # TODO: Find a way to draw partitions / orders onto the graph
+    plt.figure(name)
+    nx.draw(nx_g, edgelist=edges, with_labels=True, node_color=color_map)
+    # plt.show()

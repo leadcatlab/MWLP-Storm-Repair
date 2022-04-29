@@ -84,6 +84,31 @@ def test_dict_from_graph() -> None:
     assert g.edge_weight == g_again.edge_weight
 
 
+def test_to_networkx() -> None:
+    gd: graph_dict = {
+        "num_nodes": 3,
+        "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
+        "node_weight": [0, 0, 0],
+    }
+    g = Graph.from_dict(gd)
+    nx_g = Graph.to_networkx(g)
+
+    assert 0 in nx_g.nodes
+    assert 1 in nx_g.nodes
+    assert 2 in nx_g.nodes
+    assert len(nx_g.nodes) == 3
+    assert (0, 1) in nx_g.edges
+    assert (1, 0) in nx_g.edges
+    assert nx_g[0][1]["weight"] == 1.0
+    assert nx_g[1][0]["weight"] == 2.0
+    assert (0, 2) in nx_g.edges
+    assert nx_g[0][2]["weight"] == 3.0
+    assert nx_g[2][0]["weight"] == 4.0
+    assert nx_g.nodes[0]["weight"] == 0
+    assert nx_g.nodes[1]["weight"] == 0
+    assert nx_g.nodes[2]["weight"] == 0
+
+
 def test_is_complete() -> None:
     g = Graph(4)
     for i in range(4):

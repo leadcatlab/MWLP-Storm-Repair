@@ -169,9 +169,10 @@ class Graph:
         """
         n: int = g.num_nodes
         nx_g = nx.DiGraph()
+        for i in range(n):
+            nx_g.add_node(i)
         for i, w in enumerate(g.node_weight):
-            nx_g.add_node(i, weight=w)
-
+            nx_g.nodes[i]["weight"] = w
         for u, v in product(range(n), range(n)):
             if u != v:
                 nx_g.add_edge(u, v, weight=g.edge_weight[u][v])

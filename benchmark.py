@@ -718,5 +718,11 @@ def draw_graph_with_partitions(nx_g, assignments: list[list[int]], name=None) ->
             edges.append((u, v))
 
     plt.figure(name)
-    nx.draw(nx_g, edgelist=edges, with_labels=True, node_color=color_map)
+    nx.draw(
+        nx_g,
+        pos=nx.spring_layout(nx_g),
+        edgelist=edges,
+        with_labels=True,
+        node_color=color_map,
+    )
     # plt.show()

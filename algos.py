@@ -7,6 +7,7 @@ from itertools import combinations, permutations, product
 from typing import Callable, Deque, Optional
 
 import numpy as np
+from more_itertools import set_partitions
 
 from graph import Graph
 
@@ -738,6 +739,80 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
         if tsp < tsp_sol:
             tsp_sol = tsp
             best_order = order + [i]
+
+    return best_order
+
+
+def partition_heuristic(
+    g: Graph, k: int, f: Callable[..., list[int]] = brute_force_mwlp
+) -> list[list[int]]:
+    """
+    Computes the optimal assignment of targets for a given heuristic
+
+    Runtime: TODO
+
+    Parameters
+    ----------
+    g: Graph
+        Input Graph
+        Assertions:
+            Must be complete
+
+    k: int
+        Number of agents
+        Assertions:
+            0 < k <= g.num_nodes
+
+    f: Callable[..., list[int]]
+        Heuristic to optimize with
+        Default:
+            Brute force mwlp
+
+    Returns
+    -------
+    list[list[int]]
+        Optimal assignment
+
+    """
+
+    # for now assume complete
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if k <= 0:
+        raise ValueError(f"Multi-agent case must have non-zero agents ({k})")
+
+    if k > g.num_nodes:
+        raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
+
+    # assume start is at 0
+    nodes = list(range(1, g.num_nodes))
+
+    best_order: list[list[int]] = []
+    minimum = float("inf")
+
+    # iterate through each partition
+    for part in set_partitions(nodes, k):
+        curr = float("-inf")
+        part_order: list[list[int]] = []
+
+        # iterate through each group in partition
+        for nodes in part:
+            # assume starting at 0
+            full_list: list[int] = [0] + nodes
+            sg, sto, _ = Graph.subgraph(g, full_list)
+
+            # calculuate heuristic
+            heuristic_order: list[int] = f(sg)
+            curr = max(curr, wlp(sg, heuristic_order))
+
+            # collect orders
+            original_order = [sto[n] for n in heuristic_order]
+            part_order.append(original_order)
+
+        if curr < minimum:
+            minimum = curr
+            best_order = part_order
 
     return best_order
 

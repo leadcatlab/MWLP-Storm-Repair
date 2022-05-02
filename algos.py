@@ -743,7 +743,7 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     return best_order
 
 
-def partition_heuristic(
+def multi_agent_brute_force(
     g: Graph, k: int, f: Callable[..., list[int]] = brute_force_mwlp
 ) -> list[list[int]]:
     """

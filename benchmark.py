@@ -663,6 +663,16 @@ def line_plot(
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
     lines.append(line)
 
+    curr = "Best Solution (MWLP)"
+    paths = algos.multi_agent_brute_force(g, k)
+    curr_max = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
+    )
+    lines.append(line)
+
     # This ended up performing poorly
     # curr = "TSP After NN"
     # paths = solve_partition(g, output, algos.held_karp)

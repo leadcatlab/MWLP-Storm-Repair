@@ -744,7 +744,7 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
 
 
 def multi_agent_brute_force(
-    g: Graph, k: int, f: Callable[..., list[int]] = brute_force_mwlp
+        g: Graph, k: int, f: Callable[..., list[int]] = brute_force_mwlp, max_size: Optional[int] = None
 ) -> list[list[int]]:
     """
     Computes the optimal assignment of targets for a given heuristic
@@ -784,6 +784,9 @@ def multi_agent_brute_force(
 
     if k > g.num_nodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
+    
+    if max_size == None:
+        max_size = g.num_nodes
 
     # assume start is at 0
     nodes = list(range(1, g.num_nodes))
@@ -793,6 +796,8 @@ def multi_agent_brute_force(
 
     # iterate through each partition
     for part in set_partitions(nodes, k):
+        if any(len(nodes) > max_size for nodes in part):
+            continue
         curr = float("-inf")
         part_order: list[list[int]] = []
 

@@ -655,7 +655,7 @@ def line_plot(
     )
     lines.append(line)
 
-    curr = "Optimal After NN"
+    curr = "Optimal After NN transfers"
     paths = solve_partition(g, output, algos.brute_force_mwlp)
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
@@ -663,8 +663,20 @@ def line_plot(
     (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
     lines.append(line)
 
-    curr = "Best Solution (MWLP)"
-    paths = algos.multi_agent_brute_force(g, k)
+    cap: int = (g.num_nodes // k) + 1
+    curr = f"Best Solution with {cap = }"
+    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size = cap)
+    curr_max = max(algos.wlp(g, path) for path in paths)
+    f = algos.generate_partition_path_function(g, paths)
+    y = [total - f(i) for i in x]
+    (line,) = ax.plot(
+        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
+    )
+    lines.append(line)
+    
+    cap: int = (g.num_nodes // k) + 2
+    curr = f"Best Solution with {cap = }"
+    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size = cap)
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
@@ -686,7 +698,10 @@ def line_plot(
 
     mplcursors.cursor(lines, highlight=True)
     plt.legend()
-    plt.show()
+    figure = plt.gcf()
+    figure.set_size_inches(10, 7) # horizontal x vertical
+    plt.savefig("most_recent_line_plot.png")
+    # plt.show()
 
 
 @no_type_check

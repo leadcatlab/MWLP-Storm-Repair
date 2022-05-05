@@ -45,8 +45,8 @@ def main() -> None:
     # print(f"{best_for_nn = }")
 
     # Line Plot
-    n = 12
-    k = 3
+    n = 20
+    k = 4
     g: Graph = Graph.random_complete_metric(n)
     part: list[set[int]] = Graph.create_agent_partition(g, k)
     benchmark.line_plot(g, part)

@@ -20,29 +20,50 @@ graph_dict = TypedDict(
 
 def main() -> None:
     # Mass benchmark of graphs given parameters
-    num_graphs: int = 20
-    num_agents: int = 6
-    num_nodes: int = 30
-    upper_bound: float = 10.0
+    # num_graphs: int = 20
+    # num_agents: int = 6
+    # num_nodes: int = 30
+    # upper_bound: float = 10.0
 
-    benchmark.mass_benchmark(
-        count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
-    )
+    # benchmark.mass_benchmark(
+    #     count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
+    # )
 
     # Alpha threshold benchmarking code
-    # best_for_greedy: float = benchmark.alpha_heuristic_search(
-    #     f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
+    # num_graphs: int = 3
+    # num_agents: int = 2
+    # num_nodes: int = 10
+    # upper_bound: float = 10.0
+    # 
+    # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
+    #     f=algos.greedy, 
+    #     count=num_graphs, 
+    #     k=num_agents, 
+    #     n=num_nodes, 
+    #     upper=upper_bound
     # )
-    # print(f"{best_for_greedy = }")
+    # for alpha, val in greedy_alpha_dict.items():
+    #     print(f"{alpha:.2f}: {val}")
+    # print() 
+    # plt.plot(list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()))
+    # plt.show()
 
-    # best_for_nn: float = benchmark.alpha_heuristic_search(
+    # nn_alpha_dict: list[float, float] = benchmark.alpha_heuristic_data(
     #     f=algos.nearest_neighbor,
     #     count=num_graphs,
     #     k=num_agents,
     #     n=num_nodes,
     #     upper=upper_bound,
     # )
-    # print(f"{best_for_nn = }")
+    # for alpha, val in nn_alpha_dict.items():
+    #     print(f"{alpha:.2f}: {val}")
+    # print()
+    # plt.plot(list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()))
+    # plt.show()
+
+    # Testing writing to file
+    g = Graph.random_complete(10)
+    Graph.to_file(g, "test.json")
 
     # Line Plot
     # n = 20

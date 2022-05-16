@@ -458,7 +458,7 @@ def mass_benchmark(
     print()
 
 
-def alpha_heuristic_search(
+def alpha_heuristic_data(
     f: Callable[..., list[int]],
     count: int,
     k: int,
@@ -467,10 +467,10 @@ def alpha_heuristic_search(
     metric: bool = True,
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
-) -> float:
+) -> list[float]:
     """
-    Search function to help determine ideal alpha values for transfers and swaps
-    Used for nearest neighbor or greedy or other such heuristics
+    Benchmark function to help determine ideal alpha values for transfers and swaps
+    Creates a list of average resulting sums of weighted latencies for each alpha
 
     Parameters
     ----------
@@ -504,8 +504,9 @@ def alpha_heuristic_search(
 
     Returns
     -------
-    float
-        Ideal alpha
+    dict[float, float]
+        Averages of sums of weighted latencies 
+        One for each alpha value from 0.0 to 1.0 in increments of 0.01
 
     """
 
@@ -527,17 +528,17 @@ def alpha_heuristic_search(
     alpha: float = 0.0
     while alpha <= 1.0:
         print(alpha)
-        maximums: list[float] = []
+        sums: list[float] = []
         for g, partition in zip(graph_bank, partition_bank):
             output = algos.find_partition_with_heuristic(g, partition, f, alpha)
             res = solve_partition(g, output)
-            curr_max, _, _, _, _ = benchmark_partition(g, res)
-            maximums.append(curr_max)
-        averages[alpha] = sum(maximums) / count
+            _, _, _, _, curr_sum, _ = benchmark_partition(g, res)
+            sums.append(curr_sum)
+        averages[alpha] = sum(sums) / count
         alpha = round(alpha + 0.01, 2)
         print(Bcolors.CLEAR_LAST_LINE)
 
-    return min(averages.items(), key=lambda x: x[1])[0]
+    return averages
 
 
 def line_plot(

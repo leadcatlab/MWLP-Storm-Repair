@@ -129,7 +129,7 @@ def benchmark_partition(
     for val, p in zip(vals, partition):
         wait_times.append(val / algos.num_visited_along_path(g, p)[-1])
 
-    res: tuple[float, float, float, float, float] = (
+    res: tuple[float, float, float, float, float, float] = (
         max(vals),
         sum(wait_times) / len(wait_times),
         min(vals),
@@ -216,9 +216,14 @@ def mass_benchmark(
         start: float = time.perf_counter_ns()
         res = algos.uconn_strat_1(g, k)
         end: float = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -236,9 +241,14 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_3(g, k)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -256,9 +266,14 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 2.5)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -276,9 +291,14 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 5.0)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -296,9 +316,14 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 7.5)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -321,9 +346,14 @@ def mass_benchmark(
         print("Solving partition")
         res = solve_partition(g, output, algos.greedy)
         print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -348,9 +378,14 @@ def mass_benchmark(
         print("Solving partition")
         res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
-            g, res
-        )
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark_partition(g, res)
         if curr_sum < curr_best:
             curr_best = curr_sum
             best = curr
@@ -421,7 +456,7 @@ def mass_benchmark(
     for key, vals in sums.items():
         print(f"\t{key:40}{sum(vals) / count}")
     print()
-    
+
     print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
     for key, vals in maximums.items():
         print(f"\t{key:40}{sum(vals) / count}")
@@ -467,7 +502,7 @@ def alpha_heuristic_data(
     metric: bool = True,
     upper: float = 1.0,
     node_w: tuple[int, int] = (0, 100),
-) -> list[float]:
+) -> dict[float, float]:
     """
     Benchmark function to help determine ideal alpha values for transfers and swaps
     Creates a list of average resulting sums of weighted latencies for each alpha
@@ -505,7 +540,7 @@ def alpha_heuristic_data(
     Returns
     -------
     dict[float, float]
-        Averages of sums of weighted latencies 
+        Averages of sums of weighted latencies
         One for each alpha value from 0.0 to 1.0 in increments of 0.01
 
     """
@@ -671,28 +706,20 @@ def line_plot(
     )
     lines.append(line)
 
-    curr = "Optimal After NN transfers"
-    paths = solve_partition(g, output, algos.brute_force_mwlp)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
-    lines.append(line)
+    # This is slow
+    # curr = "Optimal After NN transfers"
+    # paths = solve_partition(g, output, algos.brute_force_mwlp)
+    # curr_max = max(algos.wlp(g, path) for path in paths)
+    # f = algos.generate_partition_path_function(g, paths)
+    # y = [total - f(i) for i in x]
+    # (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
+    # lines.append(line)
 
+    # This is slow
+    # Brute for solve with capped sizes
     cap: int = (g.num_nodes // k) + 1
     curr = f"Best Solution with {cap = }"
-    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size = cap)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
-    )
-    lines.append(line)
-    
-    cap: int = (g.num_nodes // k) + 2
-    curr = f"Best Solution with {cap = }"
-    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size = cap)
+    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size=cap)
     curr_max = max(algos.wlp(g, path) for path in paths)
     f = algos.generate_partition_path_function(g, paths)
     y = [total - f(i) for i in x]
@@ -701,7 +728,7 @@ def line_plot(
     )
     lines.append(line)
 
-    # This ended up performing poorly
+    # This is slow and bad
     # curr = "TSP After NN"
     # paths = solve_partition(g, output, algos.held_karp)
     # curr_max = max(algos.wlp(g, path) for path in paths)
@@ -715,7 +742,7 @@ def line_plot(
     mplcursors.cursor(lines, highlight=True)
     plt.legend()
     figure = plt.gcf()
-    figure.set_size_inches(10, 7) # horizontal x vertical
+    figure.set_size_inches(10, 7)  # horizontal x vertical
     plt.savefig("most_recent_line_plot.png")
     # plt.show()
 

@@ -34,17 +34,17 @@ def main() -> None:
     # num_agents: int = 2
     # num_nodes: int = 10
     # upper_bound: float = 10.0
-    # 
+    #
     # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.greedy, 
-    #     count=num_graphs, 
-    #     k=num_agents, 
-    #     n=num_nodes, 
+    #     f=algos.greedy,
+    #     count=num_graphs,
+    #     k=num_agents,
+    #     n=num_nodes,
     #     upper=upper_bound
     # )
     # for alpha, val in greedy_alpha_dict.items():
     #     print(f"{alpha:.2f}: {val}")
-    # print() 
+    # print()
     # plt.plot(list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()))
     # plt.show()
 
@@ -85,7 +85,12 @@ def main() -> None:
     # )
     # benchmark.draw_graph_with_partitions(nx_g, initial_assignment, "Initial")
 
-    # output = algos.find_partition_with_heuristic(g, part, algos.nearest_neighbor, 0.18)
+    # output = algos.find_partition_with_heuristic(
+    #         g,
+    #         part,
+    #         algos.nearest_neighbor,
+    #         0.18
+    #     )
     # final_assignment = benchmark.solve_partition(g, output, algos.nearest_neighbor)
     # benchmark.draw_graph_with_partitions(nx_g, final_assignment, "Nearest Neighbor")
     # plt.show()

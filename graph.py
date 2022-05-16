@@ -2,6 +2,7 @@
 Graph class with integer nodes, integer node weights, float edge weights
 """
 from __future__ import annotations
+
 import json
 import random
 from itertools import product
@@ -114,7 +115,6 @@ class Graph:
             g.add_edge(start_node, end_node, node_weight)
 
         return g
-    
 
     @staticmethod
     def dict_from_graph(g: Graph) -> graph_dict:
@@ -148,8 +148,6 @@ class Graph:
         }
 
         return gd
-    
-
 
     @staticmethod
     def from_file(loc: str) -> Graph:
@@ -168,10 +166,10 @@ class Graph:
 
         """
 
-        with open(loc) as gd_json:
+        with open(loc, encoding="utf-8") as gd_json:
             gd: graph_dict = json.load(gd_json)
             return Graph.from_dict(gd)
-    
+
     @staticmethod
     def to_file(g: Graph, loc: str) -> None:
         """
@@ -181,13 +179,13 @@ class Graph:
         ----------
         g: Graph
             input graph
-        
+
         loc: str
             file location of dictionary json
 
         """
 
-        with open(loc, "w") as outfile:
+        with open(loc, "w", encoding="utf-8") as outfile:
             gd: graph_dict = Graph.dict_from_graph(g)
             json.dump(gd, outfile)
 

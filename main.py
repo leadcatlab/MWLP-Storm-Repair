@@ -20,14 +20,14 @@ graph_dict = TypedDict(
 
 def main() -> None:
     # Mass benchmark of graphs given parameters
-    # num_graphs: int = 1
-    # num_agents: int = 50
-    # num_nodes: int = 100
-    # upper_bound: float = 10.0
+    num_graphs: int = 20
+    num_agents: int = 6
+    num_nodes: int = 30
+    upper_bound: float = 10.0
 
-    # benchmark.mass_benchmark(
-    #     count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
-    # )
+    benchmark.mass_benchmark(
+        count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
+    )
 
     # Alpha threshold benchmarking code
     # best_for_greedy: float = benchmark.alpha_heuristic_search(
@@ -45,11 +45,11 @@ def main() -> None:
     # print(f"{best_for_nn = }")
 
     # Line Plot
-    n = 20
-    k = 4
-    g: Graph = Graph.random_complete_metric(n)
-    part: list[set[int]] = Graph.create_agent_partition(g, k)
-    benchmark.line_plot(g, part)
+    # n = 20
+    # k = 4
+    # g: Graph = Graph.random_complete_metric(n)
+    # part: list[set[int]] = Graph.create_agent_partition(g, k)
+    # benchmark.line_plot(g, part)
 
     # Messing with plotting
     # n = 100

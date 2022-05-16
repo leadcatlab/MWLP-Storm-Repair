@@ -85,7 +85,7 @@ def solve_partition(
 
 def benchmark_partition(
     g: Graph, part: list[list[int]]
-) -> tuple[float, float, float, float, float]:
+) -> tuple[float, float, float, float, float, float]:
     """
     Takes in a partition and path order of agents and benchmarks it
 
@@ -103,8 +103,8 @@ def benchmark_partition(
 
     Returns
     -------
-    tuple[float, float, float, float]
-        maximum, average wait, minimum, range, average
+    tuple[float, float, float, float, float, float]
+        maximum, average wait, minimum, range, sum, average
 
     """
 
@@ -134,6 +134,7 @@ def benchmark_partition(
         sum(wait_times) / len(wait_times),
         min(vals),
         max(vals) - min(vals),
+        sum(vals),
         sum(vals) / len(vals),
     )
 
@@ -192,6 +193,7 @@ def mass_benchmark(
     wait_times: DefaultDict[str, list[float]] = defaultdict(list)
     times: DefaultDict[str, list[float]] = defaultdict(list)
     minimums: DefaultDict[str, list[float]] = defaultdict(list)
+    sums: DefaultDict[str, list[float]] = defaultdict(list)
     ranges: DefaultDict[str, list[float]] = defaultdict(list)
     averages: DefaultDict[str, list[float]] = defaultdict(list)
     bests: DefaultDict[str, int] = defaultdict(int)
@@ -214,17 +216,18 @@ def mass_benchmark(
         start: float = time.perf_counter_ns()
         res = algos.uconn_strat_1(g, k)
         end: float = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -233,17 +236,18 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_3(g, k)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -252,17 +256,18 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 2.5)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -271,17 +276,18 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 5.0)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
@@ -290,43 +296,45 @@ def mass_benchmark(
         start = time.perf_counter_ns()
         res = algos.uconn_strat_2(g, k, 7.5)
         end = time.perf_counter_ns()
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        # curr = "Greedy"
-        # print(curr)
-        # print("Finding partition")
-        # start = time.perf_counter_ns()
-        # output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
-        # end = time.perf_counter_ns()
-        # print(Bcolors.CLEAR_LAST_LINE)
-        # print("Solving partition")
-        # res = solve_partition(g, output, algos.greedy)
-        # print(Bcolors.CLEAR_LAST_LINE)
-        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-        #     g, res
-        # )
-        # if curr_max < curr_best:
-        #     curr_best = curr_max
-        #     best = curr
-        # maximums[curr].append(curr_max)
-        # wait_times[curr].append(curr_wait)
-        # times[curr].append(end - start)
-        # minimums[curr].append(curr_min)
-        # ranges[curr].append(curr_range)
-        # averages[curr].append(curr_avg)
-        # print(Bcolors.CLEAR_LAST_LINE)
+        curr = "Greedy"
+        print(curr)
+        print("Finding partition")
+        start = time.perf_counter_ns()
+        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
+        end = time.perf_counter_ns()
+        print(Bcolors.CLEAR_LAST_LINE)
+        print("Solving partition")
+        res = solve_partition(g, output, algos.greedy)
+        print(Bcolors.CLEAR_LAST_LINE)
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
+            g, res
+        )
+        if curr_sum < curr_best:
+            curr_best = curr_sum
+            best = curr
+        maximums[curr].append(curr_max)
+        wait_times[curr].append(curr_wait)
+        times[curr].append(end - start)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
+        averages[curr].append(curr_avg)
+        print(Bcolors.CLEAR_LAST_LINE)
 
         curr = "Nearest Neighbor"
         print(curr)
@@ -340,73 +348,80 @@ def mass_benchmark(
         print("Solving partition")
         res = solve_partition(g, output, algos.nearest_neighbor)
         print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        curr_max, curr_wait, curr_min, curr_range, curr_sum, curr_avg = benchmark_partition(
             g, res
         )
-        if curr_max < curr_best:
-            curr_best = curr_max
+        if curr_sum < curr_best:
+            curr_best = curr_sum
             best = curr
         maximums[curr].append(curr_max)
         wait_times[curr].append(curr_wait)
         times[curr].append(end - start)
         minimums[curr].append(curr_min)
         ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Optimal after NN"
-        print(curr)
-        print("Solving partition")
-        start = time.perf_counter_ns()
-        # NOTE: This is the time to SOLVE for the optimal order in given partition.
-        #   Includes no time to find the partition (as this was done earlier)
-        res = solve_partition(g, output, algos.brute_force_mwlp)
-        end = time.perf_counter_ns()
-        print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-            g, res
-        )
-        if curr_max < curr_best:
-            curr_best = curr_max
-            best = curr
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        times[curr].append(end - start)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        averages[curr].append(curr_avg)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # curr = "Optimal after NN"
+        # print(curr)
+        # print("Solving partition")
+        # start = time.perf_counter_ns()
+        # # NOTE: This is the time to SOLVE for the optimal order in given partition.
+        # #   Includes no time to find the partition (as this was done earlier)
+        # res = solve_partition(g, output, algos.brute_force_mwlp)
+        # end = time.perf_counter_ns()
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        #     g, res
+        # )
+        # if curr_sum < curr_best:
+        #     curr_best = curr_sum
+        #     best = curr
+        # maximums[curr].append(curr_max)
+        # wait_times[curr].append(curr_wait)
+        # times[curr].append(end - start)
+        # minimums[curr].append(curr_min)
+        # ranges[curr].append(curr_range)
+        # averages[curr].append(curr_avg)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Alternate"
-        print(curr)
-        print("Finding partition")
-        start = time.perf_counter_ns()
-        output = algos.find_partition_with_heuristic(
-            g, partition, algos.alternate, 0.18
-        )
-        end = time.perf_counter_ns()
-        print(Bcolors.CLEAR_LAST_LINE)
-        print("Solving partition")
-        res = solve_partition(g, output, algos.alternate)
-        print(Bcolors.CLEAR_LAST_LINE)
-        curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-            g, res
-        )
-        if curr_max < curr_best:
-            curr_best = curr_max
-            best = curr
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        times[curr].append(end - start)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        averages[curr].append(curr_avg)
-        print(Bcolors.CLEAR_LAST_LINE)
+        # This doesn't have any real meaning so it is being depreciated
+        # curr = "Alternate"
+        # print(curr)
+        # print("Finding partition")
+        # start = time.perf_counter_ns()
+        # output = algos.find_partition_with_heuristic(
+        #     g, partition, algos.alternate, 0.18
+        # )
+        # end = time.perf_counter_ns()
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # print("Solving partition")
+        # res = solve_partition(g, output, algos.alternate)
+        # print(Bcolors.CLEAR_LAST_LINE)
+        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
+        #     g, res
+        # )
+        # if curr_sum < curr_best:
+        #     curr_best = curr_sum
+        #     best = curr
+        # maximums[curr].append(curr_max)
+        # wait_times[curr].append(curr_wait)
+        # times[curr].append(end - start)
+        # minimums[curr].append(curr_min)
+        # ranges[curr].append(curr_range)
+        # averages[curr].append(curr_avg)
+        # print(Bcolors.CLEAR_LAST_LINE)
 
         bests[best] += 1
 
         print(Bcolors.CLEAR_LAST_LINE)
 
+    print(f"{Bcolors.OKBLUE}Sums: {Bcolors.ENDC}")
+    for key, vals in sums.items():
+        print(f"\t{key:40}{sum(vals) / count}")
+    print()
+    
     print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
     for key, vals in maximums.items():
         print(f"\t{key:40}{sum(vals) / count}")

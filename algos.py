@@ -771,6 +771,13 @@ def multi_agent_brute_force(
         Default:
             Brute force mwlp
 
+    max_size: int
+        Maximum number of nodes that agents can visit
+        Default:
+            0 which means any number is allowed
+        Assertions:
+            Must be >= 0
+
     Returns
     -------
     list[list[int]]
@@ -788,6 +795,9 @@ def multi_agent_brute_force(
     if k > g.num_nodes:
         raise ValueError(f"Multi-agent case cannot have more agents than nodes ({k})")
 
+    if max_size < 0:
+        raise ValueError(f"Maximum size of path cannot be negative ({max_size})")
+
     if max_size == 0:
         max_size = g.num_nodes
 
@@ -799,7 +809,7 @@ def multi_agent_brute_force(
 
     # iterate through each partition
     for part in set_partitions(nodes, k):
-        if any(len(nodes) > max_size for nodes in part):
+        if any(len(subset) > max_size for subset in part):
             continue
         curr = float("-inf")
         part_order: list[list[int]] = []

@@ -30,17 +30,13 @@ def main() -> None:
     # )
 
     # Alpha threshold benchmarking code
-    # num_graphs: int = 3
-    # num_agents: int = 2
-    # num_nodes: int = 10
+    # num_graphs: int = 1
+    # num_agents: int = 10
+    # num_nodes: int = 80
     # upper_bound: float = 10.0
-    #
+
     # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.greedy,
-    #     count=num_graphs,
-    #     k=num_agents,
-    #     n=num_nodes,
-    #     upper=upper_bound
+    #     f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
     # )
     # for alpha, val in greedy_alpha_dict.items():
     #     print(f"{alpha:.2f}: {val}")
@@ -62,7 +58,7 @@ def main() -> None:
     # plt.show()
 
     # Testing writing to file
-    g = Graph.random_complete(10)
+    g = Graph.random_complete(4)
     Graph.to_file(g, "test.json")
 
     # Line Plot

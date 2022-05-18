@@ -337,6 +337,22 @@ def test_uconn_strats_agent_partition() -> None:
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_3])
 
 
+def test_multi_agent_brute_force() -> None:
+    g: Graph = complete_two
+    res: list[list[int]] = algos.multi_agent_brute_force(g, 2)
+
+    assert [0, 1, 2] in res
+    assert [0, 3] in res
+
+
+def test_multi_agent_brute_force_capped() -> None:
+    g: Graph = complete_two
+    capped_res: list[list[int]] = algos.multi_agent_brute_force(g, 2, max_size=1)
+
+    # max_size = 1 means no calculations will occur
+    assert not capped_res
+
+
 def test_evaluate_partition_heuristic() -> None:
     g = Graph.random_complete(8)
 
@@ -579,6 +595,24 @@ def test_uconn_strat_3_directed() -> None:
     g: Graph = complete
     with pytest.raises(ValueError):
         algos.uconn_strat_3(g, 2)
+
+
+def test_multi_agent_brute_force_incomplete_graph() -> None:
+    with pytest.raises(ValueError):
+        algos.multi_agent_brute_force(almost_complete, 2)
+
+
+def test_multi_agent_brute_force_invalid_agent_number() -> None:
+    with pytest.raises(ValueError):
+        algos.multi_agent_brute_force(complete, -2)
+
+    with pytest.raises(ValueError):
+        algos.multi_agent_brute_force(complete, 100)
+
+
+def test_multi_agent_brute_force_negative_max_size() -> None:
+    with pytest.raises(ValueError):
+        algos.multi_agent_brute_force(complete, 2, max_size=-1)
 
 
 def test_evaluate_partition_heuristic_incomplete_graph() -> None:

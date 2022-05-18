@@ -361,6 +361,27 @@ class Graph:
             n, edge_w=(upper / 2, upper), node_w=node_w, directed=directed
         )
 
+    def add_repair_time(self, amt: float) -> None:
+        """
+        Adds a desired fixed repair time to all edges
+
+        Parameters
+        ----------
+        amt: float
+            Repair time to be added
+            Assertions:
+                Must be non-negative
+
+        """
+
+        if amt < 0.0:
+            raise ValueError(f"Passed repair time is negative: {amt}")
+
+        n: int = self.num_nodes
+        for u, v in product(range(n), range(n)):
+            if u != v:
+                self.edge_weight[u][v] += amt
+
     @staticmethod
     def subgraph(
         g: Graph, nodes: Collection[int]

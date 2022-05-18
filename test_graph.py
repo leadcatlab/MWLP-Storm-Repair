@@ -1,6 +1,8 @@
 """
 Test cases to validate Graph class
 """
+from itertools import product
+
 import pytest
 
 from graph import Graph, graph_dict
@@ -82,6 +84,24 @@ def test_dict_from_graph() -> None:
     assert g.node_weight == g_again.node_weight
     assert g.adjacen_list == g_again.adjacen_list
     assert g.edge_weight == g_again.edge_weight
+
+
+def test_json_file() -> None:
+    gd: graph_dict = {
+        "num_nodes": 3,
+        "edges": [(0, 1, 1.0), (1, 0, 2.0), (0, 2, 3.0), (2, 0, 4.0)],
+        "node_weight": [0, 0, 0],
+    }
+    g = Graph.from_dict(gd)
+
+    Graph.to_file(g, "json_testcase.json")
+    new_g = Graph.from_file("json_testcase.json")
+    new_gd: graph_dict = Graph.dict_from_graph(new_g)
+
+    assert gd["num_nodes"] == new_gd["num_nodes"]
+    assert gd["node_weight"] == new_gd["node_weight"]
+    for edge in gd["edges"]:
+        assert edge in new_gd["edges"]
 
 
 def test_to_networkx() -> None:
@@ -243,6 +263,20 @@ def test_is_undirected() -> None:
     }
     g = Graph.from_dict(gd)
     assert Graph.is_undirected(g) is False
+
+
+def test_repair_time() -> None:
+    g = Graph.random_complete_metric(10)
+    before: list[list[float]] = [
+        [g.edge_weight[u][v] for v in range(10)] for u in range(10)
+    ]
+
+    amt: float = 3.14
+    g.add_repair_time(amt)
+
+    for u, v in product(range(10), range(10)):
+        if u != v:
+            assert g.edge_weight[u][v] == before[u][v] + amt
 
 
 def test_subgraph_one_to_one() -> None:
@@ -562,3 +596,9 @@ def test_subgraph_nonexistant_node() -> None:
     with pytest.raises(ValueError):
         g = Graph.random_complete(4)
         Graph.subgraph(g, [0, 2, 4])
+
+
+def test_add_repair_time_negative_time() -> None:
+    with pytest.raises(ValueError):
+        g = Graph.random_complete(5)
+        g.add_repair_time(-1.0)

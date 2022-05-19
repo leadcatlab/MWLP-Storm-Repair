@@ -5,5 +5,4 @@ __pycache__/
 .coverage
 *.swp
 notes.norg
-*.json
-*.txt
+comments_format.txt

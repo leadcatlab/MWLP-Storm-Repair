@@ -1,6 +1,7 @@
 __pycache__/
 .mypy_cache/
 .pytest_cache/
+cache/
 .flake8
 .coverage
 *.swp

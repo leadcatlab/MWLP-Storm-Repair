@@ -19,6 +19,8 @@ graph_dict = TypedDict(
 
 
 def main() -> None:
+    # Generate and save a Graph
+
     # Mass benchmark of graphs given parameters
     # num_graphs: int = 20
     # num_agents: int = 6
@@ -30,36 +32,34 @@ def main() -> None:
     # )
 
     # Alpha threshold benchmarking code
-    # num_graphs: int = 1
-    # num_agents: int = 10
-    # num_nodes: int = 80
-    # upper_bound: float = 10.0
+    num_graphs: int = 5
+    num_agents: int = 15
+    num_nodes: int = 60
+    upper_bound: float = 10.0
 
-    # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
-    # )
-    # for alpha, val in greedy_alpha_dict.items():
-    #     print(f"{alpha:.2f}: {val}")
-    # print()
-    # plt.plot(list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()))
-    # plt.show()
+    greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
+        f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
+    )
+    for alpha, val in greedy_alpha_dict.items():
+        print(f"{alpha:.2f}: {val}")
+    print()
+    plt.plot(
+        list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()), label="greedy"
+    )
 
-    # nn_alpha_dict: list[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.nearest_neighbor,
-    #     count=num_graphs,
-    #     k=num_agents,
-    #     n=num_nodes,
-    #     upper=upper_bound,
-    # )
-    # for alpha, val in nn_alpha_dict.items():
-    #     print(f"{alpha:.2f}: {val}")
-    # print()
-    # plt.plot(list(greedy_alpha_dict.keys()), list(greedy_alpha_dict.values()))
-    # plt.show()
-
-    # Testing writing to file
-    g = Graph.random_complete(4)
-    Graph.to_file(g, "test.json")
+    nn_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
+        f=algos.nearest_neighbor,
+        count=num_graphs,
+        k=num_agents,
+        n=num_nodes,
+        upper=upper_bound,
+    )
+    for alpha, val in nn_alpha_dict.items():
+        print(f"{alpha:.2f}: {val}")
+    print()
+    plt.plot(list(nn_alpha_dict.keys()), list(nn_alpha_dict.values()), label="nn")
+    plt.legend()
+    plt.show()
 
     # Line Plot
     # n = 20
@@ -75,7 +75,6 @@ def main() -> None:
     # nx_g = Graph.to_networkx(g)
 
     # part: list[set[int]] = Graph.create_agent_partition(g, k)
-
     # initial_assignment: list[list[int]] = benchmark.solve_partition(
     #     g, part, algos.nearest_neighbor
     # )

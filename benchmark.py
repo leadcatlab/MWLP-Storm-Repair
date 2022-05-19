@@ -147,6 +147,90 @@ def benchmark_partition(
     return res
 
 
+def generate_graph_bank(
+    count: int,
+    n: int,
+    edge_w: tuple[float, float] = (0.0, 1.0),
+    metric: bool = True,
+    upper: float = 1.0,
+    node_w: tuple[int, int] = (0, 100),
+) -> list[Graph]:
+    """
+    Generate a list of graphs based on passed parameters
+
+    Parameters
+    ----------
+    count: int
+        The number of graphs to benchmark
+
+    n: int
+        The number of nodes per graph
+
+    edge_w: tuple[float, float]
+        The range of edge weights allowed
+        Default: (0.0, 1.0)
+
+    metric: bool
+        Determine whether to test on metric or non-metric graphs
+        Default: True
+
+    upper: float
+        Upper bound of edge weights for a metric graph
+        Default: 1.0
+
+    node_w: tuple[int, int]
+        The range of node weights allowed
+        Default: (0, 100)
+
+    Returns
+    -------
+    list[Graph]:
+        List of randomly generated graphs based on passed data
+
+    """
+
+    graph_bank: list[Graph] = []
+    for _ in range(count):
+        if metric:
+            g = Graph.random_complete_metric(n, upper, node_w)
+        else:
+            g = Graph.random_complete(n, edge_w, node_w)
+        graph_bank.append(g)
+
+    return graph_bank
+
+
+def generate_agent_partitions(graph_bank: list[Graph], k: int) -> list[list[set[int]]]:
+    """
+    Generate agent partitions based on passed graphs
+
+    Parameters
+    ----------
+    graph_bank: list[Graph]
+        Passed list of graphs
+        Assertions:
+            Each graph must be complete
+
+    k: int
+        Number of agents
+
+    Returns
+    -------
+    list[list[set[int]]]
+        Generated agent partitions
+
+    """
+
+    partition_bank: list[list[set[int]]] = []
+
+    for g in graph_bank:
+        assert Graph.is_complete(g)
+        partition: list[set[int]] = Graph.create_agent_partition(g, k)
+        partition_bank.append(partition)
+
+    return partition_bank
+
+
 def mass_benchmark(
     count: int,
     k: int,
@@ -493,6 +577,62 @@ def mass_benchmark(
     print()
 
 
+def alpha_heuristic_given(
+    f: Callable[..., list[int]],
+    graph_bank: list[Graph],
+    partition_bank: list[list[set[int]]],
+) -> dict[float, float]:
+    """
+    Benchmark function to help determine ideal alpha values for transfers and swaps
+    Creates a list of average resulting sums of weighted latencies for each alpha
+
+    Parameters
+    ----------
+    f: Callable[..., list[int]]
+        Passed heuristic
+
+    graph_bank: list[Graph]
+        List of graphs to test over
+        Assertions:
+            complete graphs
+
+    partition_bank: list[list[set[int]]]
+        List of partitions associated with graphs in graph_bank
+        Assertions:
+            partition_bank[i] is an agent partition of graph_bank[i]
+
+    Returns
+    -------
+    dict[float, float]
+        Averages of sums of weighted latencies
+        One for each alpha value from 0.0 to 1.0 in increments of 0.01
+
+    """
+
+    assert len(graph_bank) == len(partition_bank)
+    for g, p in zip(graph_bank, partition_bank):
+        assert Graph.is_complete(g)
+        assert Graph.is_agent_partition(g, p)
+
+    count: int = len(graph_bank)
+    averages: dict[float, float] = {}
+
+    alpha: float = 0.0
+    while alpha <= 1.0:
+        print(alpha)
+        sums: list[float] = []
+        for g, partition in zip(graph_bank, partition_bank):
+            output = algos.find_partition_with_heuristic(g, partition, f, alpha)
+            res = solve_partition(g, output)
+            _, _, _, _, curr_sum, _ = benchmark_partition(g, res)
+            sums.append(curr_sum)
+        averages[alpha] = sum(sums) / count
+        alpha = round(alpha + 0.01, 2)
+        print(Bcolors.CLEAR_LAST_LINE)
+
+    return averages
+
+
 def alpha_heuristic_data(
     f: Callable[..., list[int]],
     count: int,
@@ -504,8 +644,7 @@ def alpha_heuristic_data(
     node_w: tuple[int, int] = (0, 100),
 ) -> dict[float, float]:
     """
-    Benchmark function to help determine ideal alpha values for transfers and swaps
-    Creates a list of average resulting sums of weighted latencies for each alpha
+    Run alpha_heuristic_given on randomly generated graphs
 
     Parameters
     ----------
@@ -545,35 +684,11 @@ def alpha_heuristic_data(
 
     """
 
-    graph_bank: list[Graph] = []
-    for _ in range(count):
-        if metric:
-            g = Graph.random_complete_metric(n, upper, node_w)
-        else:
-            g = Graph.random_complete(n, edge_w, node_w)
-        graph_bank.append(g)
-
-    partition_bank: list[list[set[int]]] = []
-    for g in graph_bank:
-        partition: list[set[int]] = Graph.create_agent_partition(g, k)
-        partition_bank.append(partition)
-
-    averages: dict[float, float] = {}
-
-    alpha: float = 0.0
-    while alpha <= 1.0:
-        print(alpha)
-        sums: list[float] = []
-        for g, partition in zip(graph_bank, partition_bank):
-            output = algos.find_partition_with_heuristic(g, partition, f, alpha)
-            res = solve_partition(g, output)
-            _, _, _, _, curr_sum, _ = benchmark_partition(g, res)
-            sums.append(curr_sum)
-        averages[alpha] = sum(sums) / count
-        alpha = round(alpha + 0.01, 2)
-        print(Bcolors.CLEAR_LAST_LINE)
-
-    return averages
+    graph_bank: list[Graph] = generate_graph_bank(
+        count, n, edge_w, metric, upper, node_w
+    )
+    partition_bank: list[list[set[int]]] = generate_agent_partitions(graph_bank, k)
+    return alpha_heuristic_given(f, graph_bank, partition_bank)
 
 
 def line_plot(

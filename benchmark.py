@@ -291,45 +291,30 @@ def agent_partitions_from_file(loc: str) -> list[list[set[int]]]:
 
 
 def mass_benchmark(
-    count: int,
-    k: int,
-    n: int,
-    edge_w: tuple[float, float] = (0.0, 1.0),
-    metric: bool = True,
-    upper: float = 1.0,
-    node_w: tuple[int, int] = (0, 100),
+    graph_bank: list[Graph],
+    partition_bank: list[list[set[int]]],
 ) -> None:
     """
     Benchmarks a large number of graphs randomly generated accord to the parameters
 
     Parameters
     ----------
-    count: int
-        The number of graphs to benchmark
+    graph_bank: list[Graph]
+        List of graphs to test over
+        Assertions:
+            complete graphs
 
-    k: int
-        The number of agents
-
-    n: int
-        The number of nodes per graph
-
-    edge_w: tuple[float, float]
-        The range of edge weights allowed
-        Default: (0.0, 1.0)
-
-    metric: bool
-        Determine whether to test on metric or non-metric graphs
-        Default: True
-
-    upper: float
-        Upper bound of edge weights for a metric graph
-        Default: 1.0
-
-    node_w: tuple[int, int]
-        The range of node weights allowed
-        Default: (0, 100)
+    partition_bank: list[list[set[int]]]
+        List of partitions associated with graphs in graph_bank
+        Assertions:
+            partition_bank[i] is an agent partition of graph_bank[i]
 
     """
+
+    assert len(graph_bank) == len(partition_bank)
+    for g, p in zip(graph_bank, partition_bank):
+        assert Graph.is_complete(g)
+        assert Graph.is_agent_partition(g, p)
 
     maximums: DefaultDict[str, list[float]] = defaultdict(list)
     # WLP is a weighted average of wait times of sorts
@@ -341,14 +326,10 @@ def mass_benchmark(
     averages: DefaultDict[str, list[float]] = defaultdict(list)
     bests: DefaultDict[str, int] = defaultdict(int)
 
-    for i in range(count):
+    count: int = len(graph_bank)
+    for i, (g, partition) in enumerate(zip(graph_bank, partition_bank)):
         print(i)
-        if metric:
-            g = Graph.random_complete_metric(n, upper, node_w)
-        else:
-            g = Graph.random_complete(n, edge_w, node_w)
-
-        partition: list[set[int]] = Graph.create_agent_partition(g, k)
+        k: int = len(partition)
 
         # Put all desired heuristics here
 
@@ -541,56 +522,6 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        # curr = "Optimal after NN"
-        # print(curr)
-        # print("Solving partition")
-        # start = time.perf_counter_ns()
-        # # NOTE: This is the time to SOLVE for the optimal order in given partition.
-        # #   Includes no time to find the partition (as this was done earlier)
-        # res = solve_partition(g, output, algos.brute_force_mwlp)
-        # end = time.perf_counter_ns()
-        # print(Bcolors.CLEAR_LAST_LINE)
-        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-        #     g, res
-        # )
-        # if curr_sum < curr_best:
-        #     curr_best = curr_sum
-        #     best = curr
-        # maximums[curr].append(curr_max)
-        # wait_times[curr].append(curr_wait)
-        # times[curr].append(end - start)
-        # minimums[curr].append(curr_min)
-        # ranges[curr].append(curr_range)
-        # averages[curr].append(curr_avg)
-        # print(Bcolors.CLEAR_LAST_LINE)
-
-        # This doesn't have any real meaning so it is being depreciated
-        # curr = "Alternate"
-        # print(curr)
-        # print("Finding partition")
-        # start = time.perf_counter_ns()
-        # output = algos.find_partition_with_heuristic(
-        #     g, partition, algos.alternate, 0.18
-        # )
-        # end = time.perf_counter_ns()
-        # print(Bcolors.CLEAR_LAST_LINE)
-        # print("Solving partition")
-        # res = solve_partition(g, output, algos.alternate)
-        # print(Bcolors.CLEAR_LAST_LINE)
-        # curr_max, curr_wait, curr_min, curr_range, curr_avg = benchmark_partition(
-        #     g, res
-        # )
-        # if curr_sum < curr_best:
-        #     curr_best = curr_sum
-        #     best = curr
-        # maximums[curr].append(curr_max)
-        # wait_times[curr].append(curr_wait)
-        # times[curr].append(end - start)
-        # minimums[curr].append(curr_min)
-        # ranges[curr].append(curr_range)
-        # averages[curr].append(curr_avg)
-        # print(Bcolors.CLEAR_LAST_LINE)
-
         bests[best] += 1
 
         print(Bcolors.CLEAR_LAST_LINE)
@@ -690,64 +621,6 @@ def alpha_heuristic_given(
         print(Bcolors.CLEAR_LAST_LINE)
 
     return averages
-
-
-def alpha_heuristic_data(
-    f: Callable[..., list[int]],
-    count: int,
-    k: int,
-    n: int,
-    edge_w: tuple[float, float] = (0.0, 1.0),
-    metric: bool = True,
-    upper: float = 1.0,
-    node_w: tuple[int, int] = (0, 100),
-) -> dict[float, float]:
-    """
-    Run alpha_heuristic_given on randomly generated graphs
-
-    Parameters
-    ----------
-    f: Callable[..., list[int]]
-        Passed heuristic
-
-    count: int
-        The number of graphs to benchmark
-
-    k: int
-        The number of agents
-
-    n: int
-        The number of nodes per graph
-
-    edge_w: tuple[float, float]
-        The range of edge weights allowed
-        Default: (0.0, 1.0)
-
-    metric: bool
-        Determine whether to test on metric or non-metric graphs
-        Default: True
-
-    upper: float
-        Upper bound of edge weights for a metric graph
-        Default: 1.0
-
-    node_w: tuple[int, int]
-        The range of node weights allowed
-        Default: (0, 100)
-
-    Returns
-    -------
-    dict[float, float]
-        Averages of sums of weighted latencies
-        One for each alpha value from 0.0 to 1.0 in increments of 0.01
-
-    """
-
-    graph_bank: list[Graph] = generate_graph_bank(
-        count, n, edge_w, metric, upper, node_w
-    )
-    partition_bank: list[list[set[int]]] = generate_agent_partitions(graph_bank, k)
-    return alpha_heuristic_given(f, graph_bank, partition_bank)
 
 
 def line_plot(

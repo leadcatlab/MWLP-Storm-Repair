@@ -12,68 +12,59 @@ from graph import Graph, graph_dict
 
 def main() -> None:
     # Generate and save Graphs and Partitions
-    # Save JSON file with parallel key-value pairs of int -> graph or partitions
-    # Using seperate JSON files to make it easier to parse
-    graphs: dict[int, graph_dict] = {}
-    parts: dict[int, list[list[int]]] = {}
-
-    num_graphs: int = 5
-    num_agents: int = 15
-    num_nodes: int = 60
+    num_graphs: int = 10
+    num_agents: int = 10
+    num_nodes: int = 30
     upper_bound: float = 10.0
 
     graph_bank: list[Graph] = benchmark.generate_graph_bank(
         num_graphs, num_nodes, upper=upper_bound
     )
-    graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
 
     partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
         graph_bank, num_agents
     )
-    # sets and frozensets are both unserializable
-    serializable_partition_bank: list[list[list[int]]] = [
-        [list(s) for s in part] for part in partition_bank
-    ]
-    for i in range(num_graphs):
-        graphs[i] = graph_dict_bank[i]
-        parts[i] = serializable_partition_bank[i]
 
-    loc: str = "results/test_graph.json"
-    with open(loc, "w", encoding="utf-8") as outfile:
-        json.dump(graphs, outfile)
-    loc = "results/test_part.json"
-    with open(loc, "w", encoding="utf-8") as outfile:
-        json.dump(parts, outfile)
+    # Save banks to files
+    # Use JSON files with parallel key-value pairs of int -> graph or partitions
+    # Using seperate JSON files to make it easier to parse
 
-    graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
-        "results/test_graph.json"
-    )
-    parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
-        "results/test_part.json"
-    )
+    # graphs: dict[int, graph_dict] = {}
+    # parts: dict[int, list[list[int]]] = {}
+    # graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
+    # # sets and frozensets are both unserializable
+    # serializable_partition_bank: list[list[list[int]]] = [
+    #     [list(s) for s in part] for part in partition_bank
+    # ]
+    # for i in range(num_graphs):
+    #     graphs[i] = graph_dict_bank[i]
+    #     parts[i] = serializable_partition_bank[i]
 
-    assert len(graphs_from_file) == len(parts_from_file)
-    for g, p in zip(graphs_from_file, parts_from_file):
-        assert Graph.is_agent_partition(g, p)
+    # loc: str = "results/test_graph.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(graphs, outfile)
+    # loc = "results/test_part.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(parts, outfile)
 
-    # Mass benchmark of graphs given parameters
-    # num_graphs: int = 20
-    # num_agents: int = 6
-    # num_nodes: int = 30
-    # upper_bound: float = 10.0
-
-    # benchmark.mass_benchmark(
-    #     count=num_graphs, k=num_agents, n=num_nodes, metric=True, upper=upper_bound
+    # Read from generated bank files
+    # graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
+    #     "results/test_graph.json"
+    # )
+    # parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
+    #     "results/test_part.json"
     # )
 
-    # Alpha threshold benchmarking code
-    # num_graphs: int = 5
-    # num_agents: int = 15
-    # num_nodes: int = 60
-    # upper_bound: float = 10.0
+    # assert len(graphs_from_file) == len(parts_from_file)
+    # for g, p in zip(graphs_from_file, parts_from_file):
+    #     assert Graph.is_agent_partition(g, p)
 
+    # Mass benchmark of graphs given bank
+    benchmark.mass_benchmark(graph_bank, partition_bank)
+
+    # Alpha Heuristic Benchmarking
     # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.greedy, count=num_graphs, k=num_agents, n=num_nodes, upper=upper_bound
+    #     f=algos.greedy, graph_bank, partition_bank
     # )
     # for alpha, val in greedy_alpha_dict.items():
     #     print(f"{alpha:.2f}: {val}")
@@ -84,11 +75,7 @@ def main() -> None:
     # )
 
     # nn_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_data(
-    #     f=algos.nearest_neighbor,
-    #     count=num_graphs,
-    #     k=num_agents,
-    #     n=num_nodes,
-    #     upper=upper_bound,
+    #     f=algos.nearest_neighbor, graph_bank, partition_bank
     # )
     # for alpha, val in nn_alpha_dict.items():
     #     print(f"{alpha:.2f}: {val}")
@@ -96,13 +83,6 @@ def main() -> None:
     # plt.plot(list(nn_alpha_dict.keys()), list(nn_alpha_dict.values()), label="nn")
     # plt.legend()
     # plt.show()
-
-    # Line Plot
-    # n = 20
-    # k = 4
-    # g: Graph = Graph.random_complete_metric(n)
-    # part: list[set[int]] = Graph.create_agent_partition(g, k)
-    # benchmark.line_plot(g, part)
 
     # Messing with plotting
     # n = 100

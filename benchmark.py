@@ -1,6 +1,7 @@
 """
 Benchmark Functions
 """
+import json
 import time
 from collections import defaultdict
 from typing import Callable, DefaultDict, no_type_check
@@ -11,7 +12,7 @@ import networkx as nx  # type: ignore
 import numpy as np
 
 import algos
-from graph import Graph
+from graph import Graph, graph_dict
 
 
 class Bcolors:
@@ -200,6 +201,34 @@ def generate_graph_bank(
     return graph_bank
 
 
+def graph_bank_from_file(loc: str) -> list[Graph]:
+    """
+    Generate a list of graphs based on a json file
+
+    Parameters
+    ----------
+    loc: str
+        location of json file of graph_dicts
+
+    Returns
+    -------
+    list[Graph]:
+        List of graphs based on json file
+
+    """
+
+    graph_dict_bank: dict[str, graph_dict] = {}
+    with open(loc, encoding="utf-8") as gd_json:
+        graph_dict_bank = json.load(gd_json)
+
+    n: int = len(graph_dict_bank)
+    graph_bank: list[Graph] = []
+    for i in range(n):
+        gd: graph_dict = graph_dict_bank[str(i)]
+        graph_bank.append(Graph.from_dict(gd))
+    return graph_bank
+
+
 def generate_agent_partitions(graph_bank: list[Graph], k: int) -> list[list[set[int]]]:
     """
     Generate agent partitions based on passed graphs
@@ -227,6 +256,36 @@ def generate_agent_partitions(graph_bank: list[Graph], k: int) -> list[list[set[
         assert Graph.is_complete(g)
         partition: list[set[int]] = Graph.create_agent_partition(g, k)
         partition_bank.append(partition)
+
+    return partition_bank
+
+
+def agent_partitions_from_file(loc: str) -> list[list[set[int]]]:
+    """
+    Generate a list of agent partitions based on a json file
+
+    Parameters
+    ----------
+    loc: str
+        location of json file of partitions
+
+    Returns
+    -------
+    list[list[set[int]]]:
+        List of agent partitions based on json file
+
+    """
+
+    serialized_partition_bank: dict[str, list[list[int]]] = {}
+    with open(loc, encoding="utf8") as part_file:
+        serialized_partition_bank = json.load(part_file)
+
+    n: int = len(serialized_partition_bank)
+    partition_bank: list[list[set[int]]] = []
+    for i in range(n):
+        serialized_part: list[list[int]] = serialized_partition_bank[str(i)]
+        part: list[set[int]] = [set(s) for s in serialized_part]
+        partition_bank.append(part)
 
     return partition_bank
 

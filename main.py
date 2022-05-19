@@ -45,6 +45,17 @@ def main() -> None:
     with open(loc, "w", encoding="utf-8") as outfile:
         json.dump(parts, outfile)
 
+    graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
+        "results/test_graph.json"
+    )
+    parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
+        "results/test_part.json"
+    )
+
+    assert len(graphs_from_file) == len(parts_from_file)
+    for g, p in zip(graphs_from_file, parts_from_file):
+        assert Graph.is_agent_partition(g, p)
+
     # Mass benchmark of graphs given parameters
     # num_graphs: int = 20
     # num_agents: int = 6

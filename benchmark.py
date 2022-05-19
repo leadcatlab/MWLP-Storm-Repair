@@ -609,13 +609,16 @@ def alpha_heuristic_given(
 
     alpha: float = 0.0
     while alpha <= 1.0:
-        print(alpha)
+        print(f"Current Alpha Val = {alpha}")
         sums: list[float] = []
-        for g, partition in zip(graph_bank, partition_bank):
+        for i, (g, partition) in enumerate(zip(graph_bank, partition_bank)):
+            print(f"Current Graph = {i}")
             output = algos.find_partition_with_heuristic(g, partition, f, alpha)
             res = solve_partition(g, output)
             _, _, _, _, curr_sum, _ = benchmark_partition(g, res)
             sums.append(curr_sum)
+            print(Bcolors.CLEAR_LAST_LINE)
+
         averages[alpha] = sum(sums) / count
         alpha = round(alpha + 0.01, 2)
         print(Bcolors.CLEAR_LAST_LINE)

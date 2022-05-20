@@ -12,18 +12,18 @@ from graph import Graph, graph_dict
 
 def main() -> None:
     # Generate Graphs and Partitions
-    num_graphs: int = 10
-    num_agents: int = 10
-    num_nodes: int = 30
-    upper_bound: float = 10.0
+    # num_graphs: int = 10
+    # num_agents: int = 10
+    # num_nodes: int = 30
+    # upper_bound: float = 10.0
 
-    graph_bank: list[Graph] = benchmark.generate_graph_bank(
-        num_graphs, num_nodes, upper=upper_bound
-    )
+    # graph_bank: list[Graph] = benchmark.generate_graph_bank(
+    #     num_graphs, num_nodes, upper=upper_bound
+    # )
 
-    partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
-        graph_bank, num_agents
-    )
+    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+    #     graph_bank, num_agents
+    # )
 
     # Save banks to files
     # Use JSON files with parallel key-value pairs of int -> graph or partitions
@@ -60,7 +60,7 @@ def main() -> None:
     #     assert Graph.is_agent_partition(g, p)
 
     # Mass benchmark of graphs given bank
-    benchmark.mass_benchmark(graph_bank, partition_bank)
+    # benchmark.mass_benchmark(graph_bank, partition_bank)
 
     # Messing with plotting
     # n = 100
@@ -89,11 +89,11 @@ def main() -> None:
     ############################################################################
     # # Parameters for Graphs and Partitions
     # num_graphs: int = 20
-    # num_nodes: int = 80
+    # num_nodes: int = 56
     # edge_w: tuple[float, float] = (5.0, 10.0)
     # metric = False
     # node_w: tuple[int, int] = (10, 100)
-    # num_agents: int = 10
+    # num_agents: int = 8
     # repair_time: float = 2.0
 
     # # Generating Graphs
@@ -133,39 +133,39 @@ def main() -> None:
     # with open(loc, "w", encoding="utf-8") as outfile:
     #     json.dump(parts, outfile)
 
-    # # Read from generated bank files
-    # graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
-    #     "results/alpha/final_graph.json"
-    # )
-    # parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
-    #     "results/alpha/final_part.json"
-    # )
-    # assert len(graphs_from_file) == len(parts_from_file)
-    # for g, p in zip(graphs_from_file, parts_from_file):
-    #     assert Graph.is_agent_partition(g, p)
+    # Read from generated bank files
+    graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
+        "results/alpha/final_graph.json"
+    )
+    parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
+        "results/alpha/final_part.json"
+    )
+    assert len(graphs_from_file) == len(parts_from_file)
+    for g, p in zip(graphs_from_file, parts_from_file):
+        assert Graph.is_agent_partition(g, p)
 
-    # # Run Alpha Heuristic Benchmark
-    # greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_given(
-    #     algos.greedy, graphs_from_file, parts_from_file
-    # )
-    # for alpha, val in greedy_alpha_dict.items():
-    #     print(f"{alpha:.2f}: {val}")
-    # print()
-    # with open(
-    #     "results/alpha/alpha_greedy_final_results.json", "w", encoding="utf-8"
-    # ) as outfile:
-    #     json.dump(greedy_alpha_dict, outfile)
+    # Run Alpha Heuristic Benchmark
+    greedy_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_given(
+        algos.greedy, graphs_from_file, parts_from_file
+    )
+    for alpha, val in greedy_alpha_dict.items():
+        print(f"{alpha:.2f}: {val}")
+    print()
+    with open(
+        "results/alpha/alpha_greedy_final_results.json", "w", encoding="utf-8"
+    ) as outfile:
+        json.dump(greedy_alpha_dict, outfile)
 
-    # nn_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_given(
-    #     algos.nearest_neighbor, graphs_from_file, parts_from_file
-    # )
-    # for alpha, val in nn_alpha_dict.items():
-    #     print(f"{alpha:.2f}: {val}")
-    # print()
-    # with open(
-    #     "results/alpha/alpha_nn_final_results.json", "w", encoding="utf-8"
-    # ) as outfile:
-    #     json.dump(nn_alpha_dict, outfile)
+    nn_alpha_dict: dict[float, float] = benchmark.alpha_heuristic_given(
+        algos.nearest_neighbor, graphs_from_file, parts_from_file
+    )
+    for alpha, val in nn_alpha_dict.items():
+        print(f"{alpha:.2f}: {val}")
+    print()
+    with open(
+        "results/alpha/alpha_nn_final_results.json", "w", encoding="utf-8"
+    ) as outfile:
+        json.dump(nn_alpha_dict, outfile)
 
     # # Finish plotting
     # plt.plot(

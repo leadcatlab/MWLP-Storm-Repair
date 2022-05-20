@@ -4,7 +4,7 @@ Benchmark Functions
 import json
 import time
 from collections import defaultdict
-from typing import Callable, DefaultDict, no_type_check
+from typing import Any, Callable, DefaultDict, no_type_check
 
 import matplotlib.pyplot as plt  # type: ignore
 import mplcursors  # type: ignore
@@ -293,7 +293,8 @@ def agent_partitions_from_file(loc: str) -> list[list[set[int]]]:
 def mass_benchmark(
     graph_bank: list[Graph],
     partition_bank: list[list[set[int]]],
-) -> None:
+    rand_dist_range: tuple[float, float],
+) -> list[DefaultDict[Any, Any]]:
     """
     Benchmarks a large number of graphs randomly generated accord to the parameters
 
@@ -308,6 +309,9 @@ def mass_benchmark(
         List of partitions associated with graphs in graph_bank
         Assertions:
             partition_bank[i] is an agent partition of graph_bank[i]
+
+    rand_dist_range: tuple[float, float]
+        Range of allowed distances for random aspect of prior strategies
 
     """
 
@@ -385,10 +389,13 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Greedy + Random (dist: 2.5)"
+        lo, hi = rand_dist_range
+        dist_range: float = hi - lo
+
+        curr = "UConn Greedy + Random (25%)"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, 2.5)
+        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.25))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -410,10 +417,10 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Greedy + Random (dist: 5.0)"
+        curr = "UConn Greedy + Random (50%)"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, 5.0)
+        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.50))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -435,10 +442,10 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Greedy + Random (dist: 7.5)"
+        curr = "UConn Greedy + Random (75%)"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, 7.5)
+        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.75))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -565,6 +572,8 @@ def mass_benchmark(
     for key, vals in averages.items():
         print(f"\t{key:40}{sum(vals) / count}")
     print()
+
+    return [maximums, wait_times, times, minimums, sums, ranges, averages, bests]
 
 
 def alpha_heuristic_given(

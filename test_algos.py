@@ -374,7 +374,7 @@ def test_evaluate_partition_heuristic() -> None:
 
 def test_transfers_and_swaps_maintains_agent_partition() -> None:
     for _ in range(5):
-        g = Graph.random_complete_metric(20)
+        g = Graph.random_complete_metric(30)
         k: int = 4
         part: list[set[int]] = Graph.create_agent_partition(g, k)
         res: list[set[int]] = algos.transfers_and_swaps_mwlp(

@@ -86,6 +86,9 @@ def main() -> None:
 
         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
         G.nodes[closest]["pop"] += population
+    
+    print("Writing graphML")
+    ox.save_graphml(G, "champaign.graphml")
 
     n: int = G.order()
     # Initializing a bunch of empty nodes and edges is faster than calling add_edge
@@ -104,6 +107,10 @@ def main() -> None:
     # map to relate nodes between g and G
     # node_map[i] = x := node i in g corresponding to node x in G
     node_map: dict[int, int] = {i: rand_order[i] for i in range(n)}
+    
+    print("Adding node weights to g")
+    for i in range(n):
+        g.node_weight[i] = G.nodes[rand_order[i]]['pop']
 
     # Use APSP algorithm to add edge weights
     print("Solving APSP")
@@ -132,8 +139,13 @@ def main() -> None:
     else:
         print("Graph is undirected")
     
-    print("Writing graphML")
-    ox.save_graphml(G, "champaign.graphml")
+    # print("Writing graph json")
+    # gd: graph_dict = Graph.dict_from_graph(g)
+    # loc: str = "champaign_graph.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(gd, outfile)
+
+
     # sorted_pop = sorted(list(g.nodes), key=lambda i: g.nodes[i]["pop"])
     # # for i in sorted_pop:
     # #     print(f"{i}: {G.nodes[i]['pop']}")

@@ -133,8 +133,8 @@ def test_is_complete() -> None:
     g = Graph(4)
     for i in range(4):
         for j in range(i + 1, 4):
-            g.add_edge(i, j)
-            g.add_edge(j, i)
+            g.add_edge(i, j, 1.0)
+            g.add_edge(j, i, 1.0)
 
     assert Graph.is_complete(g)
 

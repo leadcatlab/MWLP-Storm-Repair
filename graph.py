@@ -103,7 +103,7 @@ class Graph:
             )
         g.node_weight = gd["node_weight"]
 
-        for start_node, end_node, node_weight in gd["edges"]:
+        for start_node, end_node, edge_weight in gd["edges"]:
             if start_node >= g.num_nodes or g.num_nodes < 0:
                 raise ValueError(
                     f"Starting node {start_node} is out of range [0, {g.num_nodes - 1}]"
@@ -112,7 +112,7 @@ class Graph:
                 raise ValueError(
                     f"Ending node {end_node} is out of range [0, {g.num_nodes - 1}]"
                 )
-            g.add_edge(start_node, end_node, node_weight)
+            g.add_edge(start_node, end_node, edge_weight)
 
         return g
 
@@ -624,6 +624,8 @@ class Graph:
 
         for u, v in product(range(g.num_nodes), range(g.num_nodes)):
             if u != v and v not in g.adjacen_list[u]:
+                return False
+            if u != v and g.edge_weight[u][v] <= 0.0:
                 return False
 
         return True

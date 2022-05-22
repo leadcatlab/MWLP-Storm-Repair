@@ -622,11 +622,6 @@ def test_evaluate_partition_heuristic_incomplete_graph() -> None:
         )
 
 
-def test_evaluate_partition_heuristic_directed_graph() -> None:
-    with pytest.raises(ValueError):
-        algos.evaluate_partition_heuristic(complete, [{0, 1, 2, 3}], algos.greedy)
-
-
 def test_evaluate_partition_heuristic_invalid_partition() -> None:
     g: Graph = undirected
     with pytest.raises(ValueError):
@@ -640,13 +635,6 @@ def test_transfers_and_swaps_mwlp_incomplete() -> None:
         algos.transfers_and_swaps_mwlp(g, part, algos.greedy)
 
 
-def test_transfers_and_swaps_mwlp_undirected() -> None:
-    g: Graph = complete
-    part: list[set[int]] = Graph.create_agent_partition(g, 2)
-    with pytest.raises(ValueError):
-        algos.transfers_and_swaps_mwlp(g, part, algos.greedy)
-
-
 def test_transfers_and_swaps_mwlp_invalid_partition() -> None:
     g: Graph = undirected
     with pytest.raises(ValueError):
@@ -655,13 +643,6 @@ def test_transfers_and_swaps_mwlp_invalid_partition() -> None:
 
 def test_transfer_outliers_mwlp_incomplete() -> None:
     g: Graph = almost_complete
-    part: list[set[int]] = Graph.create_agent_partition(g, 2)
-    with pytest.raises(ValueError):
-        algos.transfer_outliers_mwlp(g, part, algos.greedy, 0.5)
-
-
-def test_transfer_outliers_undirected() -> None:
-    g: Graph = complete
     part: list[set[int]] = Graph.create_agent_partition(g, 2)
     with pytest.raises(ValueError):
         algos.transfer_outliers_mwlp(g, part, algos.greedy, 0.5)
@@ -682,13 +663,6 @@ def test_transfer_outliers_mwlp_invalid_threshold() -> None:
 
 def test_find_partition_heuristic_incomplete() -> None:
     g: Graph = almost_complete
-    part: list[set[int]] = Graph.create_agent_partition(g, 2)
-    with pytest.raises(ValueError):
-        algos.find_partition_with_heuristic(g, part, algos.greedy, 0.5)
-
-
-def test_find_partition_heuristic_undirected() -> None:
-    g: Graph = complete
     part: list[set[int]] = Graph.create_agent_partition(g, 2)
     with pytest.raises(ValueError):
         algos.find_partition_with_heuristic(g, part, algos.greedy, 0.5)

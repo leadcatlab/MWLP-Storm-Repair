@@ -3,10 +3,10 @@ Driver code for testing functions
 """
 import json
 import math
+import pickle
 import random
 from itertools import product
 from typing import Any, DefaultDict
-import pickle
 
 import matplotlib.pyplot as plt  # type: ignore
 import networkx as nx  # type: ignore
@@ -56,10 +56,10 @@ def main() -> None:
     # for item in components:
     #     if len(item) == 0 or len(item) == 1:
     #         G.remove_node(item.pop())
-    # 
+    #
     # n: int = G.order()
     # print(f"{n} nodes")
-    # 
+    #
     # # During repairs we do not care about one way roads
     # print("Turning G into undirected graph")
     # G = ox.utils_graph.get_undirected(G)
@@ -86,37 +86,40 @@ def main() -> None:
     #     if population > 0:
     #         # Find the closest node in G to lat, long
     #         closest: int = min(
-    #             G.nodes(), key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"])
+    #             G.nodes(),
+    #             key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
     #         )
 
     #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
     #         G.nodes[closest]["pop"] += population
-    # 
+    #
     # print("Writing graphML")
     # ox.save_graphml(G, "champaign.graphml")
-    
+
     print("Loading graphml")
-    G = ox.load_graphml('champaign.graphml')
-   
+    G = ox.load_graphml("champaign.graphml")
+
     print("Fixing population numbers")
     for node in G.nodes():
-        G.nodes[node]['pop'] =  int(G.nodes[node]['pop'])
+        G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
 
     # Find populated nodes
     node_list: list[int] = [int(node) for node in G.nodes()]
-    populated: list[int] = filter(lambda node: G.nodes[node]['pop'] > 0, node_list)
-    
+    populated: list[int] = list(
+        filter(lambda node: G.nodes[node]["pop"] > 0, node_list)
+    )
+
     # Choose random nodes to be damaged
     num_nodes: int = 100
     print(f"Choosing {num_nodes} damaged nodes")
-    damaged: list[int] = list(node_list)
+    damaged: list[int] = list(populated)
     random.shuffle(damaged)
     damaged = damaged[:100]
-    
+
     # Construct smaller graph of just damaged nodes out of G
     print("Constructing g")
     g = Graph(num_nodes)
-    
+
     # Initializing a bunch of empty nodes and edges is faster than calling add_edge
     print("Initializing adjacency lists")
     for i in range(num_nodes):  # make complete
@@ -127,7 +130,7 @@ def main() -> None:
 
     print("Adding node weights to g")
     for i in range(num_nodes):
-        g.node_weight[i] = G.nodes[damaged[i]]['pop']
+        g.node_weight[i] = G.nodes[damaged[i]]["pop"]
 
     # Use APSP algorithm to add edge weights
     print("Solving APSP")
@@ -141,7 +144,7 @@ def main() -> None:
 
     print("Checking completeness of g")
     for u, v in product(range(num_nodes), range(num_nodes)):
-        if u != v: 
+        if u != v:
             if g.edge_weight[u][v] <= 0.0:
                 print("Graph is incomplete")
                 break
@@ -156,19 +159,17 @@ def main() -> None:
                 break
     else:
         print("Graph is undirected")
- 
+
     # We now know that g is complete and undirected
 
     print("Writing pickled graph object")
-    with open('damaged.pickle', 'wb') as outfile:
+    with open("damaged.pickle", "wb") as outfile:
         pickle.dump(g, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-
 
     # print("Loading constructed graph")
     # with open('damaged.pickle', 'rb') as outfile:
     #     g = pickle.load(outfile)
 
-    
     # sorted_pop = sorted(node_list, key=lambda i: int(G.nodes[i]["pop"]))
     # # for i in sorted_pop:
     # #     print(f"{i}: {G.nodes[i]['pop']}")

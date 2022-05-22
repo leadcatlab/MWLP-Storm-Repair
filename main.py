@@ -115,10 +115,25 @@ def main() -> None:
             g.edge_weight[u][v] = apsp[u_prime][v_prime]
 
     print("Checking completeness of g")
-    print(f"{Graph.is_complete(g) = }")
-    print("Checking directedness of g")
-    print(f"{Graph.is_undirected(g) = }")
+    for u, v in product(range(n), range(n)):
+        if u != v: 
+            if g.edge_weight[u][v] <= 0.0:
+                print("Graph is incomplete")
+                break
+    else:
+        print("Graph is complete")
 
+    print("Checking directedness of g")
+    for u, v in product(range(n), range(n)):
+        if u != v:
+            if g.edge_weight[u][v] != g.edge_weight[v][u]:
+                print("Graph is directed")
+                break
+    else:
+        print("Graph is undirected")
+    
+    print("Writing graphML")
+    ox.save_graphml(G, "champaign.graphml")
     # sorted_pop = sorted(list(g.nodes), key=lambda i: g.nodes[i]["pop"])
     # # for i in sorted_pop:
     # #     print(f"{i}: {G.nodes[i]['pop']}")

@@ -132,9 +132,9 @@ def main() -> None:
     for i in range(num_nodes):
         g.node_weight[i] = G.nodes[damaged[i]]["pop"]
 
-    # Use APSP algorithm to add edge weights
     print("Solving APSP")
     apsp = dict(nx.all_pairs_shortest_path_length(G))
+
     print("Adding edge weights to g")
     repair_time: float = 0.0
     for u, v in product(range(num_nodes), range(num_nodes)):
@@ -162,9 +162,9 @@ def main() -> None:
 
     # We now know that g is complete and undirected
 
-    print("Writing pickled graph object")
-    with open("damaged.pickle", "wb") as outfile:
-        pickle.dump(g, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+    print("Writing graph json")
+    with open("damaged.json", "w") as outfile:
+        json.dump(Graph.dict_from_graph(g), outfile)
 
     # print("Loading constructed graph")
     # with open('damaged.pickle', 'rb') as outfile:

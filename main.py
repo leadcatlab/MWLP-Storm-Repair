@@ -92,93 +92,94 @@ def main() -> None:
     #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
     #         G.nodes[closest]["pop"] += population
     # 
-    # empty: int = 0
-    # for node in G.nodes():
-    #     if G.nodes[node]['pop'] == 0: empty += 1
-    # print(f"{empty} nodes with 0 population")
-    # 
-    # # TODO: try to find way remove nodes with empty population but maintain distances
-    # # Maybe create new graph
-    # 
     # print("Writing graphML")
     # ox.save_graphml(G, "champaign.graphml")
-
-    # # Initializing a bunch of empty nodes and edges is faster than calling add_edge
-    # g = Graph(n)
-    # print("Initializing adjacency lists")
-    # for i in range(n):  # make complete
-    #     g.adjacen_list[i] = list(range(n))
-    # print("Initializing edge weights")
-    # for i in range(n):
-    #     g.edge_weight[i] = [-1.0 for _ in range(n)]
-
-    # # create a random ordering of nodes with node 0 = start
-    # rand_order: list[int] = list(G.nodes)
-    # random.shuffle(rand_order)
-
-    # # map to relate nodes between g and G
-    # # node_map[i] = x := node i in g corresponding to node x in G
-    # node_map: dict[int, int] = {i: rand_order[i] for i in range(n)}
-    # 
-    # print("Adding node weights to g")
-    # for i in range(n):
-    #     g.node_weight[i] = G.nodes[rand_order[i]]['pop']
-
-    # # Use APSP algorithm to add edge weights
-    # print("Solving APSP")
-    # apsp = dict(nx.all_pairs_shortest_path_length(G))
-    # print("Adding edges to g")
-    # for u, v in product(range(n), range(n)):
-    #     if u != v:
-    #         u_prime, v_prime = node_map[u], node_map[v]
-    #         g.edge_weight[u][v] = apsp[u_prime][v_prime]
-
-    # print("Checking completeness of g")
-    # for u, v in product(range(n), range(n)):
-    #     if u != v: 
-    #         if g.edge_weight[u][v] <= 0.0:
-    #             print("Graph is incomplete")
-    #             break
-    # else:
-    #     print("Graph is complete")
-
-    # print("Checking directedness of g")
-    # for u, v in product(range(n), range(n)):
-    #     if u != v:
-    #         if g.edge_weight[u][v] != g.edge_weight[v][u]:
-    #             print("Graph is directed")
-    #             break
-    # else:
-    #     print("Graph is undirected")
- 
-    # # We know that g is complete and undirected
-
-    # print("Writing pickled graph object")
-    # with open('champaign_graph.pickle', 'wb') as outfile:
-    #     pickle.dump(g, outfile, protocol=pickle.HIGHEST_PROTOCOL)
-
+    
     print("Loading graphml")
     G = ox.load_graphml('champaign.graphml')
+   
+    print("Fixing population numbers")
+    for node in G.nodes():
+        G.nodes[node]['pop'] =  int(G.nodes[node]['pop'])
 
-    print("Loading constructed graph")
-    with open('champaign_graph.pickle', 'rb') as outfile:
-        g = pickle.load(outfile)
-
-    assert G.order() == g.num_nodes
-    n: int = G.order()
-    
+    # Find populated nodes
     node_list: list[int] = [int(node) for node in G.nodes()]
-    sorted_pop = sorted(node_list, key=lambda i: int(G.nodes[i]["pop"]))
-    # for i in sorted_pop:
-    #     print(f"{i}: {G.nodes[i]['pop']}")
+    populated: list[int] = filter(lambda node: G.nodes[node]['pop'] > 0, node_list)
+    
+    # Choose random nodes to be damaged
+    num_nodes: int = 100
+    print(f"Choosing {num_nodes} damaged nodes")
+    damaged: list[int] = list(node_list)
+    random.shuffle(damaged)
+    damaged = damaged[:100]
+    
+    # Construct smaller graph of just damaged nodes out of G
+    print("Constructing g")
+    g = Graph(num_nodes)
+    
+    # Initializing a bunch of empty nodes and edges is faster than calling add_edge
+    print("Initializing adjacency lists")
+    for i in range(num_nodes):  # make complete
+        g.adjacen_list[i] = list(range(num_nodes))
+    print("Initializing edge weights")
+    for i in range(num_nodes):
+        g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
 
-    max_pop = int(G.nodes[sorted_pop[-1]]["pop"])
+    print("Adding node weights to g")
+    for i in range(num_nodes):
+        g.node_weight[i] = G.nodes[damaged[i]]['pop']
 
-    ox.plot_graph(
-        G,
-        node_size=[(int(G.nodes[i]["pop"]) / max_pop) * 100 for i in G.nodes],
-        node_color="#261CE9",
-    )
+    # Use APSP algorithm to add edge weights
+    print("Solving APSP")
+    apsp = dict(nx.all_pairs_shortest_path_length(G))
+    print("Adding edge weights to g")
+    repair_time: float = 0.0
+    for u, v in product(range(num_nodes), range(num_nodes)):
+        if u != v:
+            u_prime, v_prime = damaged[u], damaged[v]
+            g.edge_weight[u][v] = apsp[u_prime][v_prime] + repair_time
+
+    print("Checking completeness of g")
+    for u, v in product(range(num_nodes), range(num_nodes)):
+        if u != v: 
+            if g.edge_weight[u][v] <= 0.0:
+                print("Graph is incomplete")
+                break
+    else:
+        print("Graph is complete")
+
+    print("Checking directedness of g")
+    for u, v in product(range(num_nodes), range(num_nodes)):
+        if u != v:
+            if g.edge_weight[u][v] != g.edge_weight[v][u]:
+                print("Graph is directed")
+                break
+    else:
+        print("Graph is undirected")
+ 
+    # We now know that g is complete and undirected
+
+    print("Writing pickled graph object")
+    with open('damaged.pickle', 'wb') as outfile:
+        pickle.dump(g, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+
+
+    # print("Loading constructed graph")
+    # with open('damaged.pickle', 'rb') as outfile:
+    #     g = pickle.load(outfile)
+
+    
+    # sorted_pop = sorted(node_list, key=lambda i: int(G.nodes[i]["pop"]))
+    # # for i in sorted_pop:
+    # #     print(f"{i}: {G.nodes[i]['pop']}")
+
+    # max_pop = int(G.nodes[sorted_pop[-1]]["pop"])
+
+    # ox.plot_graph(
+    #     G,
+    #     node_size=[(int(G.nodes[i]["pop"]) / max_pop) * 100 for i in G.nodes],
+    #     node_color="#261CE9",
+    # )
 
     ############################################################################
     ###################### Finalizing Mass Benchmarking ########################

@@ -579,24 +579,6 @@ def test_uconn_strat_3_incomplete() -> None:
         algos.uconn_strat_3(g, 2)
 
 
-def test_uconn_strat_1_directed() -> None:
-    g: Graph = complete
-    with pytest.raises(ValueError):
-        algos.uconn_strat_1(g, 2)
-
-
-def test_uconn_strat_2_directed() -> None:
-    g: Graph = complete
-    with pytest.raises(ValueError):
-        algos.uconn_strat_2(g, 2, 1.0)
-
-
-def test_uconn_strat_3_directed() -> None:
-    g: Graph = complete
-    with pytest.raises(ValueError):
-        algos.uconn_strat_3(g, 2)
-
-
 def test_multi_agent_brute_force_incomplete_graph() -> None:
     with pytest.raises(ValueError):
         algos.multi_agent_brute_force(almost_complete, 2)

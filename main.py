@@ -3,8 +3,8 @@ Driver code for testing functions
 """
 import json
 import math
-import pickle
 import random
+from collections import defaultdict
 from itertools import product
 from typing import Any, DefaultDict
 
@@ -41,60 +41,63 @@ def main() -> None:
     # benchmark.draw_graph_with_partitions(nx_g, final_assignment, "Nearest Neighbor")
     # plt.show()
 
-    # # Testing Champaign data
-    # # Thanks Pranay
-    # ox.config(log_console=True, use_cache=True)
-    # place = "Champaign, Illinois, USA"
-    # # gdf = ox.geocode_to_gdf(place)
-    # # area = ox.projection.project_gdf(gdf).unary_union.area
-    # # 'drive_service' := drivable and service roads both
-    # G = ox.graph_from_place(place, network_type="drive_service", simplify=True)
+    # Testing Champaign data
+    # Thanks Pranay
+    ox.config(log_console=True, use_cache=True)
+    place = "Champaign, Illinois, USA"
+    # gdf = ox.geocode_to_gdf(place)
+    # area = ox.projection.project_gdf(gdf).unary_union.area
+    # 'drive_service' := drivable and service roads both
+    G = ox.graph_from_place(place, network_type="drive_service", simplify=True)
+    G = ox.distance.add_edge_lengths(G, precision=5)
 
-    # # Remove unreachable /  empty nodes
-    # print("Removing unreachable nodes")
-    # components = list(nx.strongly_connected_components(G))
-    # for item in components:
-    #     if len(item) == 0 or len(item) == 1:
-    #         G.remove_node(item.pop())
-    #
-    # n: int = G.order()
-    # print(f"{n} nodes")
-    #
-    # # During repairs we do not care about one way roads
-    # print("Turning G into undirected graph")
-    # G = ox.utils_graph.get_undirected(G)
+    kph: float = 30
+    print(f"Setting all travel speeds to {kph} kph")
+    for u, v, key in G.edges(keys=True):
+        G[u][v][key]["speed_kph"] = 30.0
+    G = ox.add_edge_travel_times(G, precision=5)
 
-    # # Set speed of repair crews to 30 km / h
-    # G = ox.add_edge_speeds(G, fallback=30)
-    # G = ox.add_edge_travel_times(G)
+    # Remove unreachable /  empty nodes
+    print("Removing unreachable nodes")
+    components = list(nx.strongly_connected_components(G))
+    for item in components:
+        if len(item) == 0 or len(item) == 1:
+            G.remove_node(item.pop())
 
-    # # Add population to the nearest points
-    # pop_data = pd.read_csv("cus_blockdata.csv", index_col=0)
-    # pop_points = list(pop_data.to_records(index=False))
+    order: int = G.order()
+    print(f"{order} nodes")
 
-    # def dist(x1: float, y1: float, x2: float, y2: float) -> float:
-    #     x_diff: float = x1 - x2
-    #     y_diff: float = y1 - y2
-    #     return math.sqrt(x_diff**2 + y_diff**2)
+    # During repairs we do not care about one way roads
+    print("Turning G into undirected graph")
+    G = ox.utils_graph.get_undirected(G)
 
-    # print("Initializing population of each node to 0")
-    # for i in G.nodes():
-    #     G.nodes[i]["pop"] = 0
+    # Add population to the nearest points
+    pop_data = pd.read_csv("cus_blockdata.csv", index_col=0)
+    pop_points = list(pop_data.to_records(index=False))
 
-    # print("Adding populations")
-    # for population, lat, long in pop_points:
-    #     if population > 0:
-    #         # Find the closest node in G to lat, long
-    #         closest: int = min(
-    #             G.nodes(),
-    #             key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
-    #         )
+    def dist(x1: float, y1: float, x2: float, y2: float) -> float:
+        x_diff: float = x1 - x2
+        y_diff: float = y1 - y2
+        return math.sqrt(x_diff**2 + y_diff**2)
 
-    #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
-    #         G.nodes[closest]["pop"] += population
-    #
-    # print("Writing graphML")
-    # ox.save_graphml(G, "champaign.graphml")
+    print("Initializing population of each node to 0")
+    for i in G.nodes():
+        G.nodes[i]["pop"] = 0
+
+    print("Adding populations")
+    for population, lat, long in pop_points:
+        if population > 0:
+            # Find the closest node in G to lat, long
+            closest: int = min(
+                G.nodes(),
+                key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
+            )
+
+            # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
+            G.nodes[closest]["pop"] += population
+
+    print("Writing graphML")
+    ox.save_graphml(G, "champaign.graphml")
 
     print("Loading graphml")
     G = ox.load_graphml("champaign.graphml")
@@ -114,7 +117,7 @@ def main() -> None:
     print(f"Choosing {num_nodes} damaged nodes")
     damaged: list[int] = list(populated)
     random.shuffle(damaged)
-    damaged = damaged[:100]
+    damaged = damaged[:num_nodes]
 
     # Construct smaller graph of just damaged nodes out of G
     print("Constructing g")
@@ -132,54 +135,69 @@ def main() -> None:
     for i in range(num_nodes):
         g.node_weight[i] = G.nodes[damaged[i]]["pop"]
 
-    print("Solving APSP")
-    apsp = dict(nx.all_pairs_shortest_path_length(G))
-
-    print("Adding edge weights to g")
-    repair_time: float = 0.0
+    print("Finding shortest path travel times in hours")
     for u, v in product(range(num_nodes), range(num_nodes)):
         if u != v:
             u_prime, v_prime = damaged[u], damaged[v]
-            g.edge_weight[u][v] = apsp[u_prime][v_prime] + repair_time
-
-    print("Checking completeness of g")
-    for u, v in product(range(num_nodes), range(num_nodes)):
-        if u != v:
-            if g.edge_weight[u][v] <= 0.0:
-                print("Graph is incomplete")
-                break
-    else:
-        print("Graph is complete")
-
-    print("Checking directedness of g")
-    for u, v in product(range(num_nodes), range(num_nodes)):
-        if u != v:
-            if g.edge_weight[u][v] != g.edge_weight[v][u]:
-                print("Graph is directed")
-                break
-    else:
-        print("Graph is undirected")
-
-    # We now know that g is complete and undirected
+            time = nx.shortest_path_length(G, u_prime, v_prime, weight="travel_time")
+            g.edge_weight[u][v] = time / (60 * 60)
 
     print("Writing graph json")
-    with open("damaged.json", "w") as outfile:
+    with open("damaged.json", "w", encoding="utf-8") as outfile:
         json.dump(Graph.dict_from_graph(g), outfile)
 
-    # print("Loading constructed graph")
-    # with open('damaged.pickle', 'rb') as outfile:
-    #     g = pickle.load(outfile)
+    print("Loading constructed graph")
+    g = Graph.from_file("damaged.json")
 
-    # sorted_pop = sorted(node_list, key=lambda i: int(G.nodes[i]["pop"]))
-    # # for i in sorted_pop:
-    # #     print(f"{i}: {G.nodes[i]['pop']}")
+    n: int = g.num_nodes
+    k: int = 10
+    print(f"Number of nodes: {n}")
+    print(f"Number of agents: {k}")
 
-    # max_pop = int(G.nodes[sorted_pop[-1]]["pop"])
+    min_time = min(
+        g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
+    )
+    max_time = max(
+        g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
+    )
+    kph = 30.0
+    min_dist, max_dist = min_time * 30, max_time * 30
+    print(f"Minimum Distance (km) = {min_dist}")
+    print(f"Maximum Distance (km) = {max_dist}")
+    print(f"Minimum Travel Time (hours) = {min_time}")
+    print(f"Maximum Travel Time (hours) = {max_time}")
+    print(f"Maximum Population = {max(g.node_weight)}")
+    print(f"Minimum Population = {min(g.node_weight)}")
 
+    # Test random partitions of g with k agents
+    print("Generating partitions")
+    count: int = 10
+    graph_bank: list[Graph] = [g for _ in range(count)]
+    partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+        graph_bank, k
+    )
+
+    # Add repair times
+    # Ranges from "Predicting Outage Restoration ..."
+    for u, v in product(range(n), range(n)):
+        if u != v:
+            pop: int = g.node_weight[v]
+            if pop <= 10:
+                g.edge_weight[u][v] += random.uniform(2, 4)
+            elif pop <= 100:
+                g.edge_weight[u][v] += random.uniform(2, 6)
+            elif pop <= 1000:
+                g.edge_weight[u][v] += random.uniform(3, 8)
+            else:
+                g.edge_weight[u][v] += random.uniform(5, 10)
+
+    print("Beginning mass benchmark")
+    benchmark.mass_benchmark(graph_bank, partition_bank, (min_dist, max_dist))
+    #
     # ox.plot_graph(
     #     G,
-    #     node_size=[(int(G.nodes[i]["pop"]) / max_pop) * 100 for i in G.nodes],
-    #     node_color="#261CE9",
+    #     node_size=7,
+    #     node_color=['r' if node in damaged else 'w' for node in G.nodes()],
     # )
 
     ############################################################################

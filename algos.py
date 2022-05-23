@@ -849,7 +849,6 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     k: int
         Number of agents
@@ -863,8 +862,6 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
 
     # The only valid nodes to visit are non-starting nodes
     nodes: list[int] = list(range(1, g.num_nodes))
@@ -901,7 +898,6 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     k: int
         Number of agents
@@ -918,9 +914,6 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
-
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
 
     # The only valid nodes to visit are non-starting nodes
     nodes: set[int] = set(range(1, g.num_nodes))
@@ -972,7 +965,6 @@ def uconn_strat_3(g: Graph, k: int) -> list[list[int]]:
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     k: int
         Number of agents
@@ -986,9 +978,6 @@ def uconn_strat_3(g: Graph, k: int) -> list[list[int]]:
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
-
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
 
     # The only valid nodes to visit are non-starting nodes
     nodes: set[int] = set(range(1, g.num_nodes))
@@ -1023,7 +1012,6 @@ def transfers_and_swaps_mwlp(
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent
@@ -1222,7 +1210,6 @@ def transfer_outliers_mwlp(
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent
@@ -1317,7 +1304,6 @@ def evaluate_partition_heuristic(
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     part: list[set[int]]
         Unordered assignment of nodes for each agent
@@ -1371,7 +1357,6 @@ def find_partition_with_heuristic(
         Input graph
         Assertions:
             g must be a complete graph
-            g must be an undirected graph
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent

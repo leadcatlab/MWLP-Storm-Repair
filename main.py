@@ -328,18 +328,19 @@ def main() -> None:
 
     # Parameters for Graphs and Partitions
     num_graphs: int = 20
-    num_nodes: int = 40
-    edge_w: tuple[float, float] = (5.0, 10.0)
-    metric = False
-    node_w: tuple[int, int] = (10, 100)
-    num_agents: int = 5
+    num_nodes: int = 71
+    metric = True
+    upper: float = 10.0
+    node_w: tuple[int, int] = (10, 20)
+    num_agents: int = 10
+    # 10 agents * ~7 nodes per agent + 1 start node
 
     # Generating Graphs
     graph_bank: list[Graph] = benchmark.generate_graph_bank(
         count=num_graphs,
         n=num_nodes,
-        edge_w=edge_w,
         metric=metric,
+        upper=upper,
         node_w=node_w
     )
 

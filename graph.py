@@ -361,7 +361,7 @@ class Graph:
             n, edge_w=(upper / 2, upper), node_w=node_w, directed=directed
         )
 
-    def add_repair_time(self, amt: float) -> None:
+    def add_repair_time(self, amt: float = 0.0) -> None:
         """
         Adds a desired fixed repair time to all edges
 
@@ -369,6 +369,7 @@ class Graph:
         ----------
         amt: float
             Repair time to be added
+            Default: 0.0
             Assertions:
                 Must be non-negative
 

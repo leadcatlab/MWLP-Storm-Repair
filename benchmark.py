@@ -121,7 +121,7 @@ def benchmark_partition(
     assign: list[list[int]] = [list(p) for p in assignment]
 
     vals: list[float] = [algos.wlp(g, p) for p in assign]
-    
+
     # Calculate average wait times
     wait_times: list[float] = []
     for val, p in zip(vals, assign):

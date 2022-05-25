@@ -1,0 +1,416 @@
+
+sourcing "/usr/share/nvim/runtime/ftplugin.vim"
+finished sourcing /usr/share/nvim/runtime/ftplugin.vim
+sourcing "/usr/share/nvim/runtime/indent.vim"
+finished sourcing /usr/share/nvim/runtime/indent.vim
+could not source "/etc/xdg/nvim/sysinit.vim"
+could not source "$VIM/sysinit.vim"
+sourcing "/home/anakin/.config/nvim/init.vim"
+line 10: sourcing "/home/anakin/.local/share/nvim/site/autoload/plug.vim"
+finished sourcing /home/anakin/.local/share/nvim/site/autoload/plug.vim
+continuing in /home/anakin/.config/nvim/init.vim
+line 83: sourcing "/usr/share/nvim/runtime/filetype.lua"
+finished sourcing /usr/share/nvim/runtime/filetype.lua
+continuing in function plug#end
+line 83: sourcing "/usr/share/nvim/runtime/filetype.vim"
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/fusion.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/fusion.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gdresource.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gdresource.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gdscript.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gdscript.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/glimmer.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/glimmer.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/glsl.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/glsl.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gowork.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/gowork.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/graphql.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/graphql.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hack.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hack.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hcl.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hcl.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/heex.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/heex.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hjson.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/hjson.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/json5.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/json5.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/ledger.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/ledger.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/nix.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/nix.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/prisma.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/prisma.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/pug.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/pug.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/ql.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/ql.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/query.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/query.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/surface.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/surface.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/teal.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/teal.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/tlaplus.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/tlaplus.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/yang.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/ftdetect/yang.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+line 2506: sourcing "/home/anakin/.local/share/nvim/plugged/neorg/ftdetect/norg.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/neorg/ftdetect/norg.vim
+continuing in /usr/share/nvim/runtime/filetype.vim
+not found in runtime path: "ftdetect/*.lua"
+finished sourcing /usr/share/nvim/runtime/filetype.vim
+continuing in function plug#end
+line 83: sourcing "/usr/share/nvim/runtime/ftplugin.vim"
+finished sourcing /usr/share/nvim/runtime/ftplugin.vim
+continuing in function plug#end
+line 83: sourcing "/usr/share/nvim/runtime/indent.vim"
+finished sourcing /usr/share/nvim/runtime/indent.vim
+continuing in function plug#end
+line 86: sourcing "/usr/share/nvim/runtime/syntax/syntax.vim"
+line 19: sourcing "/usr/share/nvim/runtime/syntax/synload.vim"
+finished sourcing /usr/share/nvim/runtime/syntax/synload.vim
+continuing in /usr/share/nvim/runtime/syntax/syntax.vim
+finished sourcing /usr/share/nvim/runtime/syntax/syntax.vim
+continuing in function plug#end
+not found in runtime path: "colors/onedark.vim"
+not found in 'packpath': "pack/*/opt/*/colors/onedark.vim"
+not found in 'packpath': "opt/*/colors/onedark.vim"
+line 71: sourcing "/home/anakin/.local/share/nvim/plugged/onedark.nvim/colors/onedark.lua"
+finished sourcing /home/anakin/.local/share/nvim/plugged/onedark.nvim/colors/onedark.lua
+continuing in /home/anakin/.config/nvim/init.vim
+not found in runtime path: "colors/onedark.vim"
+not found in 'packpath': "pack/*/opt/*/colors/onedark.vim"
+not found in 'packpath': "opt/*/colors/onedark.vim"
+line 73: sourcing "/home/anakin/.local/share/nvim/plugged/onedark.nvim/colors/onedark.lua"
+finished sourcing /home/anakin/.local/share/nvim/plugged/onedark.nvim/colors/onedark.lua
+continuing in /home/anakin/.config/nvim/init.vim
+line 117: sourcing "/usr/share/nvim/runtime/filetype.lua"
+finished sourcing /usr/share/nvim/runtime/filetype.lua
+continuing in /home/anakin/.config/nvim/init.vim
+line 117: sourcing "/usr/share/nvim/runtime/filetype.vim"
+finished sourcing /usr/share/nvim/runtime/filetype.vim
+continuing in /home/anakin/.config/nvim/init.vim
+line 117: sourcing "/usr/share/nvim/runtime/ftplugin.vim"
+finished sourcing /usr/share/nvim/runtime/ftplugin.vim
+continuing in /home/anakin/.config/nvim/init.vim
+line 117: sourcing "/usr/share/nvim/runtime/indent.vim"
+finished sourcing /usr/share/nvim/runtime/indent.vim
+continuing in /home/anakin/.config/nvim/init.vim
+finished sourcing /home/anakin/.config/nvim/init.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/restore_view.vim/plugin/restore_view.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/restore_view.vim/plugin/restore_view.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/vim-foldtext/plugin/foldtext.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/vim-foldtext/plugin/foldtext.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/nvim-ts-rainbow/plugin/rainbow.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-ts-rainbow/plugin/rainbow.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/vim-visual-multi/plugin/visual-multi.vim"
+line 59: sourcing "/home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/plugs.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/plugs.vim
+continuing in /home/anakin/.local/share/nvim/plugged/vim-visual-multi/plugin/visual-multi.vim
+line 60: sourcing "/home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/maps.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/maps.vim
+continuing in /home/anakin/.local/share/nvim/plugged/vim-visual-multi/plugin/visual-multi.vim
+line 13: sourcing "/home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/maps/all.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/vim-visual-multi/autoload/vm/maps/all.vim
+continuing in function vm#maps#default[2]..<SNR>42_build_permanent_maps
+Error detected while processing function vm#maps#default[2]..<SNR>42_build_permanent_maps:
+line   17:
+E716: Key not present in Dictionary: "Undo"
+Error detected while processing function vm#maps#default[2]..<SNR>42_build_permanent_maps:
+line   17:
+E716: Key not present in Dictionary: "Redo"
+finished sourcing /home/anakin/.local/share/nvim/plugged/vim-visual-multi/plugin/visual-multi.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/nvim-treesitter/plugin/nvim-treesitter.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-treesitter/plugin/nvim-treesitter.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/nvim-lspconfig/plugin/lspconfig.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/nvim-lspconfig/plugin/lspconfig.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/presence.nvim/plugin/presence.vim"
+line 6: sourcing "/home/anakin/.local/share/nvim/plugged/presence.nvim/autoload/presence.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/presence.nvim/autoload/presence.vim
+continuing in /home/anakin/.local/share/nvim/plugged/presence.nvim/plugin/presence.vim
+finished sourcing /home/anakin/.local/share/nvim/plugged/presence.nvim/plugin/presence.vim
+sourcing "/home/anakin/.local/share/nvim/plugged/plenary.nvim/plugin/plenary.vim"
+finished sourcing /home/anakin/.local/share/nvim/plugged/plenary.nvim/plugin/plenary.vim
+sourcing "/usr/share/nvim/runtime/plugin/gzip.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/gzip.vim
+sourcing "/usr/share/nvim/runtime/plugin/health.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/health.vim
+sourcing "/usr/share/nvim/runtime/plugin/man.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/man.vim
+sourcing "/usr/share/nvim/runtime/plugin/matchit.vim"
+not found in 'packpath': "pack/*/start/matchit"
+line 3: sourcing "/usr/share/nvim/runtime/pack/dist/opt/matchit/plugin/matchit.vim"
+finished sourcing /usr/share/nvim/runtime/pack/dist/opt/matchit/plugin/matchit.vim
+continuing in /usr/share/nvim/runtime/plugin/matchit.vim
+finished sourcing /usr/share/nvim/runtime/plugin/matchit.vim
+sourcing "/usr/share/nvim/runtime/plugin/matchparen.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/matchparen.vim
+sourcing "/usr/share/nvim/runtime/plugin/netrwPlugin.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/netrwPlugin.vim
+sourcing "/usr/share/nvim/runtime/plugin/rplugin.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/rplugin.vim
+sourcing "/usr/share/nvim/runtime/plugin/shada.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/shada.vim
+sourcing "/usr/share/nvim/runtime/plugin/spellfile.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/spellfile.vim
+sourcing "/usr/share/nvim/runtime/plugin/tarPlugin.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/tarPlugin.vim
+sourcing "/usr/share/nvim/runtime/plugin/tohtml.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/tohtml.vim
+sourcing "/usr/share/nvim/runtime/plugin/tutor.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/tutor.vim
+sourcing "/usr/share/nvim/runtime/plugin/zipPlugin.vim"
+finished sourcing /usr/share/nvim/runtime/plugin/zipPlugin.vim
+not found in 'packpath': "plugin/**/*.lua"
+not found in 'packpath': "pack/*/start/*"
+not found in 'packpath': "start/*"
+not found in runtime path: "plugin/**/*.vim"
+not found in runtime path: "plugin/**/*.lua"
+Reading ShaDa file "/home/anakin/.local/share/nvim/shada/main.shada" info marks oldfiles
+sourcing "/usr/share/nvim/runtime/autoload/provider/clipboard.vim"
+finished sourcing /usr/share/nvim/runtime/autoload/provider/clipboard.vim
+
+--- Terminal info --- {{{
+&term: screen
+Description: VT 100/ANSI X3.64 virtual terminal
+Aliases: screen
+Boolean capabilities:
+  auto_left_margin          bw         = false
+  auto_right_margin         am         = true
+  no_esc_ctlc               xsb        = false
+  ceol_standout_glitch      xhp        = false
+  eat_newline_glitch        xenl       = true
+  erase_overstrike          eo         = false
+  generic_type              gn         = false
+  hard_copy                 hc         = false
+  has_meta_key              km         = true
+  has_status_line           hs         = false
+  insert_null_glitch        in         = false
+  memory_above              da         = false
+  memory_below              db         = false
+  move_insert_mode          mir        = true
+  move_standout_mode        msgr       = true
+  over_strike               os         = false
+  status_line_esc_ok        eslok      = false
+  dest_tabs_magic_smso      xt         = false
+  tilde_glitch              hz         = false
+  transparent_underline     ul         = false
+  xon_xoff                  xon        = false
+  needs_xon_xoff            nxon       = false
+  prtr_silent               mc5i       = false
+  hard_cursor               chts       = false
+  non_rev_rmcup             nrrmc      = false
+  no_pad_char               npc        = false
+  non_dest_scroll_region    ndscr      = false
+  can_change                ccc        = false
+  back_color_erase          bce        = false
+  hue_lightness_saturation  hls        = false
+  col_addr_glitch           xhpa       = false
+  cr_cancels_micro_mode     crxm       = false
+  has_print_wheel           daisy      = false
+  row_addr_glitch           xvpa       = false
+  semi_auto_right_margin    sam        = false
+  cpi_changes_res           cpix       = false
+  lpi_changes_res           lpix       = false
+  backspaces_with_bs        OTbs       = true
+  crt_no_scrolling          OTns       = false
+  no_correctly_working_cr   OTnc       = false
+  gnu_has_meta_key          OTMT       = false
+  linefeed_is_newline       OTNL       = false
+  has_hardware_tabs         OTpt       = true
+  return_does_clr_eol       OTxr       = false
+Numeric capabilities:
+  columns                   cols       = 80
+  init_tabs                 it         = 8
+  lines                     lines      = 24
+  lines_of_memory           lm         = -1
+  magic_cookie_glitch       xmc        = -1
+  padding_baud_rate         pb         = -1
+  virtual_terminal          vt         = -1
+  width_status_line         wsl        = -1
+  num_labels                nlab       = -1
+  label_height              lh         = -1
+  label_width               lw         = -1
+  max_attributes            ma         = -1
+  maximum_windows           wnum       = -1
+  max_colors                colors     = 256
+  max_pairs                 pairs      = 64
+  no_color_video            ncv        = -1
+  buffer_capacity           bufsz      = -1
+  dot_vert_spacing          spinv      = -1
+  dot_horz_spacing          spinh      = -1
+  max_micro_address         maddr      = -1
+  max_micro_jump            mjump      = -1
+  micro_col_size            mcs        = -1
+  micro_line_size           mls        = -1
+  number_of_pins            npins      = -1
+  output_res_char           orc        = -1
+  output_res_line           orl        = -1
+  output_res_horz_inch      orhi       = -1
+  output_res_vert_inch      orvi       = -1
+  print_rate                cps        = -1
+  wide_char_size            widcs      = -1
+  buttons                   btns       = -1
+  bit_image_entwining       bitwin     = -1
+  bit_image_type            bitype     = -1
+  magic_cookie_glitch_ul    OTug       = -1
+  carriage_return_delay     OTdC       = -1
+  new_line_delay            OTdN       = -1
+  backspace_delay           OTdB       = -1
+  horizontal_tab_delay      OTdT       = -1
+  number_of_function_keys   OTkn       = -1
+String capabilities:
+  back_tab                  cbt        = <Esc>[Z
+  bell                      bel        = <C-G>
+  carriage_return           cr         = <CR>
+  change_scroll_region      csr        = <Esc>[%i%p1%d;%p2%dr
+  clear_all_tabs            tbc        = <Esc>[3g
+  clear_screen              clear      = <Esc>[H<Esc>[J
+  clr_eol                   el         = <Esc>[K
+  clr_eos                   ed         = <Esc>[J
+  column_address            hpa        = <Esc>[%i%p1%dG
+  cursor_address            cup        = <Esc>[%i%p1%d;%p2%dH
+  cursor_down               cud1       = <NL>
+  cursor_home               home       = <Esc>[H
+  cursor_invisible          civis      = <Esc>[?25l
+  cursor_left               cub1       = <C-H>
+  cursor_normal             cnorm      = <Esc>[34h<Esc>[?25h
+  cursor_right              cuf1       = <Esc>[C
+  cursor_up                 cuu1       = <Esc>M
+  cursor_visible            cvvis      = <Esc>[34l
+  delete_character          dch1       = <Esc>[P
+  delete_line               dl1        = <Esc>[M
+  enter_alt_charset_mode    smacs      = <C-N>
+  enter_blink_mode          blink      = <Esc>[5m
+  enter_bold_mode           bold       = <Esc>[1m
+  enter_ca_mode             smcup      = <Esc>[?1049h
+  enter_dim_mode            dim        = <Esc>[2m
+  enter_insert_mode         smir       = <Esc>[4h
+  enter_reverse_mode        rev        = <Esc>[7m
+  enter_standout_mode       smso       = <Esc>[3m
+  enter_underline_mode      smul       = <Esc>[4m
+  exit_alt_charset_mode     rmacs      = <C-O>
+  exit_attribute_mode       sgr0       = <Esc>[m<C-O>
+  exit_ca_mode              rmcup      = <Esc>[?1049l
+  exit_insert_mode          rmir       = <Esc>[4l
+  exit_standout_mode        rmso       = <Esc>[23m
+  exit_underline_mode       rmul       = <Esc>[24m
+  flash_screen              flash      = <Esc>g
+  from_status_line          fsl        = <Esc>\
+  init_2string              is2        = <Esc>)0
+  insert_line               il1        = <Esc>[L
+  key_backspace             kbs        = <^?>
+  key_dc                    kdch1      = <Esc>[3~
+  key_down                  kcud1      = <Esc>OB
+  key_f1                    kf1        = <Esc>OP
+  key_f10                   kf10       = <Esc>[21~
+  key_f2                    kf2        = <Esc>OQ
+  key_f3                    kf3        = <Esc>OR
+  key_f4                    kf4        = <Esc>OS
+  key_f5                    kf5        = <Esc>[15~
+  key_f6                    kf6        = <Esc>[17~
+  key_f7                    kf7        = <Esc>[18~
+  key_f8                    kf8        = <Esc>[19~
+  key_f9                    kf9        = <Esc>[20~
+  key_home                  khome      = <Esc>[1~
+  key_ic                    kich1      = <Esc>[2~
+  key_left                  kcub1      = <Esc>OD
+  key_npage                 knp        = <Esc>[6~
+  key_ppage                 kpp        = <Esc>[5~
+  key_right                 kcuf1      = <Esc>OC
+  key_up                    kcuu1      = <Esc>OA
+  keypad_local              rmkx       = <Esc>[?1l<Esc>>
+  keypad_xmit               smkx       = <Esc>[?1h<Esc>=
+  newline                   nel        = <Esc>E
+  parm_dch                  dch        = <Esc>[%p1%dP
+  parm_delete_line          dl         = <Esc>[%p1%dM
+  parm_down_cursor          cud        = <Esc>[%p1%dB
+  parm_ich                  ich        = <Esc>[%p1%d@
+  parm_index                indn       = <Esc>[%p1%dS
+  parm_insert_line          il         = <Esc>[%p1%dL
+  parm_left_cursor          cub        = <Esc>[%p1%dD
+  parm_right_cursor         cuf        = <Esc>[%p1%dC
+  parm_up_cursor            cuu        = <Esc>[%p1%dA
+  reset_2string             rs2        = <Esc>c<Esc>[?1000l<Esc>[?25h
+  restore_cursor            rc         = <Esc>8
+  row_address               vpa        = <Esc>[%i%p1%dd
+  save_cursor               sc         = <Esc>7
+  scroll_forward            ind        = <NL>
+  scroll_reverse            ri         = <Esc>M
+  set_attributes            sgr        = <Esc>[0%?%p6%t;1%;%?%p1%t;3%;%?%p2%t;4%;%?%p3%t;7%;%?%p4%t;5%;%?%p5%t;2%;m%?%p9%t<C-N>%e<C-O>%;
+  set_tab                   hts        = <Esc>H
+  tab                       ht         = <Tab>
+  to_status_line            tsl        = <Esc>_
+  acs_chars                 acsc       = ++,,--..00``aaffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz{{||}}~~
+  key_btab                  kcbt       = <Esc>[Z
+  ena_acs                   enacs      = <Esc>(B<Esc>)0
+  key_end                   kend       = <Esc>[4~
+  key_f11                   kf11       = <Esc>[23~
+  key_f12                   kf12       = <Esc>[24~
+  clr_bol                   el1        = <Esc>[1K
+  user6                     u6         = <Esc>[%i%d;%dR
+  user7                     u7         = <Esc>[6n
+  user8                     u8         = <Esc>[?1;2c
+  user9                     u9         = <Esc>[c
+  orig_pair                 op         = <Esc>[39;49m
+  key_mouse                 kmous      = <Esc>[M
+  set_a_foreground          setaf      = <Esc>[%?%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m
+  set_a_background          setab      = <Esc>[%?%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m
+Extended boolean capabilities:
+  AX                        = true
+  G0                        = true
+Extended numeric capabilities:
+  U8                        = 1
+Extended string capabilities:
+  E0                        = <Esc>(B
+  S0                        = <Esc>(%p1%c
+  ext.get_bg                = <Esc>]11;?<C-G>
+  Ss                        = <Esc>[%p1%d q
+  Se                        = <Esc>[ q
+  setrgbf                   = <Esc>[38;2;%p1%d;%p2%d;%p3%dm
+  setrgbb                   = <Esc>[48;2;%p1%d;%p2%d;%p3%dm
+  ext.set_cursor_color      = <Esc>]12;#%p1%06x<C-G>
+  ext.reset_cursor_color    = <Esc>]112<C-G>
+  ext.save_title            = <Esc>[22;0t
+  ext.restore_title         = <Esc>[23;0t
+  ext.enable_lr_margin      = <Esc>[?69h
+  ext.disable_lr_margin     = <Esc>[?69l
+  ext.enable_bpaste         = <Esc>[?2004h
+  ext.disable_bpaste        = <Esc>[?2004l
+  ext.enable_focus          = <Esc>[?1004h
+  ext.disable_focus         = <Esc>[?1004l
+  ext.enable_mouse          = <Esc>[?1002h<Esc>[?1006h
+  ext.disable_mouse         = <Esc>[?1002l<Esc>[?1006l
+  ext.enable_extended_keys  = <Esc>[>4;2m
+  ext.disable_extended_keys = <Esc>[>4;0m
+}}}
+
+
+E492: Not an editor command: bcev
+
+Writing ShaDa file "/home/anakin/.local/share/nvim/shada/main.shada"

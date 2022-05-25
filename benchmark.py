@@ -114,7 +114,7 @@ def benchmark_partition(
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 
-    if Graph.is_agent_partition(g, [set(s) for s in part]) is False:
+    if Graph.is_agent_partition(g, [set(s) for s in assignment]) is False:
         raise ValueError("Passed partition is invalid")
 
     # creating a deep copy to be safe

@@ -330,7 +330,7 @@ def main() -> None:
     num_graphs: int = 20
     num_nodes: int = 40
     edge_w: tuple[float, float] = (5.0, 10.0)
-    metric = True
+    metric = False
     node_w: tuple[int, int] = (10, 100)
     num_agents: int = 5
 

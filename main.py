@@ -77,7 +77,7 @@ def main() -> None:
     # kph: float = 25.0 * 1.609344
     # print(f"Setting all travel speeds to {kph} kph")
     # for u, v, key in G.edges(keys=True):
-    #     G[u][v][key]["speed_kph"] = 30.0
+    #     G[u][v][key]["speed_kph"] = kph
     # G = ox.add_edge_travel_times(G, precision=5)
 
     # # Remove unreachable /  empty nodes
@@ -118,28 +118,9 @@ def main() -> None:
 
     #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
     #         G.nodes[closest]["pop"] += population
-    #
-    # # Find populated nodes
-    # node_list: list[int] = [int(node) for node in G.nodes()]
-    # populated: list[int] = list(
-    #     filter(lambda node: G.nodes[node]["pop"] > 0, node_list)
-    # )
-    #
-    # travel_times = np.zeros((len(populated), len(populated)))
-    # for u, v in product(range(len(populated)), range(len(populated))):
-    #     if u == v:
-    #         travel_times[u, v] = -1.0
-    #     else:
-    #         time = nx.shortest_path_length(G, populated[u], populated[v], weight="travel_time")
-    #         travel_times[u, v] = time / (60 * 60)
-
+    # 
     # print("Writing graphML")
     # ox.save_graphml(G, "champaign.graphml")
-
-    # print("Saving travel times")
-    # with open('populated.npy') as outfile:
-    #     np.save(outfile, np.array(populated))
-    #     np.save(outfile, travel_times)
 
     # print("Loading graphml")
     # G = ox.load_graphml("champaign.graphml")
@@ -162,7 +143,9 @@ def main() -> None:
     # print(f"Constructing graph bank of {count} graphs")
     # graph_bank: list[Graph] = []
 
+    # # Saving travel times to prevent recalculating
     # travel_times: dict[tuple[int, int], float] = {}
+
     # for i in range(count):
     #     print(f"Creating graph {i}")
     #     g = Graph(num_nodes)
@@ -174,7 +157,7 @@ def main() -> None:
     #     print("\tInitializing edge weights")
     #     for i in range(num_nodes):
     #         g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
-    #
+    # 
     #     print(f"\tChoosing {num_nodes} damaged nodes")
     #     damaged: list[int] = list(populated)
     #     random.shuffle(damaged)
@@ -194,80 +177,10 @@ def main() -> None:
     #                 time = nx.shortest_path_length(G, u_prime, v_prime, weight="travel_time")
     #                 g.edge_weight[u][v] = time / (60 * 60)
     #                 travel_times[(u, v)] = time / (60 * 60)
-    #     graph_bank.append(g)
-    #
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #     print(Bcolors.CLEAR_LAST_LINE)
-    #
-    # num_agents: int = 5
-    # print(f"Creating partitions for {num_agents} agents")
-    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
-    #     graph_bank, num_agents
-    # )
-    #
-    # print("Serializing graphs and partitions")
-    # graphs: dict[int, graph_dict] = {}
-    # parts: dict[int, list[list[int]]] = {}
-    # graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
-    #
-    # # sets and frozensets are both unserializable
-    # serializable_partition_bank: list[list[list[int]]] = [
-    #     [list(s) for s in part] for part in partition_bank
-    # ]
-    #
-    # for i in range(count):
-    #     graphs[i] = graph_dict_bank[i]
-    #     parts[i] = serializable_partition_bank[i]
-    #
-    # # Saving Graphs and Partitions to files
-    # loc: str = "results/champaign/champaign_graphs.json"
-    # with open(loc, "w", encoding="utf-8") as outfile:
-    #     json.dump(graphs, outfile)
-    # loc = "results/champaign/champaign_parts.json"
-    # with open(loc, "w", encoding="utf-8") as outfile:
-    #     json.dump(parts, outfile)
-
-    # print("Reading graphs and partitions")
-    # graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
-    #     "results/champaign/champaign_graphs.json"
-    # )
-    # parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
-    #     "results/champaign/champaign_parts.json"
-    # )
-    # assert len(graphs_from_file) == len(parts_from_file)
-    # for g, p in zip(graphs_from_file, parts_from_file):
-    #     assert Graph.is_agent_partition(g, p)
-
-    # n: int = graphs_from_file[0].num_nodes
-    # k: int = len(parts_from_file[0])
-    # print(f"Number of nodes: {n}")
-    # print(f"Number of agents: {k}")
-    #
-    # g: Graph = graphs_from_file[0]
-    # print("Representative information from one graph")
-    # min_time = min(
-    #     g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
-    # )
-    # max_time = max(
-    #     g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
-    # )
-    # kph = 30.0
-    # min_dist, max_dist = min_time * 30, max_time * 30
-    # print(f"Minimum Distance (km) = {min_dist}")
-    # print(f"Maximum Distance (km) = {max_dist}")
-    # print(f"Minimum Travel Time (hours) = {min_time}")
-    # print(f"Maximum Travel Time (hours) = {max_time}")
-    # print(f"Maximum Population = {max(g.node_weight)}")
-    # print(f"Minimum Population = {min(g.node_weight)}")
-
-    # # Add repair times
-    # # Ranges from "Predicting Outage Restoration ..."
-    # for g in graphs_from_file:
-    #     for u, v in product(range(n), range(n)):
+    #     
+    #     print("\tAdding repair times")
+    #     # Ranges from "Predicting Outage Restoration ..."
+    #     for u, v in product(range(num_nodes), range(num_nodes)):
     #         if u != v:
     #             pop: int = g.node_weight[v]
     #             if pop <= 10:
@@ -278,97 +191,166 @@ def main() -> None:
     #                 g.edge_weight[u][v] += random.uniform(3, 8)
     #             else:
     #                 g.edge_weight[u][v] += random.uniform(5, 10)
+    #     graph_bank.append(g)
+    # 
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    # 
 
-    # print("Beginning mass benchmark")
-    # benchmark.mass_benchmark(graphs_from_file, parts_from_file, (min_time, max_time))
-
-    # ox.plot_graph(
-    #     G,
-    #     node_size=7,
-    #     node_color=['r' if node in damaged else 'w' for node in G.nodes()],
+    # num_agents: int = 5
+    # print(f"Creating partitions for {num_agents} agents")
+    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+    #     graph_bank, num_agents
     # )
-
-    ############################################################################
-    ###################### Finalizing Mass Benchmarking ########################
-    ############################################################################
-
-    # Parameters for Graphs and Partitions
-    num_graphs: int = 1
-    num_nodes: int = 71  # 10 agents * 7 nodes per agent + start
-    metric = True
-    upper: float = 1.0  # Travel time between 0.5-1 hour
-    node_w: tuple[int, int] = (10, 20)
-    num_agents: int = 10
-    repair_time: float = 2.0  # Flat repair time of 2 hours
-
-    # Generating Graphs
-    graph_bank: list[Graph] = benchmark.generate_graph_bank(
-        count=num_graphs, n=num_nodes, metric=metric, upper=upper, node_w=node_w
-    )
-
-    # Adding repair times
-    for g in graph_bank:
-        g.add_repair_time(repair_time)
-
-    # Generating Partitions
-    partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
-        graph_bank, num_agents
-    )
-
-    # Serializing Graphs and Partitions
-    graphs: dict[int, graph_dict] = {}
-    parts: dict[int, list[list[int]]] = {}
-    graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
-    # sets and frozensets are both unserializable
-    serializable_partition_bank: list[list[list[int]]] = [
-        [list(s) for s in part] for part in partition_bank
-    ]
-    for i in range(num_graphs):
-        graphs[i] = graph_dict_bank[i]
-        parts[i] = serializable_partition_bank[i]
-
-    # Saving Graphs and Partitions to files
-    loc: str = "results/mass_benchmark/final_graph.json"
-    with open(loc, "w", encoding="utf-8") as outfile:
-        json.dump(graphs, outfile)
-    loc = "results/mass_benchmark/final_part.json"
-    with open(loc, "w", encoding="utf-8") as outfile:
-        json.dump(parts, outfile)
-
-    # Read from generated bank files
+    # 
+    # print("Serializing graphs and partitions")
+    # graphs: dict[int, graph_dict] = {}
+    # parts: dict[int, list[list[int]]] = {}
+    # graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
+    # 
+    # # sets and frozensets are both unserializable
+    # serializable_partition_bank: list[list[list[int]]] = [
+    #     [list(s) for s in part] for part in partition_bank
+    # ]
+    # 
+    # for i in range(count):
+    #     graphs[i] = graph_dict_bank[i]
+    #     parts[i] = serializable_partition_bank[i]
+    # 
+    # # Saving Graphs and Partitions to files
+    # loc: str = "results/champaign/champaign_graphs.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(graphs, outfile)
+    # loc = "results/champaign/champaign_parts.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(parts, outfile)
+    
+    # Reading graphs and partitons from files
+    print("Reading graphs and partitions")
     graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
-        "results/mass_benchmark/final_graph.json"
+        "results/champaign/champaign_graphs.json"
     )
     parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
-        "results/mass_benchmark/final_part.json"
+        "results/champaign/champaign_parts.json"
     )
     assert len(graphs_from_file) == len(parts_from_file)
     for g, p in zip(graphs_from_file, parts_from_file):
         assert Graph.is_agent_partition(g, p)
 
-    # Mass benchmark of graphs given bank
-    # Need to edit the ranges
-    #   If metric: do (upper / 2, upper)
-    results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
-        graphs_from_file, parts_from_file, (0.5, 1.0)
-    )
+    n: int = graphs_from_file[0].num_nodes
+    k: int = len(parts_from_file[0])
+    print(f"Number of graphs: {len(graphs_from_file)}") 
+    print(f"Number of nodes: {n}")
+    print(f"Number of agents: {k}")
+    print()
 
-    # Write to files
-    names: list[str] = [
-        "maximums",
-        "wait_times",
-        "times",
-        "minimums",
-        "sums",
-        "ranges",
-        "averages",
-        "bests",
-    ]
-    for res, name in zip(results, names):
-        with open(
-            f"results/mass_benchmark/{name}.json", "w", encoding="utf-8"
-        ) as outfile:
-            json.dump(res, outfile)
+    g: Graph = graphs_from_file[0]
+    print("Representative information from one graph")
+    min_time = min(
+        g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
+    )
+    max_time = max(
+        g.edge_weight[u][v] for u, v in product(range(n), range(n)) if u != v
+    )
+    kph: float = 25.0 * 1.609344
+    min_dist, max_dist = min_time * kph, max_time * kph
+    print(f"Minimum Distance (km) = {min_dist}")
+    print(f"Maximum Distance (km) = {max_dist}")
+    print(f"Minimum Travel Time (hours) = {min_time}")
+    print(f"Maximum Travel Time (hours) = {max_time}")
+    print(f"Maximum Population = {max(g.node_weight)}")
+    print(f"Minimum Population = {min(g.node_weight)}")
+    print()
+
+    print("Beginning mass benchmark")
+    benchmark.mass_benchmark(graphs_from_file, parts_from_file, (min_time, max_time))
+
+    ############################################################################
+    ###################### Finalizing Mass Benchmarking ########################
+    ############################################################################
+
+    # # Parameters for Graphs and Partitions
+    # num_graphs: int = 1
+    # num_nodes: int = 71  # 10 agents * 7 nodes per agent + start
+    # metric = True
+    # upper: float = 1.0  # Travel time between 0.5-1 hour
+    # node_w: tuple[int, int] = (10, 20)
+    # num_agents: int = 10
+    # repair_time: float = 2.0  # Flat repair time of 2 hours
+
+    # # Generating Graphs
+    # graph_bank: list[Graph] = benchmark.generate_graph_bank(
+    #     count=num_graphs, n=num_nodes, metric=metric, upper=upper, node_w=node_w
+    # )
+
+    # # Adding repair times
+    # for g in graph_bank:
+    #     g.add_repair_time(repair_time)
+
+    # # Generating Partitions
+    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+    #     graph_bank, num_agents
+    # )
+
+    # # Serializing Graphs and Partitions
+    # graphs: dict[int, graph_dict] = {}
+    # parts: dict[int, list[list[int]]] = {}
+    # graph_dict_bank: list[graph_dict] = [Graph.dict_from_graph(g) for g in graph_bank]
+    # # sets and frozensets are both unserializable
+    # serializable_partition_bank: list[list[list[int]]] = [
+    #     [list(s) for s in part] for part in partition_bank
+    # ]
+    # for i in range(num_graphs):
+    #     graphs[i] = graph_dict_bank[i]
+    #     parts[i] = serializable_partition_bank[i]
+
+    # # Saving Graphs and Partitions to files
+    # loc: str = "results/mass_benchmark/final_graph.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(graphs, outfile)
+    # loc = "results/mass_benchmark/final_part.json"
+    # with open(loc, "w", encoding="utf-8") as outfile:
+    #     json.dump(parts, outfile)
+
+    # # Read from generated bank files
+    # graphs_from_file: list[Graph] = benchmark.graph_bank_from_file(
+    #     "results/mass_benchmark/final_graph.json"
+    # )
+    # parts_from_file: list[list[set[int]]] = benchmark.agent_partitions_from_file(
+    #     "results/mass_benchmark/final_part.json"
+    # )
+    # assert len(graphs_from_file) == len(parts_from_file)
+    # for g, p in zip(graphs_from_file, parts_from_file):
+    #     assert Graph.is_agent_partition(g, p)
+
+    # # Mass benchmark of graphs given bank
+    # # Need to edit the ranges
+    # #   If metric: do (upper / 2, upper)
+    # results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
+    #     graphs_from_file, parts_from_file, (0.5, 1.0)
+    # )
+
+    # # Write to files
+    # names: list[str] = [
+    #     "maximums",
+    #     "wait_times",
+    #     "times",
+    #     "minimums",
+    #     "sums",
+    #     "ranges",
+    #     "averages",
+    #     "bests",
+    # ]
+    # for res, name in zip(results, names):
+    #     with open(
+    #         f"results/mass_benchmark/{name}.json", "w", encoding="utf-8"
+    #     ) as outfile:
+    #         json.dump(res, outfile)
 
     ############################################################################
     ############### Code used for finalizing Alpha benchmarking ################

@@ -85,7 +85,7 @@ def solve_partition(
 
 
 def benchmark_partition(
-    g: Graph, part: list[list[int]]
+    g: Graph, assignment: list[list[int]]
 ) -> tuple[float, float, float, float, float, float]:
     """
     Takes in a partition and path order of agents and benchmarks it
@@ -97,10 +97,10 @@ def benchmark_partition(
         Assertions:
             g must be a complete graph
 
-    part: list[set[int]]
-        Starting unordered assignment of nodes for each agent
+    assignment: list[set[int]]
+        Assignment of nodes for each agent
         Assertions:
-            Must be an agent partition
+            Must be an agent assignment
 
     Returns
     -------
@@ -118,16 +118,13 @@ def benchmark_partition(
         raise ValueError("Passed partition is invalid")
 
     # creating a deep copy to be safe
-    partition: list[list[int]] = [list(p) for p in part]
+    assign: list[list[int]] = [list(p) for p in assignment]
 
-    vals: list[float] = [algos.wlp(g, p) for p in partition]
-    # output: str = ""
-    # for i in range(len(partition)):
-    #     output += f"    Agent {i} = {vals[i]: >20}: {partition[i]}\n"
-
+    vals: list[float] = [algos.wlp(g, p) for p in assign]
+    
     # Calculate average wait times
     wait_times: list[float] = []
-    for val, p in zip(vals, partition):
+    for val, p in zip(vals, assign):
         wait_times.append(val / algos.num_visited_along_path(g, p)[-1])
 
     res: tuple[float, float, float, float, float, float] = (
@@ -138,12 +135,6 @@ def benchmark_partition(
         sum(vals),
         sum(vals) / len(vals),
     )
-
-    # output += f"{Bcolors.OKBLUE}Maximum: {Bcolors.ENDC}{res[0]}\n"
-    # output += f"{Bcolors.OKBLUE}Minimum: {Bcolors.ENDC}{res[1]}\n"
-    # output += f"{Bcolors.OKBLUE}Range:   {Bcolors.ENDC}{res[2]}\n"
-    # output += f"{Bcolors.OKBLUE}Average: {Bcolors.ENDC}{res[3]}\n"
-    # print(output)
 
     return res
 

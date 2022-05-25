@@ -953,7 +953,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
 
 def uconn_strat_3(g: Graph, k: int) -> list[list[int]]:
     """
-    Greedy + Random algorithm from "Agent Based Model to Estimate..."
+    Nearest Neighbor algorithm from "Agent Based Model to Estimate..."
     Find the agent with the current shortest path.
     Assign them the nerest unvisited neighbor
 

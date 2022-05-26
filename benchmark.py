@@ -684,10 +684,9 @@ def line_plot(
     #   https://matplotlib.org/3.5.0/_images/sphx_glr_named_colors_003.png
 
     for paths, name, color in zip(assignments, names, colors):
-        curr_max: float = max(algos.wlp(g, path) for path in paths)
         f = algos.generate_partition_path_function(g, paths)
         y = [total - f(i) for i in x]
-        (line,) = ax.plot(x, y, label=f"{name}: {curr_max}", linewidth=2.0, color=color)
+        (line,) = ax.plot(x, y, label=f"{name}", linewidth=2.0, color=color)
         lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)

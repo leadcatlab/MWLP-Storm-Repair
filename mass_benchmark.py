@@ -102,12 +102,16 @@ def main() -> None:
     #         json.dump(res, outfile)
 
     ############################################################################
+    ######################### Generating Assignments ###########################
+    ############################################################################
+
+    ############################################################################
     ######################## Plotting Visited Targets ##########################
     ############################################################################
 
     # Parameters for Graphs and Partitions
-    num_agents: int = 5
-    num_nodes: int = 51  # 20 agents * 10 nodes per agent + start
+    num_agents: int = 20
+    num_nodes: int = 201  # 20 agents * 10 nodes per agent + start
     upper: float = 1.0  # Travel time between 0.5-1 hour
     node_w: tuple[int, int] = (1, 1500)
 
@@ -153,12 +157,12 @@ def main() -> None:
     assignments.append(paths)
     names.append("Greedy + Random (25%) Assignment")
     colors.append("royalblue")
-    
+
     paths = algos.greedy_random_assignment(g, num_agents, 0.5 + (dist_range * 0.50))
     assignments.append(paths)
     names.append("Greedy + Random (50%) Assignment")
     colors.append("blue")
-    
+
     paths = algos.greedy_random_assignment(g, num_agents, 0.5 + (dist_range * 0.75))
     assignments.append(paths)
     names.append("Greedy + Random (75%) Assignment")
@@ -170,13 +174,70 @@ def main() -> None:
     names.append("Transfers and Swaps Greedy")
     colors.append("limegreen")
 
-    part = algos.find_partition_with_heuristic(g, partition, algos.nearest_neighbor, 0.13)
+    part = algos.find_partition_with_heuristic(
+        g, partition, algos.nearest_neighbor, 0.13
+    )
     paths = benchmark.solve_partition(g, part, algos.nearest_neighbor)
     assignments.append(paths)
     names.append("Transfers and Swaps Nearest Neighbor")
     colors.append("darkgreen")
-    
+
+    maximums: DefaultDict[str, list[float]] = defaultdict(list)
+    wait_times: DefaultDict[str, list[float]] = defaultdict(list)
+    minimums: DefaultDict[str, list[float]] = defaultdict(list)
+    sums: DefaultDict[str, list[float]] = defaultdict(list)
+    ranges: DefaultDict[str, list[float]] = defaultdict(list)
+    averages: DefaultDict[str, list[float]] = defaultdict(list)
+
+    for curr, path in zip(names, assignments):
+        (
+            curr_max,
+            curr_wait,
+            curr_min,
+            curr_range,
+            curr_sum,
+            curr_avg,
+        ) = benchmark.benchmark_partition(g, path)
+
+        maximums[curr].append(curr_max)
+        wait_times[curr].append(curr_wait)
+        minimums[curr].append(curr_min)
+        ranges[curr].append(curr_range)
+        sums[curr].append(curr_sum)
+        averages[curr].append(curr_avg)
+
+    print(f"{Bcolors.OKBLUE}Sums: {Bcolors.ENDC}")
+    for key, vals in sums.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
+    for key, vals in maximums.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Wait Times: {Bcolors.ENDC}")
+    for key, vals in wait_times.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Minimums: {Bcolors.ENDC}")
+    for key, vals in minimums.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Ranges: {Bcolors.ENDC}")
+    for key, vals in ranges.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
+    print(f"{Bcolors.OKBLUE}Averages: {Bcolors.ENDC}")
+    for key, vals in averages.items():
+        print(f"\t{key:40}{sum(vals)}")
+    print()
+
     benchmark.line_plot(g, assignments, names, colors, x_range=(0, 100))
+
 
 if __name__ == "__main__":
     main()

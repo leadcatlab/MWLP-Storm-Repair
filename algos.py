@@ -835,7 +835,7 @@ def multi_agent_brute_force(
     return best_order
 
 
-def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
+def greedy_assignment(g: Graph, k: int) -> list[list[int]]:
     """
     Greedy algorithm from "Predicting Outage Restoration..."
     Finds the agent with the current shortest path
@@ -879,7 +879,7 @@ def uconn_strat_1(g: Graph, k: int) -> list[list[int]]:
     return paths
 
 
-def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
+def greedy_random_assignment(g: Graph, k: int, r: float) -> list[list[int]]:
     """
     Greedy + Random algorithm from "Predicting Outage Restoration..."
     Group agents into two groups:
@@ -951,7 +951,7 @@ def uconn_strat_2(g: Graph, k: int, r: float) -> list[list[int]]:
     return paths
 
 
-def uconn_strat_3(g: Graph, k: int) -> list[list[int]]:
+def nearest_neighbor_assignment(g: Graph, k: int) -> list[list[int]]:
     """
     Nearest Neighbor algorithm from "Agent Based Model to Estimate..."
     Find the agent with the current shortest path.

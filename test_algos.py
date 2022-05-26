@@ -320,20 +320,20 @@ def test_tsp_correctness() -> None:
         assert algos.held_karp(g) == algos.brute_force_tsp(g)
 
 
-def test_uconn_strats_agent_partition() -> None:
+def test_prior_strats_agent_partition() -> None:
     for _ in range(5):
         g = Graph.random_complete_metric(20)
         k = 5
-        strat_1: list[list[int]] = algos.uconn_strat_1(g, k)
+        strat_1: list[list[int]] = algos.greedy_assignment(g, k)
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_1])
 
-        strat_2_no_rad: list[list[int]] = algos.uconn_strat_2(g, k, 0.0)
+        strat_2_no_rad: list[list[int]] = algos.greedy_random_assignment(g, k, 0.0)
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2_no_rad])
 
-        strat_2: list[list[int]] = algos.uconn_strat_2(g, k, 5.0)
+        strat_2: list[list[int]] = algos.greedy_random_assignment(g, k, 5.0)
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_2])
 
-        strat_3: list[list[int]] = algos.uconn_strat_3(g, k)
+        strat_3: list[list[int]] = algos.nearest_neighbor_assignment(g, k)
         assert Graph.is_agent_partition(g, [set(subset) for subset in strat_3])
 
 
@@ -561,22 +561,22 @@ def test_hk_invalid_start() -> None:
             algos.held_karp(g, start=g.num_nodes)
 
 
-def test_uconn_strat_1_incomplete() -> None:
+def test_greedy_assignment_incomplete() -> None:
     g: Graph = almost_complete
     with pytest.raises(ValueError):
-        algos.uconn_strat_1(g, 2)
+        algos.greedy_assignment(g, 2)
 
 
-def test_uconn_strat_2_incomplete() -> None:
+def test_greedy_random_assignment_incomplete() -> None:
     g: Graph = almost_complete
     with pytest.raises(ValueError):
-        algos.uconn_strat_2(g, 2, 1.0)
+        algos.greedy_random_assignment(g, 2, 1.0)
 
 
-def test_uconn_strat_3_incomplete() -> None:
+def test_nearest_neighbor_assignment_incomplete() -> None:
     g: Graph = almost_complete
     with pytest.raises(ValueError):
-        algos.uconn_strat_3(g, 2)
+        algos.nearest_neighbor_assignment(g, 2)
 
 
 def test_multi_agent_brute_force_incomplete_graph() -> None:

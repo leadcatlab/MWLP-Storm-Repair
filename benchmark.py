@@ -330,10 +330,10 @@ def mass_benchmark(
 
         best, curr_best = "", float("inf")
 
-        curr = "UConn Greedy"
+        curr = "Greedy Assignment"
         print(curr)
         start: float = time.perf_counter_ns()
-        res = algos.uconn_strat_1(g, k)
+        res = algos.greedy_assignment(g, k)
         end: float = time.perf_counter_ns()
         (
             curr_max,
@@ -355,10 +355,10 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Nearest Neighbor"
+        curr = "Nearest Neighbor Assignment"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_3(g, k)
+        res = algos.nearest_neighbor_assignment(g, k)
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -383,10 +383,10 @@ def mass_benchmark(
         lo, hi = rand_dist_range
         dist_range: float = hi - lo
 
-        curr = "UConn Greedy + Random (25%)"
+        curr = "Greedy + Random (25%) Assignment"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.25))
+        res = algos.greedy_random_assignment(g, k, lo + (dist_range * 0.25))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -408,10 +408,10 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Greedy + Random (50%)"
+        curr = "Greedy + Random (50%) Assignment"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.50))
+        res = algos.greedy_random_assignment(g, k, lo + (dist_range * 0.50))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -433,10 +433,10 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "UConn Greedy + Random (75%)"
+        curr = "Greedy + Random (75%) Assignment"
         print(curr)
         start = time.perf_counter_ns()
-        res = algos.uconn_strat_2(g, k, lo + (dist_range * 0.75))
+        res = algos.greedy_random_assignment(g, k, lo + (dist_range * 0.75))
         end = time.perf_counter_ns()
         (
             curr_max,
@@ -458,11 +458,11 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Greedy"
+        curr = "Transfers and Swaps Greedy"
         print(curr)
         print("Finding partition")
         start = time.perf_counter_ns()
-        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.02)
+        output = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.13)
         end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
         print("Solving partition")
@@ -488,12 +488,12 @@ def mass_benchmark(
         averages[curr].append(curr_avg)
         print(Bcolors.CLEAR_LAST_LINE)
 
-        curr = "Nearest Neighbor"
+        curr = "Transfers and Swaps Nearest Neighbor"
         print(curr)
         print("Finding partition")
         start = time.perf_counter_ns()
         output = algos.find_partition_with_heuristic(
-            g, partition, algos.nearest_neighbor, 0.18
+            g, partition, algos.nearest_neighbor, 0.13
         )
         end = time.perf_counter_ns()
         print(Bcolors.CLEAR_LAST_LINE)
@@ -628,11 +628,13 @@ def alpha_heuristic_given(
 
 def line_plot(
     g: Graph,
-    part: list[set[int]],
+    assignments: list[list[list[int]]],
+    names: list[str],
+    colors: list[str],
     x_range: tuple[int, int] = (0, 10),
 ) -> None:
     """
-    Generate a graph of the given parameters and plot visited nodes
+    Generate a plot of visited nodes for the given assignments
 
     Parameters
     ----------
@@ -640,29 +642,38 @@ def line_plot(
         Input graph
         Assertions:
             Must be complete
-            Must be undirected
 
-    part: list[set[int]]
-        Starting agent partition
+    assignments: list[list[list[int]]]
+        List of agent assignments
         Assertions:
-            Must be an agent partition
+            Each assignment be an agent assignment
+
+    names: list[str]
+        Names for each plot
+
+    colors: list[str]
+        Colors for each plot
+        Assertions:
+            len(colors) == len(names) == len(assignments)
 
     x_range: tuple[int, int]
         x-axis bounds for plotting
-        Default: (0, 100)
+        Default: (0, 10)
     """
 
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    if Graph.is_undirected(g) is False:
-        raise ValueError("Passed graph is not undirected")
+    if not (len(assignments) == len(names) == len(colors)):
+        raise ValueError("Lengths of arguments do not match")
 
-    if Graph.is_agent_partition(g, part) is False:
-        raise ValueError("Passed partition is invalid")
+    for assignment in assignments:
+        part: list[set[int]] = [set(s) for s in assignment]
+        if Graph.is_agent_partition(g, part) is False:
+            raise ValueError("Some passed assignment is invalid")
 
     n: int = g.num_nodes
-    k: int = len(part)
+    count: int = len(assignments)
     low, high = x_range
     x = np.linspace(low, high, high * 10)
     _, ax = plt.subplots()
@@ -672,122 +683,12 @@ def line_plot(
     # List of matplotlib colors
     #   https://matplotlib.org/3.5.0/_images/sphx_glr_named_colors_003.png
 
-    curr: str = "Random"
-    output: list[set[int]] = [set(s) for s in part]
-    paths: list[list[int]] = solve_partition(g, output, algos.random_order)
-    curr_max: float = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="darkviolet"
-    )
-    lines.append(line)
-
-    curr = "UConn Greedy"
-    paths = algos.uconn_strat_1(g, k)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="lightsteelblue")
-    lines.append(line)
-
-    curr = "UConn Nearest Neighbor"
-    paths = algos.uconn_strat_1(g, k)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="aqua")
-    lines.append(line)
-
-    curr = "UConn Greedy + Rand (2.5)"
-    paths = algos.uconn_strat_2(g, k, 2.5)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="royalblue")
-    lines.append(line)
-
-    curr = "UConn Greedy + Rand (5.0)"
-    paths = algos.uconn_strat_2(g, k, 5.0)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="blue")
-    lines.append(line)
-
-    curr = "UConn Greedy + Rand (7.5)"
-    paths = algos.uconn_strat_2(g, k, 7.5)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", color="mediumslateblue")
-    lines.append(line)
-
-    curr = "Greedy"
-    output = algos.find_partition_with_heuristic(g, part, algos.greedy, 0.02)
-    paths = solve_partition(g, output, algos.greedy)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="limegreen"
-    )
-    lines.append(line)
-
-    curr = "Alternate"
-    output = algos.find_partition_with_heuristic(g, part, algos.alternate, 0.18)
-    paths = solve_partition(g, output, algos.alternate)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="mediumspringgreen"
-    )
-    lines.append(line)
-
-    curr = "Nearest Neighbor"
-    output = algos.find_partition_with_heuristic(g, part, algos.nearest_neighbor, 0.18)
-    paths = solve_partition(g, output, algos.nearest_neighbor)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="darkgreen"
-    )
-    lines.append(line)
-
-    # This is slow
-    # curr = "Optimal After NN transfers"
-    # paths = solve_partition(g, output, algos.brute_force_mwlp)
-    # curr_max = max(algos.wlp(g, path) for path in paths)
-    # f = algos.generate_partition_path_function(g, paths)
-    # y = [total - f(i) for i in x]
-    # (line,) = ax.plot(x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="red")
-    # lines.append(line)
-
-    # This is slow
-    # Brute for solve with capped sizes
-    cap: int = (g.num_nodes // k) + 1
-    curr = f"Best Solution with {cap = }"
-    paths = algos.multi_agent_brute_force(g, k, f=algos.nearest_neighbor, max_size=cap)
-    curr_max = max(algos.wlp(g, path) for path in paths)
-    f = algos.generate_partition_path_function(g, paths)
-    y = [total - f(i) for i in x]
-    (line,) = ax.plot(
-        x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
-    )
-    lines.append(line)
-
-    # This is slow and bad
-    # curr = "TSP After NN"
-    # paths = solve_partition(g, output, algos.held_karp)
-    # curr_max = max(algos.wlp(g, path) for path in paths)
-    # f = algos.generate_partition_path_function(g, paths)
-    # y = [total - f(i) for i in x]
-    # (line,) = ax.plot(
-    #     x, y, label=f"{curr}: {curr_max}", linewidth=2.0, color="firebrick"
-    # )
-    # lines.append(line)
+    for paths, name, color in zip(assignments, names, colors):
+        curr_max: float = max(algos.wlp(g, path) for path in paths)
+        f = algos.generate_partition_path_function(g, paths)
+        y = [total - f(i) for i in x]
+        (line,) = ax.plot(x, y, label=f"{name}: {curr_max}", linewidth=2.0, color=color)
+        lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)
     plt.legend()

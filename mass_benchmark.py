@@ -88,7 +88,7 @@ def main() -> None:
     # Need to edit the ranges
     #   If metric: do (upper / 2, upper)
     results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
-        graphs_from_file, parts_from_file, (0.5, 1.0)
+        graph_bank, partition_bank, (0.5, 1.0)
     )
 
     # Write to files
@@ -287,60 +287,6 @@ def main() -> None:
     assignments.append(paths)
     names.append("T&S Nearest Neighbor")
     colors.append("darkgreen")
-
-    maximums: DefaultDict[str, list[float]] = defaultdict(list)
-    wait_times: DefaultDict[str, list[float]] = defaultdict(list)
-    minimums: DefaultDict[str, list[float]] = defaultdict(list)
-    sums: DefaultDict[str, list[float]] = defaultdict(list)
-    ranges: DefaultDict[str, list[float]] = defaultdict(list)
-    averages: DefaultDict[str, list[float]] = defaultdict(list)
-
-    for curr, path in zip(names, assignments):
-        (
-            curr_max,
-            curr_wait,
-            curr_min,
-            curr_range,
-            curr_sum,
-            curr_avg,
-        ) = benchmark.benchmark_partition(g, path)
-
-        maximums[curr].append(curr_max)
-        wait_times[curr].append(curr_wait)
-        minimums[curr].append(curr_min)
-        ranges[curr].append(curr_range)
-        sums[curr].append(curr_sum)
-        averages[curr].append(curr_avg)
-
-    print(f"{Bcolors.OKBLUE}Sums: {Bcolors.ENDC}")
-    for key, vals in sums.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
-
-    print(f"{Bcolors.OKBLUE}Maximums: {Bcolors.ENDC}")
-    for key, vals in maximums.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
-
-    print(f"{Bcolors.OKBLUE}Wait Times: {Bcolors.ENDC}")
-    for key, vals in wait_times.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
-
-    print(f"{Bcolors.OKBLUE}Minimums: {Bcolors.ENDC}")
-    for key, vals in minimums.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
-
-    print(f"{Bcolors.OKBLUE}Ranges: {Bcolors.ENDC}")
-    for key, vals in ranges.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
-
-    print(f"{Bcolors.OKBLUE}Averages: {Bcolors.ENDC}")
-    for key, vals in averages.items():
-        print(f"\t{key:40}{sum(vals)}")
-    print()
 
     benchmark.line_plot(g, assignments, names, colors, x_range=(0, 100))
 

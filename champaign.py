@@ -117,7 +117,7 @@ def main() -> None:
     )
 
     # Choose random nodes to be damaged
-    num_nodes: int = 250
+    num_nodes: int = 251
     g = Graph(num_nodes)
 
     # Initializing a bunch of empty nodes and edges is faster than calling add_edge
@@ -138,13 +138,13 @@ def main() -> None:
     g.node_weight[0] = 0
 
     print("Finding shortest path travel times in hours")
-    for u, v in product(range(num_nodes), range(num_nodes)):
-        if u != v:
+    for u in range(num_nodes):
+        for v in range(u + 1, num_nodes)
             u_prime, v_prime = damaged[u], damaged[v]
             time = nx.shortest_path_length(
                 G, u_prime, v_prime, weight="travel_time"
             )
-            g.edge_weight[u][v] = time / (60 * 60)
+            g.edge_weight[u][v] = g.edge_weight[v][u] = time / (60 * 60)
 
     print("Adding repair times")
     # Ranges from "Predicting Outage Restoration ..."
@@ -162,7 +162,7 @@ def main() -> None:
             if u != v:
                 g.edge_weight[u][v] += repair_time
 
-    num_agents: int = 10
+    num_agents: int = 25
     print(f"Creating partitions for {num_agents} agents")
     partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
 

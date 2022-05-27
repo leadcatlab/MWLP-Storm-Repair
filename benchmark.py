@@ -632,6 +632,7 @@ def line_plot(
     names: list[str],
     colors: list[str],
     x_range: tuple[int, int] = (0, 10),
+    loc: str = 'most_recent_line_plot.png'
 ) -> None:
     """
     Generate a plot of visited nodes for the given assignments
@@ -659,6 +660,9 @@ def line_plot(
     x_range: tuple[int, int]
         x-axis bounds for plotting
         Default: (0, 10)
+
+    loc: str
+        Location to save graph to
     """
 
     if Graph.is_complete(g) is False:
@@ -693,7 +697,10 @@ def line_plot(
     plt.legend()
     figure = plt.gcf()
     figure.set_size_inches(10, 7)  # horizontal x vertical
-    plt.savefig("most_recent_line_plot.png")
+    plt.title("Number of Unvisited People over Time")
+    plt.xlabel("Time (Hours)")
+    plt.ylabel("Number Unvisited")
+    plt.savefig(loc)
     # plt.show()
 
 

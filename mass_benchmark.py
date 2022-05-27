@@ -145,7 +145,7 @@ def main() -> None:
     bars = plt.bar(names, values, color=colors)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     ax.bar_label(bars, padding=3, fmt="%d")
-    fig.savefig("total_work", bbox_inches="tight")
+    fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
 
     # Bar Plot for average wait times
     with open("results/mass_benchmark/wait_times.json", encoding="utf-8") as file:
@@ -184,7 +184,7 @@ def main() -> None:
     bars = plt.bar(names, values, color=colors)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     ax.bar_label(bars, padding=3, fmt="%d")
-    fig.savefig("wait_time", bbox_inches="tight")
+    fig.savefig("results/mass_benchmark/wait_time", bbox_inches="tight")
 
     # Bar Plot for range of work
     with open("results/mass_benchmark/ranges.json", encoding="utf-8") as file:
@@ -223,7 +223,7 @@ def main() -> None:
     bars = plt.bar(names, values, color=colors)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     ax.bar_label(bars, padding=3, fmt="%d")
-    fig.savefig("ranges", bbox_inches="tight")
+    fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")
 
     ############################################################################
     ######################## Plotting Visited Targets ##########################

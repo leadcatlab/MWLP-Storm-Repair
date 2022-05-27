@@ -8,6 +8,7 @@ from collections import defaultdict
 from itertools import product
 from typing import Any, DefaultDict
 
+from matplotlib.patches import Patch
 import matplotlib.pyplot as plt  # type: ignore
 import networkx as nx  # type: ignore
 import numpy as np
@@ -139,7 +140,7 @@ def main() -> None:
 
     print("Finding shortest path travel times in hours")
     for u in range(num_nodes):
-        for v in range(u + 1, num_nodes)
+        for v in range(u + 1, num_nodes):
             u_prime, v_prime = damaged[u], damaged[v]
             time = nx.shortest_path_length(
                 G, u_prime, v_prime, weight="travel_time"
@@ -162,10 +163,16 @@ def main() -> None:
             if u != v:
                 g.edge_weight[u][v] += repair_time
 
-    num_agents: int = 25
+    
+    Graph.to_file(g, "results/champaign/champaign.json")
+
+    g = Graph.from_file("results/champaign/champaign.json")
+        
+    num_agents: int = 12
     print(f"Creating partitions for {num_agents} agents")
     partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
-
+    
+    print("Calculating assignments")
     assignments: list[list[list[int]]] = []
     names: list[str] = []
     colors: list[str] = []
@@ -200,8 +207,67 @@ def main() -> None:
     names.append("T&S Nearest Neighbor")
     colors.append("darkgreen")
 
-    benchmark.line_plot(g, assignments, names, colors, x_range=(0, 100), loc='champaign_unvisited.png')
+    benchmark.line_plot(g, assignments, names, colors, x_range=(0, 100), loc='results/champaign/champaign_unvisited.png')
+    
+    sums, avg_wait, ranges = [], [], []
+    for assignment in assignments:
+        _, curr_wait, _, curr_range, curr_sum, _ = benchmark.benchmark_partition(g, assignment)
+        sums.append(curr_sum)
+        avg_wait.append(curr_wait)
+        ranges.append(curr_range)
+    
+    colors = ["lightsteelblue", "aqua", "blue", "limegreen", "darkgreen"]
 
+    fig, ax = plt.subplots(figsize=(6, 6))
+    patches = [Patch(color=c, label=k) for c, k in zip(colors, names)]
+    plt.legend(
+        title="Key",
+        labels=names,
+        handles=patches,
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+    )
+    frame1 = plt.gca()
+    frame1.axes.xaxis.set_ticklabels([])
+    plt.title("Sum of Weighted Latencies")
+    bars = plt.bar(names, sums, color=colors)
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    ax.bar_label(bars, padding=3, fmt="%d")
+    fig.savefig("results/champaign/total_work", bbox_inches="tight")
+    
+    fig, ax = plt.subplots(figsize=(6, 6))
+    patches = [Patch(color=c, label=k) for c, k in zip(colors, names)]
+    plt.legend(
+        title="Key",
+        labels=names,
+        handles=patches,
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+    )
+    frame1 = plt.gca()
+    frame1.axes.xaxis.set_ticklabels([])
+    plt.title("Average Wait Time")
+    bars = plt.bar(names, avg_wait, color=colors)
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    ax.bar_label(bars, padding=3, fmt="%d")
+    fig.savefig("results/champaign/wait_time", bbox_inches="tight")
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    patches = [Patch(color=c, label=k) for c, k in zip(colors, names)]
+    plt.legend(
+        title="Key",
+        labels=names,
+        handles=patches,
+        loc="center left",
+        bbox_to_anchor=(1.0, 0.5),
+    )
+    frame1 = plt.gca()
+    frame1.axes.xaxis.set_ticklabels([])
+    plt.title("Range of Weighted Latencies")
+    bars = plt.bar(names, ranges, color=colors)
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    ax.bar_label(bars, padding=3, fmt="%d")
+    fig.savefig("results/champaign/ranges", bbox_inches="tight")
 
 if __name__ == "__main__":
     main()

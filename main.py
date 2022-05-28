@@ -1,22 +1,12 @@
 """
 Driver code for testing functions
 """
-import json
-import math
-import random
-from collections import defaultdict
-from itertools import product
-from typing import Any, DefaultDict
 
 import matplotlib.pyplot as plt  # type: ignore
-import networkx as nx  # type: ignore
-import numpy as np
-import osmnx as ox  # type: ignore
-import pandas as pd  # type: ignore
 
 import algos
 import benchmark
-from graph import Graph, graph_dict
+from graph import Graph
 
 
 class Bcolors:

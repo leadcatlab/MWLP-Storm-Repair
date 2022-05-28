@@ -1,18 +1,9 @@
 """
-Driver code for testing functions
+Driver code for Alpha Benchmarking
 """
 import json
-import math
-import random
-from collections import defaultdict
-from itertools import product
-from typing import Any, DefaultDict
 
 import matplotlib.pyplot as plt  # type: ignore
-import networkx as nx  # type: ignore
-import numpy as np
-import osmnx as ox  # type: ignore
-import pandas as pd  # type: ignore
 
 import algos
 import benchmark

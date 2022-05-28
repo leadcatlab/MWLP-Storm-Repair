@@ -632,7 +632,7 @@ def line_plot(
     names: list[str],
     colors: list[str],
     x_range: tuple[int, int] = (0, 10),
-    loc: str = 'most_recent_line_plot.png'
+    loc: str = "most_recent_line_plot.png",
 ) -> None:
     """
     Generate a plot of visited nodes for the given assignments
@@ -668,7 +668,7 @@ def line_plot(
     if Graph.is_complete(g) is False:
         raise ValueError("Passed graph is not complete")
 
-    if not (len(assignments) == len(names) == len(colors)):
+    if not len(assignments) == len(names) == len(colors):
         raise ValueError("Lengths of arguments do not match")
 
     for assignment in assignments:
@@ -677,7 +677,6 @@ def line_plot(
             raise ValueError("Some passed assignment is invalid")
 
     n: int = g.num_nodes
-    count: int = len(assignments)
     low, high = x_range
     x = np.linspace(low, high, high * 10)
     _, ax = plt.subplots()

@@ -1,23 +1,18 @@
 """
-Driver code for testing functions
+Driver code for Champaign Benchmarking
 """
-import json
 import math
 import random
-from collections import defaultdict
-from itertools import product
-from typing import Any, DefaultDict
 
-from matplotlib.patches import Patch
 import matplotlib.pyplot as plt  # type: ignore
 import networkx as nx  # type: ignore
-import numpy as np
 import osmnx as ox  # type: ignore
 import pandas as pd  # type: ignore
+from matplotlib.patches import Patch  # type: ignore
 
 import algos
 import benchmark
-from graph import Graph, graph_dict
+from graph import Graph
 
 
 class Bcolors:
@@ -45,64 +40,64 @@ def main() -> None:
     ########################### Champaign Testing ##############################
     ############################################################################
 
-    # # Thanks Pranay
-    # ox.config(log_console=True, use_cache=True)
-    # place = "Champaign, Illinois, USA"
-    # # gdf = ox.geocode_to_gdf(place)
-    # # area = ox.projection.project_gdf(gdf).unary_union.area
-    # # 'drive_service' := drivable and service roads both
-    # G = ox.graph_from_place(place, network_type="drive_service", simplify=True)
-    # G = ox.distance.add_edge_lengths(G, precision=5)
+    # Thanks Pranay
+    ox.config(log_console=True, use_cache=True)
+    place = "Champaign, Illinois, USA"
+    # gdf = ox.geocode_to_gdf(place)
+    # area = ox.projection.project_gdf(gdf).unary_union.area
+    # 'drive_service' := drivable and service roads both
+    G = ox.graph_from_place(place, network_type="drive_service", simplify=True)
+    G = ox.distance.add_edge_lengths(G, precision=5)
 
-    # # From "Predicting Outage Restoration..."
-    # # Agent speed was 25 mph
-    # kph: float = 25.0 * 1.609344
-    # print(f"Setting all travel speeds to {kph} kph")
-    # for u, v, key in G.edges(keys=True):
-    #     G[u][v][key]["speed_kph"] = kph
-    # G = ox.add_edge_travel_times(G, precision=5)
+    # From "Predicting Outage Restoration..."
+    # Agent speed was 25 mph
+    kph: float = 25.0 * 1.609344
+    print(f"Setting all travel speeds to {kph} kph")
+    for u, v, key in G.edges(keys=True):
+        G[u][v][key]["speed_kph"] = kph
+    G = ox.add_edge_travel_times(G, precision=5)
 
-    # # Remove unreachable /  empty nodes
-    # print("Removing unreachable nodes")
-    # components = list(nx.strongly_connected_components(G))
-    # for item in components:
-    #     if len(item) == 0 or len(item) == 1:
-    #         G.remove_node(item.pop())
+    # Remove unreachable /  empty nodes
+    print("Removing unreachable nodes")
+    components = list(nx.strongly_connected_components(G))
+    for item in components:
+        if len(item) == 0 or len(item) == 1:
+            G.remove_node(item.pop())
 
-    # order: int = G.order()
-    # print(f"{order} nodes")
+    order: int = G.order()
+    print(f"{order} nodes")
 
-    # # During repairs we do not care about one way roads
-    # print("Turning G into undirected graph")
-    # G = ox.utils_graph.get_undirected(G)
+    # During repairs we do not care about one way roads
+    print("Turning G into undirected graph")
+    G = ox.utils_graph.get_undirected(G)
 
-    # # Add population to the nearest points
-    # pop_data = pd.read_csv("cus_blockdata.csv", index_col=0)
-    # pop_points = list(pop_data.to_records(index=False))
+    # Add population to the nearest points
+    pop_data = pd.read_csv("cus_blockdata.csv", index_col=0)
+    pop_points = list(pop_data.to_records(index=False))
 
-    # def dist(x1: float, y1: float, x2: float, y2: float) -> float:
-    #     x_diff: float = x1 - x2
-    #     y_diff: float = y1 - y2
-    #     return math.sqrt(x_diff**2 + y_diff**2)
+    def dist(x1: float, y1: float, x2: float, y2: float) -> float:
+        x_diff: float = x1 - x2
+        y_diff: float = y1 - y2
+        return math.sqrt(x_diff**2 + y_diff**2)
 
-    # print("Initializing population of each node to 0")
-    # for i in G.nodes():
-    #     G.nodes[i]["pop"] = 0
+    print("Initializing population of each node to 0")
+    for i in G.nodes():
+        G.nodes[i]["pop"] = 0
 
-    # print("Adding populations")
-    # for population, lat, long in pop_points:
-    #     if population > 0:
-    #         # Find the closest node in G to lat, long
-    #         closest: int = min(
-    #             G.nodes(),
-    #             key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
-    #         )
+    print("Adding populations")
+    for population, lat, long in pop_points:
+        if population > 0:
+            # Find the closest node in G to lat, long
+            closest: int = min(
+                G.nodes(),
+                key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
+            )
 
-    #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
-    #         G.nodes[closest]["pop"] += population
+            # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
+            G.nodes[closest]["pop"] += population
 
-    # print("Writing graphML")
-    # ox.save_graphml(G, "champaign.graphml")
+    print("Writing graphML")
+    ox.save_graphml(G, "champaign.graphml")
 
     print("Loading graphml")
     G = ox.load_graphml("champaign.graphml")
@@ -142,9 +137,7 @@ def main() -> None:
     for u in range(num_nodes):
         for v in range(u + 1, num_nodes):
             u_prime, v_prime = damaged[u], damaged[v]
-            time = nx.shortest_path_length(
-                G, u_prime, v_prime, weight="travel_time"
-            )
+            time = nx.shortest_path_length(G, u_prime, v_prime, weight="travel_time")
             g.edge_weight[u][v] = g.edge_weight[v][u] = time / (60 * 60)
 
     print("Adding repair times")
@@ -163,15 +156,14 @@ def main() -> None:
             if u != v:
                 g.edge_weight[u][v] += repair_time
 
-    
     Graph.to_file(g, "results/champaign/champaign.json")
 
     g = Graph.from_file("results/champaign/champaign.json")
-        
+
     num_agents: int = 12
     print(f"Creating partitions for {num_agents} agents")
     partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
-    
+
     print("Calculating assignments")
     assignments: list[list[list[int]]] = []
     names: list[str] = []
@@ -207,15 +199,24 @@ def main() -> None:
     names.append("T&S Nearest Neighbor")
     colors.append("darkgreen")
 
-    benchmark.line_plot(g, assignments, names, colors, x_range=(0, 100), loc='results/champaign/champaign_unvisited.png')
-    
+    benchmark.line_plot(
+        g,
+        assignments,
+        names,
+        colors,
+        x_range=(0, 100),
+        loc="results/champaign/champaign_unvisited.png",
+    )
+
     sums, avg_wait, ranges = [], [], []
     for assignment in assignments:
-        _, curr_wait, _, curr_range, curr_sum, _ = benchmark.benchmark_partition(g, assignment)
+        _, curr_wait, _, curr_range, curr_sum, _ = benchmark.benchmark_partition(
+            g, assignment
+        )
         sums.append(curr_sum)
         avg_wait.append(curr_wait)
         ranges.append(curr_range)
-    
+
     colors = ["lightsteelblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -234,7 +235,7 @@ def main() -> None:
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     ax.bar_label(bars, padding=3, fmt="%d")
     fig.savefig("results/champaign/total_work", bbox_inches="tight")
-    
+
     fig, ax = plt.subplots(figsize=(6, 6))
     patches = [Patch(color=c, label=k) for c, k in zip(colors, names)]
     plt.legend(
@@ -268,6 +269,7 @@ def main() -> None:
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     ax.bar_label(bars, padding=3, fmt="%d")
     fig.savefig("results/champaign/ranges", bbox_inches="tight")
+
 
 if __name__ == "__main__":
     main()

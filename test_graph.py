@@ -369,8 +369,11 @@ def test_is_complete_failure() -> None:
         "node_weight": [0, 0, 0, 0],
     }
     g = Graph.from_dict(gd)
-
     assert Graph.is_complete(g) is False
+
+    rand_g = Graph.random_complete_metric(5)
+    rand_g.edge_weight[0][1] = -1.0
+    assert Graph.is_complete(rand_g) is False
 
 
 def test_is_metric_failure() -> None:

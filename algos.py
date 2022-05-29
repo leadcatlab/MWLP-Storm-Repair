@@ -998,7 +998,7 @@ def nearest_neighbor_assignment(g: Graph, k: int) -> list[list[int]]:
 
 
 def transfers_and_swaps_mwlp(
-    g: Graph, part: list[set[int]], f: Callable[..., list[int]], safe: bool = True
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
     """
     Algorithm 1: Improve Partition from "Balanced Task Allocation..."
@@ -1022,9 +1022,6 @@ def transfers_and_swaps_mwlp(
         maximum,  minimum, range, average
         Passed heuristic
 
-    safe: bool
-        If true, type checking occurs
-
     Returns
     -------
     list[set[int]]
@@ -1032,12 +1029,11 @@ def transfers_and_swaps_mwlp(
 
     """
 
-    if safe:
-        if Graph.is_complete(g) is False:
-            raise ValueError("Passed graph is not complete")
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
 
-        if Graph.is_agent_partition(g, part) is False:
-            raise ValueError("Passed partition is invalid")
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
@@ -1191,11 +1187,7 @@ def transfers_and_swaps_mwlp(
 
 
 def transfer_outliers_mwlp(
-    g: Graph,
-    part: list[set[int]],
-    f: Callable[..., list[int]],
-    alpha: float,
-    safe: bool = True,
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
     """
     Algorithm 2: Transfer Outliers from "Balanced Task Allocation..."
@@ -1224,9 +1216,6 @@ def transfer_outliers_mwlp(
         Assertions:
             0 <= alpha <= 1
 
-    safe: bool
-        If true, type checking occurs
-
     Returns
     -------
     list[set[int]]
@@ -1234,15 +1223,14 @@ def transfer_outliers_mwlp(
 
     """
 
-    if safe:
-        if Graph.is_complete(g) is False:
-            raise ValueError("Passed graph is not complete")
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
 
-        if Graph.is_agent_partition(g, part) is False:
-            raise ValueError("Passed partition is invalid")
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
 
-        if not 0 <= alpha <= 1:
-            raise ValueError("Passed alpha threshold is out of range")
+    if not 0 <= alpha <= 1:
+        raise ValueError("Passed alpha threshold is out of range")
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
@@ -1287,10 +1275,7 @@ def transfer_outliers_mwlp(
 
 
 def evaluate_partition_heuristic(
-    g: Graph,
-    partition: list[set[int]],
-    f: Callable[..., list[int]],
-    safe: bool = True,
+    g: Graph, partition: list[set[int]], f: Callable[..., list[int]]
 ) -> float:
     """
     Function to evaluate a given partition of agents using a heuristic
@@ -1313,21 +1298,18 @@ def evaluate_partition_heuristic(
         Assertions:
             Must be an agent partition
 
-    safe: bool
-        If true, type checking occurs
-
     Returns
     -------
     float:
         max over all s in partition of wlp(g, f(s))
 
     """
-    if safe:
-        if Graph.is_complete(g) is False:
-            raise ValueError("Passed graph is not complete")
 
-        if Graph.is_agent_partition(g, partition) is False:
-            raise ValueError("Passed partition is invalid")
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
+
+    if Graph.is_agent_partition(g, partition) is False:
+        raise ValueError("Passed partition is invalid")
 
     curr_max = float("-inf")
     for subset in partition:
@@ -1342,7 +1324,6 @@ def find_partition_with_heuristic(
     part: list[set[int]],
     f: Callable[..., list[int]],
     alpha: float,
-    safe: bool = True,
 ) -> list[set[int]]:
     """
     Adaptation of Algorithm 3: AHP from "Balanced Task Allocation..."
@@ -1371,9 +1352,6 @@ def find_partition_with_heuristic(
         Assertions:
             0 <= alpha <= 1
 
-    safe: bool
-        If true, type checking occurs
-
     Returns
     -------
     list[set[int]]
@@ -1381,33 +1359,32 @@ def find_partition_with_heuristic(
 
     """
 
-    if safe:
-        if Graph.is_complete(g) is False:
-            raise ValueError("Passed graph is not complete")
+    if Graph.is_complete(g) is False:
+        raise ValueError("Passed graph is not complete")
 
-        if Graph.is_agent_partition(g, part) is False:
-            raise ValueError("Passed partition is invalid")
+    if Graph.is_agent_partition(g, part) is False:
+        raise ValueError("Passed partition is invalid")
 
-        if not 0 <= alpha <= 1:
-            raise ValueError("Passed alpha threshold is out of range")
+    if not 0 <= alpha <= 1:
+        raise ValueError("Passed alpha threshold is out of range")
 
     # creating a deep copy to be safe
     partition: list[set[int]] = [set(s) for s in part]
-    before: float = evaluate_partition_heuristic(g, partition, f, safe)
+    before: float = evaluate_partition_heuristic(g, partition, f)
 
-    improved: list[set[int]] = transfers_and_swaps_mwlp(g, partition, f, safe)
-    after: float = evaluate_partition_heuristic(g, improved, f, safe)
+    improved: list[set[int]] = transfers_and_swaps_mwlp(g, partition, f)
+    after: float = evaluate_partition_heuristic(g, improved, f)
 
     if improvements_decreased := (after < before):
         partition = [set(subset) for subset in improved]
 
     while improvements_decreased:
-        before = evaluate_partition_heuristic(g, partition, f, safe)
+        before = evaluate_partition_heuristic(g, partition, f)
 
         improved = [set(subset) for subset in partition]
-        improved = transfer_outliers_mwlp(g, improved, f, alpha, safe)
-        improved = transfers_and_swaps_mwlp(g, improved, f, safe)
-        after = evaluate_partition_heuristic(g, improved, f, safe)
+        improved = transfer_outliers_mwlp(g, improved, f, alpha)
+        improved = transfers_and_swaps_mwlp(g, improved, f)
+        after = evaluate_partition_heuristic(g, improved, f)
 
         if improvements_decreased := (after < before):
             partition = [set(subset) for subset in improved]

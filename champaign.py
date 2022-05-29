@@ -72,7 +72,7 @@ def main() -> None:
     G = ox.utils_graph.get_undirected(G)
 
     # Add population to the nearest points
-    pop_data = pd.read_csv("cus_blockdata.csv", index_col=0)
+    pop_data = pd.read_csv("results/champaign/cus_blockdata.csv", index_col=0)
     pop_points = list(pop_data.to_records(index=False))
 
     def dist(x1: float, y1: float, x2: float, y2: float) -> float:
@@ -97,10 +97,10 @@ def main() -> None:
             G.nodes[closest]["pop"] += population
 
     print("Writing graphML")
-    ox.save_graphml(G, "champaign.graphml")
+    ox.save_graphml(G, "results/champaign/champaign.graphml")
 
     print("Loading graphml")
-    G = ox.load_graphml("champaign.graphml")
+    G = ox.load_graphml("results/champaign/champaign.graphml")
 
     print("Fixing population numbers")
     for node in G.nodes():

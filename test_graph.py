@@ -94,8 +94,8 @@ def test_json_file() -> None:
     }
     g = Graph.from_dict(gd)
 
-    Graph.to_file(g, "json_testcase.json")
-    new_g = Graph.from_file("json_testcase.json")
+    Graph.to_file(g, "tests/json_testcase.json")
+    new_g = Graph.from_file("tests/json_testcase.json")
     new_gd: graph_dict = Graph.dict_from_graph(new_g)
 
     assert gd["num_nodes"] == new_gd["num_nodes"]

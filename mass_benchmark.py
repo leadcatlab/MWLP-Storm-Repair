@@ -6,7 +6,6 @@ import random
 from typing import Any, DefaultDict
 
 import matplotlib.pyplot as plt  # type: ignore
-from matplotlib.patches import Patch  # type: ignore
 
 import benchmark
 from graph import Graph
@@ -104,7 +103,6 @@ def main() -> None:
     with open("results/mass_benchmark/sums.json", encoding="utf-8") as file:
         sums: dict[str, list[float]] = json.load(file)
 
-    count: int = len(sums["Greedy Assignment"])
     results: list[str] = [
         "Greedy Assignment",
         "Nearest Neighbor Assignment",
@@ -112,72 +110,66 @@ def main() -> None:
         "Transfers and Swaps Greedy",
         "Transfers and Swaps Nearest Neighbor",
     ]
-    legend_names: list[str] = [
-        "Greedy",
-        "Nearest Neighbor",
-        "Greedy & Random",
-        "T&S Greedy",
-        "T&S Nearest Neighbor",
-    ]
-    
-    boxes: list[list[float]] = [sums[name] for name in results  ]
+
+    boxes: list[list[float]] = [sums[name] for name in results]
     colors: list[str] = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    
-    bp =  ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp['boxes'], colors):
+
+    bp = ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
-    for median in bp['medians']:
-        median.set(color="black", linewidth = 3)
+    for median in bp["medians"]:
+        median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
     plt.title("Sum of Weighted Latencies")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
-    
+
     # Bar Plot for average wait times
     with open("results/mass_benchmark/wait_times.json", encoding="utf-8") as file:
         wait: dict[str, list[float]] = json.load(file)
-    
-    boxes = [wait[name] for name in results  ]
+
+    boxes = [wait[name] for name in results]
     colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    
-    bp =  ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp['boxes'], colors):
+
+    bp = ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
-    for median in bp['medians']:
-        median.set(color="black", linewidth = 3)
+    for median in bp["medians"]:
+        median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
     plt.title("Average Wait Time")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/wait_time", bbox_inches="tight")
-    
+
     # Bar Plot for ranges
     with open("results/mass_benchmark/ranges.json", encoding="utf-8") as file:
-        wait: dict[str, list[float]] = json.load(file)
-    
-    boxes = [wait[name] for name in results  ]
+        ranges: dict[str, list[float]] = json.load(file)
+
+    boxes = [ranges[name] for name in results]
     colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    
-    bp =  ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp['boxes'], colors):
+
+    bp = ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
-    for median in bp['medians']:
-        median.set(color="black", linewidth = 3)
+    for median in bp["medians"]:
+        median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
     plt.title("Range of Weighted Latencies")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")
+
 
 if __name__ == "__main__":
     main()

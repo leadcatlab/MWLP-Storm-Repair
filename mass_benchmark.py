@@ -100,7 +100,7 @@ def main() -> None:
         ) as outfile:
             json.dump(res, outfile)
 
-    # Bar Plot for sum of weighted latencies
+    # Box Plot for sum of weighted latencies
     with open("results/mass_benchmark/sums.json", encoding="utf-8") as file:
         sums: dict[str, list[float]] = json.load(file)
 
@@ -119,76 +119,65 @@ def main() -> None:
         "T&S Greedy",
         "T&S Nearest Neighbor",
     ]
-    values: list[float] = [sum(sums[name]) / count for name in results]
+    
+    boxes: list[list[float]] = [sums[name] for name in results  ]
     colors: list[str] = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    patches = [Patch(color=c, label=k) for c, k in zip(colors, legend_names)]
-    plt.legend(
-        title="Key",
-        labels=legend_names,
-        handles=patches,
-        loc="center left",
-        bbox_to_anchor=(1.0, 0.5),
-    )
-    frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels([])
-    plt.title("Sum of Weighted Latencies")
-    bars = plt.bar(legend_names, values, color=colors)
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    ax.bar_label(bars, padding=3, fmt="%d")
-    fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
+    
+    bp =  ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    for median in bp['medians']:
+        median.set(color="black", linewidth = 3)
 
+    frame1 = plt.gca()
+    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
+    plt.title("Sum of Weighted Latencies")
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
+    
     # Bar Plot for average wait times
     with open("results/mass_benchmark/wait_times.json", encoding="utf-8") as file:
         wait: dict[str, list[float]] = json.load(file)
-
-    count = len(wait["Greedy Assignment"])
-    values = [sum(wait[name]) / count for name in results]
-    colors = ["lightsteelblue", "aqua", "blue", "limegreen", "darkgreen"]
+    
+    boxes = [wait[name] for name in results  ]
+    colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    patches = [Patch(color=c, label=k) for c, k in zip(colors, legend_names)]
-    plt.legend(
-        title="Key",
-        labels=legend_names,
-        handles=patches,
-        loc="center left",
-        bbox_to_anchor=(1.0, 0.5),
-    )
+    
+    bp =  ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    for median in bp['medians']:
+        median.set(color="black", linewidth = 3)
+
     frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels([])
+    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
     plt.title("Average Wait Time")
-    bars = plt.bar(legend_names, values, color=colors)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    ax.bar_label(bars, padding=3, fmt="%d")
     fig.savefig("results/mass_benchmark/wait_time", bbox_inches="tight")
-
-    # Bar Plot for range of work
+    
+    # Bar Plot for ranges
     with open("results/mass_benchmark/ranges.json", encoding="utf-8") as file:
-        ranges: dict[str, list[float]] = json.load(file)
-
-    count = len(ranges["Greedy Assignment"])
-    values = [sum(ranges[name]) / count for name in results]
-    colors = ["lightsteelblue", "aqua", "blue", "limegreen", "darkgreen"]
+        wait: dict[str, list[float]] = json.load(file)
+    
+    boxes = [wait[name] for name in results  ]
+    colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    patches = [Patch(color=c, label=k) for c, k in zip(colors, legend_names)]
-    plt.legend(
-        title="Key",
-        labels=legend_names,
-        handles=patches,
-        loc="center left",
-        bbox_to_anchor=(1.0, 0.5),
-    )
-    frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels([])
-    plt.title("Range of Weighted Latencies")
-    bars = plt.bar(legend_names, values, color=colors)
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    ax.bar_label(bars, padding=3, fmt="%d")
-    fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")
+    
+    bp =  ax.boxplot(boxes, patch_artist=True)
+    for patch, color in zip(bp['boxes'], colors):
+        patch.set_facecolor(color)
+    for median in bp['medians']:
+        median.set(color="black", linewidth = 3)
 
+    frame1 = plt.gca()
+    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
+    plt.title("Range of Weighted Latencies")
+    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")
 
 if __name__ == "__main__":
     main()

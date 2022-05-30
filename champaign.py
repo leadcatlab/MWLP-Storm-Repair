@@ -106,11 +106,11 @@ def main() -> None:
     print("Fixing population numbers")
     for node in G.nodes():
         G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
-
-    # Find populated nodes
+    
+    # Find populated nodes in range
     node_list: list[int] = [int(node) for node in G.nodes()]
     populated: list[int] = list(
-        filter(lambda node: G.nodes[node]["pop"] > 0, node_list)
+        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1000, node_list)
     )
 
     # Choose random nodes to be damaged
@@ -130,10 +130,10 @@ def main() -> None:
     random.shuffle(damaged)
     damaged = damaged[:num_nodes]
     print("Adding node weights to g")
-    # for i in range(1, num_nodes):
-    #     g.node_weight[i] = G.nodes[damaged[i]]["pop"]
-    g.node_weight = [random.randint(1, 1500) for _ in range(num_nodes)]
-    g.node_weight[0] = 0
+    for i in range(1, num_nodes):
+        g.node_weight[i] = G.nodes[damaged[i]]["pop"]
+    # g.node_weight = [random.randint(1, 3000) for _ in range(num_nodes)]
+    # g.node_weight[0] = 0
 
     nc = ['r' if node in damaged else 'w' for node in G.nodes]
     ns = [5 if node in damaged else 1 for node in G.nodes]

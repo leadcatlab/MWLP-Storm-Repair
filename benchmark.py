@@ -693,7 +693,7 @@ def line_plot(
         lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)
-    plt.legend(prop={'size': 6})
+    plt.legend(prop={'size': 20})
     figure = plt.gcf()
     figure.set_size_inches(10, 7)  # horizontal x vertical
     plt.title("Number of Unvisited People over Time")

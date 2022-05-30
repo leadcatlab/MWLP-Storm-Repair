@@ -113,9 +113,9 @@ def main() -> None:
     )
 
     # Parameters for Graphs and Partitions
-    num_graphs: int = 5
-    num_nodes: int = 20  # 20 agents * 10 nodes per agent + start
-    num_agents: int = 2
+    num_graphs: int = 25
+    num_nodes: int = 201  # 20 agents * 10 nodes per agent + start
+    num_agents: int = 20
 
     # Creating smaller graph bank
     graph_bank: list[Graph] = []

@@ -99,116 +99,115 @@ def main() -> None:
     # print("Writing graphML")
     # ox.save_graphml(G, "results/champaign/champaign.graphml")
 
-    print("Loading graphml")
-    G = ox.load_graphml("results/champaign/champaign.graphml")
+    # print("Loading graphml")
+    # G = ox.load_graphml("results/champaign/champaign.graphml")
 
-    print("Fixing population numbers")
-    for node in G.nodes():
-        G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
+    # print("Fixing population numbers")
+    # for node in G.nodes():
+    #     G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
 
-    # Find populated nodes in range
-    node_list: list[int] = [int(node) for node in G.nodes()]
-    populated: list[int] = list(
-        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
-    )
+    # # Find populated nodes in range
+    # node_list: list[int] = [int(node) for node in G.nodes()]
+    # populated: list[int] = list(
+    #     filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
+    # )
 
     # # Parameters for Graphs and Partitions
-    num_graphs: int = 5
-    num_nodes: int = 41  # 20 agents * 10 nodes per agent + start
-    num_agents: int = 2
+    num_graphs: int = 25
+    num_nodes: int = 201  # 20 agents * 10 nodes per agent + start
+    num_agents: int = 20
 
-    # Creating smaller graph bank
-    graph_bank: list[Graph] = []
-    distances: dict[tuple[int, int], float] = {}
-    for count in range(num_graphs):
-        print(count)
+    # # Creating smaller graph bank
+    # graph_bank: list[Graph] = []
+    # distances: dict[tuple[int, int], float] = {}
+    # for count in range(num_graphs):
+    #     print(count)
 
-        # Choose random nodes to be damaged
-        g = Graph(num_nodes)
+    #     # Choose random nodes to be damaged
+    #     g = Graph(num_nodes)
 
-        # Initializing a bunch of empty nodes and edges is faster than calling add_edge
-        print("Initializing adjacency lists")
-        for i in range(num_nodes):  # make complete
-            g.adjacen_list[i] = list(range(num_nodes))
-        print("Initializing edge weights")
-        for i in range(num_nodes):
-            g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
+    #     # Initializing a bunch of empty nodes and edges is faster than calling add_edge
+    #     print("Initializing adjacency lists")
+    #     for i in range(num_nodes):  # make complete
+    #         g.adjacen_list[i] = list(range(num_nodes))
+    #     print("Initializing edge weights")
+    #     for i in range(num_nodes):
+    #         g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
 
-        print(f"Choosing {num_nodes} damaged nodes")
-        damaged: list[int] = list(populated)
-        random.shuffle(damaged)
-        damaged = damaged[:num_nodes]
-        print("Adding node weights to g")
-        for i in range(1, num_nodes):
-            g.node_weight[i] = G.nodes[damaged[i]]["pop"]
-        g.node_weight[0] = 0
+    #     print(f"Choosing {num_nodes} damaged nodes")
+    #     damaged: list[int] = list(populated)
+    #     random.shuffle(damaged)
+    #     damaged = damaged[:num_nodes]
+    #     print("Adding node weights to g")
+    #     for i in range(1, num_nodes):
+    #         g.node_weight[i] = G.nodes[damaged[i]]["pop"]
+    #     g.node_weight[0] = 0
 
-        print("Finding shortest path travel times in hours")
-        for u in range(num_nodes):
-            for v in range(u + 1, num_nodes):
-                u_prime, v_prime = damaged[u], damaged[v]
-                if (u_prime, v_prime) in distances:
-                    time = distances[(u_prime, v_prime)]
-                else:
-                    time = nx.shortest_path_length(
-                        G, u_prime, v_prime, weight="travel_time"
-                    )
-                    distances[(u_prime, v_prime)] = time
-                g.edge_weight[u][v] = time / (3600)
-                g.edge_weight[v][u] = time / (3600)
+    #     print("Finding shortest path travel times in hours")
+    #     for u in range(num_nodes):
+    #         for v in range(u + 1, num_nodes):
+    #             u_prime, v_prime = damaged[u], damaged[v]
+    #             if (u_prime, v_prime) in distances:
+    #                 time = distances[(u_prime, v_prime)]
+    #             else:
+    #                 time = nx.shortest_path_length(
+    #                     G, u_prime, v_prime, weight="travel_time"
+    #                 )
+    #                 distances[(u_prime, v_prime)] = time
+    #             g.edge_weight[u][v] = time / (3600)
+    #             g.edge_weight[v][u] = time / (3600)
 
-        print("Adding repair times")
-        # Ranges from "Predicting Outage Restoration ..."
-        for v in range(num_nodes):
-            pop: int = g.node_weight[v]
-            if pop <= 10:
-                repair_time: float = random.uniform(2, 4)
-            elif pop <= 100:
-                repair_time = random.uniform(2, 6)
-            elif pop <= 1000:
-                repair_time = random.uniform(3, 8)
-            else:
-                repair_time = random.uniform(5, 10)
-            for u in range(num_nodes):
-                if u != v:
-                    g.edge_weight[u][v] += repair_time
-        graph_bank.append(g)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
-        print(Bcolors.CLEAR_LAST_LINE)
+    #     # print("Adding repair times")
+    #     # # Ranges from "Predicting Outage Restoration ..."
+    #     # for v in range(num_nodes):
+    #     #     pop: int = g.node_weight[v]
+    #     #     if pop <= 10:
+    #     #         repair_time: float = random.uniform(2, 4)
+    #     #     elif pop <= 100:
+    #     #         repair_time = random.uniform(2, 6)
+    #     #     elif pop <= 1000:
+    #     #         repair_time = random.uniform(3, 8)
+    #     #     else:
+    #     #         repair_time = random.uniform(5, 10)
+    #     #     for u in range(num_nodes):
+    #     #         if u != v:
+    #     #             g.edge_weight[u][v] += repair_time
+    #     graph_bank.append(g)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
+    #     print(Bcolors.CLEAR_LAST_LINE)
 
-    print("Generating initial partitions")
-    partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
-        graph_bank, num_agents
-    )
+    # print("Generating initial partitions")
+    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+    #     graph_bank, num_agents
+    # )
 
-    # save a representative graph
-    Graph.to_file(graph_bank[0], "results/champaign/champaign_rep.json")
+    # # save a representative graph
+    # Graph.to_file(graph_bank[0], "results/champaign/champaign_rep.json")
 
-    # Mass benchmark of graphs given bank
-    # (0.0, 0.5) should be a big enough range for calculated travel times
-    benchmark_results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
-        graph_bank, partition_bank, (0.0, 0.5)
-    )
+    # # Mass benchmark of graphs given bank
+    # # (0.0, 0.5) should be a big enough range for calculated travel times
+    # benchmark_results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
+    #     graph_bank, partition_bank, (0.0, 0.5)
+    # )
 
-    # Write to files
-    names: list[str] = [
-        "maximums",
-        "wait_times",
-        "times",
-        "minimums",
-        "sums",
-        "ranges",
-        "averages",
-        "bests",
-    ]
-    for res, name in zip(benchmark_results, names):
-        with open(f"results/champaign/{name}.json", "w", encoding="utf-8") as outfile:
-            json.dump(res, outfile)
+    # # Write to files
+    # names: list[str] = [
+    #     "maximums",
+    #     "wait_times",
+    #     "times",
+    #     "minimums",
+    #     "sums",
+    #     "ranges",
+    #     "averages",
+    #     "bests",
+    # ]
+    # for res, name in zip(benchmark_results, names):
+    #     with open(f"results/champaign/{name}.json", "w", encoding="utf-8") as outfile:
+    #         json.dump(res, outfile)
 
     # Box Plot for sum of weighted latencies
     with open("results/champaign/sums.json", encoding="utf-8") as file:
@@ -216,14 +215,11 @@ def main() -> None:
 
     results: list[str] = [
         "Greedy Assignment",
-        "Nearest Neighbor Assignment",
-        "Greedy + Random (25%) Assignment",
         "Transfers and Swaps Greedy",
-        "Transfers and Swaps Nearest Neighbor",
     ]
 
     boxes: list[list[float]] = [sums[name] for name in results]
-    colors: list[str] = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
+    colors: list[str] = ["royalblue", "limegreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
 
@@ -234,17 +230,18 @@ def main() -> None:
         median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
+    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
     plt.title("Sum of Weighted Latencies (Champaign)")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/total_work", bbox_inches="tight")
+    fig.savefig("results/champaign/champaign_total_work", bbox_inches="tight")
 
     # Bar Plot for average wait times
     with open("results/champaign/wait_times.json", encoding="utf-8") as file:
         wait: dict[str, list[float]] = json.load(file)
 
     boxes = [wait[name] for name in results]
-    colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
 
@@ -255,17 +252,18 @@ def main() -> None:
         median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
+    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
     plt.title("Average Wait Time (Champaign)")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/wait_time", bbox_inches="tight")
+    fig.savefig("results/champaign/champaign_wait_time", bbox_inches="tight")
 
     # Bar Plot for ranges
     with open("results/champaign/ranges.json", encoding="utf-8") as file:
         ranges: dict[str, list[float]] = json.load(file)
 
     boxes = [ranges[name] for name in results]
-    colors = ["royalblue", "aqua", "blue", "limegreen", "darkgreen"]
 
     fig, ax = plt.subplots(figsize=(6, 6))
 
@@ -276,10 +274,12 @@ def main() -> None:
         median.set(color="black", linewidth=3)
 
     frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
+    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
     plt.title("Range of Weighted Latencies (Champaign)")
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/ranges", bbox_inches="tight")
+    fig.savefig("results/champaign/champaign_ranges", bbox_inches="tight")
 
     g = Graph.from_file("results/champaign/champaign_rep.json")
 
@@ -289,26 +289,14 @@ def main() -> None:
 
     print("Calculating assignments")
     assignments: list[list[list[int]]] = []
-    names = ["GA", "NNA", "GRA", "TSG", "TSNN"]
+    names = ["GA", "TSG"]
 
     paths = algos.greedy_assignment(g, num_agents)
     assignments.append(paths)
 
-    paths = algos.nearest_neighbor_assignment(g, num_agents)
-    assignments.append(paths)
-
-    dist_range: float = 1.0 - 0.5
-    paths = algos.greedy_random_assignment(g, num_agents, 0.5 + (dist_range * 0.25))
-    assignments.append(paths)
 
     part = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.13)
     paths = benchmark.solve_partition(g, part, algos.greedy)
-    assignments.append(paths)
-
-    part = algos.find_partition_with_heuristic(
-        g, partition, algos.nearest_neighbor, 0.13
-    )
-    paths = benchmark.solve_partition(g, part, algos.nearest_neighbor)
     assignments.append(paths)
 
     benchmark.line_plot(
@@ -316,7 +304,7 @@ def main() -> None:
         assignments,
         names,
         colors,
-        x_range=(0, 100),
+        x_range=(0, 1),
         loc="results/champaign/champaign_unvisited.png",
     )
 

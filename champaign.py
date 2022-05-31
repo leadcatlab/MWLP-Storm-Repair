@@ -99,23 +99,23 @@ def main() -> None:
     # print("Writing graphML")
     # ox.save_graphml(G, "results/champaign/champaign.graphml")
 
-    # print("Loading graphml")
-    # G = ox.load_graphml("results/champaign/champaign.graphml")
+    print("Loading graphml")
+    G = ox.load_graphml("results/champaign/champaign.graphml")
 
-    # print("Fixing population numbers")
-    # for node in G.nodes():
-    #     G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
+    print("Fixing population numbers")
+    for node in G.nodes():
+        G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
 
-    # # Find populated nodes in range
-    # node_list: list[int] = [int(node) for node in G.nodes()]
-    # populated: list[int] = list(
-    #     filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
-    # )
+    # Find populated nodes in range
+    node_list: list[int] = [int(node) for node in G.nodes()]
+    populated: list[int] = list(
+        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
+    )
 
     # # Parameters for Graphs and Partitions
-    num_graphs: int = 25
-    num_nodes: int = 201  # 20 agents * 10 nodes per agent + start
-    num_agents: int = 20
+    num_graphs: int = 5
+    num_nodes: int = 41  # 20 agents * 10 nodes per agent + start
+    num_agents: int = 2
 
     # Creating smaller graph bank
     graph_bank: list[Graph] = []

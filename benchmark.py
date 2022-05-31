@@ -109,8 +109,6 @@ def benchmark_partition(
 
     """
 
-    #   Unsure this is a good idea since it may just invite alot of
-    #   "well actually if you use this obsucre library no one has heard of it's faster"
     if not Graph.is_complete(g):
         raise ValueError("Passed graph is not complete")
 

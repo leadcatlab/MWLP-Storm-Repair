@@ -1,5 +1,5 @@
 """
-Driver code for Champaign Benchmarking
+Driver code for testing stuff
 """
 import json
 import random
@@ -35,70 +35,6 @@ class Bcolors:
 
 
 def main() -> None:
-    ############################################################################
-    ########################### Champaign Testing ##############################
-    ############################################################################
-
-    # Thanks Pranay
-    # ox.config(log_console=True, use_cache=True)
-    # place = "Champaign, Illinois, USA"
-    # # gdf = ox.geocode_to_gdf(place)
-    # # area = ox.projection.project_gdf(gdf).unary_union.area
-    # # 'drive_service' := drivable and service roads both
-    # G = ox.graph_from_place(place, network_type="drive_service", simplify=False)
-    # G = ox.distance.add_edge_lengths(G, precision=5)
-
-    # # From "Predicting Outage Restoration..."
-    # # Agent speed was 25 mph
-    # kph: float = 25.0 * 1.609344
-    # print(f"Setting all travel speeds to {kph} kph")
-    # for u, v, key in G.edges(keys=True):
-    #     G[u][v][key]["speed_kph"] = kph
-    # G = ox.add_edge_travel_times(G, precision=5)
-    # print(max(G.edges(data=True),key= lambda x: x[2]['travel_time']))
-    # print(min(G.edges(data=True),key= lambda x: x[2]['travel_time']))
-    # # Remove unreachable /  empty nodes
-    # print("Removing unreachable nodes")
-    # components = list(nx.strongly_connected_components(G))
-    # for item in components:
-    #     if len(item) == 0 or len(item) == 1:
-    #         G.remove_node(item.pop())
-
-    # order: int = G.order()
-    # print(f"{order} nodes")
-
-    # # During repairs we do not care about one way roads
-    # print("Turning G into undirected graph")
-    # G = ox.utils_graph.get_undirected(G)
-
-    # # Add population to the nearest points
-    # pop_data = pd.read_csv("results/champaign/cus_blockdata.csv", index_col=0)
-    # pop_points = list(pop_data.to_records(index=False))
-
-    # def dist(x1: float, y1: float, x2: float, y2: float) -> float:
-    #     x_diff: float = x1 - x2
-    #     y_diff: float = y1 - y2
-    #     return math.sqrt(x_diff**2 + y_diff**2)
-
-    # print("Initializing population of each node to 0")
-    # for i in G.nodes():
-    #     G.nodes[i]["pop"] = 0
-
-    # print("Adding populations")
-    # for population, lat, long in pop_points:
-    #     if population > 0:
-    #         # Find the closest node in G to lat, long
-    #         closest: int = min(
-    #             G.nodes(),
-    #             key=lambda i: dist(long, lat, G.nodes[i]["x"], G.nodes[i]["y"]),
-    #         )
-
-    #         # print(f"Adding {population} to node G.nodes[{closest}]['pop']")
-    #         G.nodes[closest]["pop"] += population
-
-    # print("Writing graphML")
-    # ox.save_graphml(G, "results/champaign/champaign.graphml")
-
     print("Loading graphml")
     G = ox.load_graphml("results/champaign/champaign.graphml")
 
@@ -109,38 +45,47 @@ def main() -> None:
     # Find populated nodes in range
     node_list: list[int] = [int(node) for node in G.nodes()]
     populated: list[int] = list(
-        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
+        filter(lambda node: G.nodes[node]["pop"] >= 1, node_list)
     )
 
-    print(list(G.nodes(data=True))[0])
+    # # Find important and not important
+    # high: list[int] = list(
+    #     filter(lambda node: 500 <= G.nodes[node]["pop"] <= 1500, populated)
+    # )
+    # low: list[int] = list(
+    #     filter(lambda node: 1 <= G.nodes[node]["pop"] <= 50, populated)
+    # )
+
+    # print(len(high), len(low))
+
+    # # sort by 'y'
+    # high = sorted(high, key=lambda node: G.nodes[node]['y'])
+    # low = sorted(low, key=lambda node: G.nodes[node]['y'])
+
+    # damaged: list[int] = []
+    # damaged.extend(low[-10:])
+    # damaged.extend(low[:11]) # Get a low value node to be our start node
+    # damaged.extend(high[-10:])
+    # damaged.extend(high[:10])
+    # 
+    # nc = ['b' if node == damaged[0] else 'r' if node in damaged else 'black' for node in G.nodes()]
+    # ns = [40 if (node in damaged and node in high) else 20 if (node in damaged and node in low) else 1 for node in G.nodes()]
+    # fig, ax = ox.plot_graph(G, node_size=ns, node_color=nc, node_zorder=2, bgcolor='w', edge_color="black", edge_linewidth=1.1)
     
-    # Find important and not important
-    high: list[int] = list(
-        filter(lambda node: 500 <= G.nodes[node]["pop"] <= 1500, populated)
-    )
-    low: list[int] = list(
-        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 50, populated)
-    )
+    num_nodes: int = 41
+    num_agents: int = 4
 
-    print(len(high), len(low))
-
-    # sort by 'y'
-    high = sorted(high, key=lambda node: G.nodes[node]['y'])
-    low = sorted(low, key=lambda node: G.nodes[node]['y'])
-
-    damaged: list[int] = []
-    damaged.extend(high[-10:])
-    damaged.extend(high[:10])
-    damaged.extend(low[-10:])
-    damaged.extend(low[:10])
-
-    num_nodes: int = len(damaged)
     g = Graph(num_nodes)
     for i in range(num_nodes):  # make complete
         g.adjacen_list[i] = list(range(num_nodes))
     print("Initializing edge weights")
     for i in range(num_nodes):
         g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
+    print(f"Choosing {num_nodes} damaged nodes")
+    damaged: list[int] = list(populated)
+    random.shuffle(damaged)
+    damaged = damaged[:num_nodes]
+    print("Adding node weights to g")
     for i in range(1, num_nodes):
         g.node_weight[i] = G.nodes[damaged[i]]["pop"]
     g.node_weight[0] = 0
@@ -162,38 +107,22 @@ def main() -> None:
     print("Adding repair times")
     # Ranges from "Predicting Outage Restoration ..."
     for v in range(num_nodes):
-        pop: int = g.node_weight[v]
-        if pop <= 10:
-            repair_time: float = random.uniform(2, 4)
-        elif pop <= 100:
-            repair_time = random.uniform(2, 6)
-        elif pop <= 1000:
-            repair_time = random.uniform(3, 8)
-        else:
-            repair_time = random.uniform(5, 10)
+        repair_time = random.uniform(0.083333, 0.25)
         for u in range(num_nodes):
             if u != v:
                 g.edge_weight[u][v] += repair_time
-    
-    partition = [{0}, {0}, {0}, {0}]
-    partition[0].update(range(0,10))
-    partition[1].update(range(10,20))
-    partition[2].update(range(20,30))
-    partition[3].update(range(30,40))
-    
-    # damaged.extend(high[-10:])
-    # damaged.extend(high[:10])
-    # damaged.extend(low[-10:])
-    # damaged.extend(low[:10])
    
-    print(partition)
+    # use the same parameters as above
+    print(f"Creating partitions for {num_agents} agents")
+    partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
 
-    transfers = algos.transfers_and_swaps_mwlp(g, partition, algos.greedy)
-    assignment = benchmark.solve_partition(g, transfers, algos.greedy)
-    greedy_assignment = algos.greedy_assignment(g, 4)
-    
-    print()
+    print("Calculating assignments")
+    assignments: list[list[list[int]]] = []
+    names = ["GA", "TSG"]
+    colors: list[str] = ["royalblue", "limegreen"]
 
+    paths = algos.greedy_assignment(g, num_agents)
+    assignments.append(paths)
     (
         curr_max,
         curr_wait,
@@ -201,11 +130,21 @@ def main() -> None:
         curr_range,
         curr_sum,
         curr_avg,
-    ) = benchmark.benchmark_partition(g, assignment)
-    print("T&S max", curr_max)
-    print("T&S ran", curr_range)
-    print("T&S avg", curr_avg)
+    ) = benchmark.benchmark_partition(g, paths)
+    print("GA", curr_sum)
+    print("GA", curr_wait)
+    print("GA", curr_range)
 
+    # paths = algos.nearest_neighbor_assignment(g, num_agents)
+    # assignments.append(paths)
+
+    # dist_range: float = 1.0 - 0.5
+    # paths = algos.greedy_random_assignment(g, num_agents, 0.5 + (dist_range * 0.25))
+    # assignments.append(paths)
+
+    part = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.13)
+    paths = benchmark.solve_partition(g, part, algos.greedy)
+    assignments.append(paths)
     (
         curr_max,
         curr_wait,
@@ -213,13 +152,25 @@ def main() -> None:
         curr_range,
         curr_sum,
         curr_avg,
-    ) = benchmark.benchmark_partition(g, greedy_assignment)
-    print("GA max", curr_max)
-    print("GA ran", curr_range)
-    print("GA avg", curr_avg)
+    ) = benchmark.benchmark_partition(g, paths)
+    print("TSG", curr_sum)
+    print("TSG", curr_wait)
+    print("TSG", curr_range)
+
+    # part = algos.find_partition_with_heuristic(
+    #     g, partition, algos.nearest_neighbor, 0.13
+    # )
+    # paths = benchmark.solve_partition(g, part, algos.nearest_neighbor)
+    # assignments.append(paths)
+
+    benchmark.line_plot(
+        g,
+        assignments,
+        names,
+        colors,
+        x_range=(0, 100),
+        loc="results/champaign/champaign_north_south_line_plot.png",
+    )
     
-    nc = ['r' if node in damaged else 'w' for node in G.nodes()]
-    ns = [5 if node in high else 3 for node in G.nodes()]
-    fig, ax = ox.plot_graph(G, node_size=ns, node_color=nc, node_zorder=2, bgcolor='k')
 if __name__ == "__main__":
     main()

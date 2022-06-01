@@ -153,7 +153,7 @@ def generate_partition_path_function(
         Assertions:
             x >= 0.0
     """
-    
+
     if Graph.is_agent_partition(g, [set(p) for p in part]) is False:
         raise ValueError("Passed assignment is invalid")
 
@@ -1170,7 +1170,7 @@ def transfers_and_swaps_mwlp(
 
 
 def transfer_outliers_mwlp(
-    g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
+    g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float = 0.13
 ) -> list[set[int]]:
     """
     Identifies outliers in each partition and moves them to a more ideal agent
@@ -1193,6 +1193,7 @@ def transfer_outliers_mwlp(
 
     alpha: float
         Threshold for detecting outliers
+        Default: 0.13
         Assertions:
             0 <= alpha <= 1
 

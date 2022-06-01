@@ -707,7 +707,7 @@ def line_plot(
 def draw_graph_with_partitions(nx_g, assignments: list[list[int]], name=None) -> None:
     """
     Draws a graph using networkx
-    Not all edges are drawn. Just the ones pertaining to the passted edges
+    Not all edges are drawn. Just the ones pertaining to the passed edges
 
 
     Parameters

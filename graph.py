@@ -195,8 +195,6 @@ class Graph:
         """
         Creates a complete graph with randomly weighted edges and nodes
 
-        Runtime: (if applicable)
-
         Parameters
         ----------
         g: Graph
@@ -229,8 +227,6 @@ class Graph:
     ) -> Graph:
         """
         Creates a complete graph with randomly weighted edges and nodes
-
-        Runtime: (if applicable)
 
         Parameters
         ----------

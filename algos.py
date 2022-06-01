@@ -17,8 +17,6 @@ def num_visited_along_path(g: Graph, path: list[int]) -> list[int]:
     Presuming that node weights = people per location
     Utility function to give total visited at each position along a path
 
-    Runtime: O(n)
-
     Parameters
     ----------
     g: Graph
@@ -54,8 +52,6 @@ def num_visited_along_path(g: Graph, path: list[int]) -> list[int]:
 def length_along_path(g: Graph, path: list[int]) -> list[float]:
     """
     Utility function to give total length traveled at each position along a path
-
-    Runtime: O(n)
 
     Parameters
     ----------
@@ -137,8 +133,29 @@ def generate_path_function(g: Graph, path: list[int]) -> Callable[[float], int]:
 def generate_partition_path_function(
     g: Graph, part: list[list[int]]
 ) -> Callable[[float], int]:
+    """
+    Generates a function to get the number of people visited over time in an assignment
+
+    Parameters
+    ----------
+    g: Graph
+        Input graph
+
+    assignment: list[list[int]]
+        Agent assignment
+        Assertions:
+            Must be valid agent assignment
+
+    Returns
+    -------
+    Callable[[float], int]
+        partition_path_function(x) = the number of people visited at distance x
+        Assertions:
+            x >= 0.0
+    """
+    
     if Graph.is_agent_partition(g, [set(p) for p in part]) is False:
-        raise ValueError("Passed partition is invalid")
+        raise ValueError("Passed assignment is invalid")
 
     path_functions: list[Callable[[float], int]] = []
     for path in part:
@@ -164,8 +181,6 @@ def path_length(g: Graph, path: list[int]) -> float:
     Get the length of a path in a graph
     Essentially just a wrapper around length_along_path
 
-    Runtime: O(n)
-
     Parameters
     ----------
     g: Graph
@@ -189,8 +204,6 @@ def path_length(g: Graph, path: list[int]) -> float:
 def floyd_warshall(g: Graph) -> list[list[float]]:
     """
     Use Floyd-Warshall algorithm to solve all pairs shortest path (APSP)
-
-    Runtime: O(n^3)
 
     Parameters
     ----------
@@ -229,8 +242,6 @@ def create_metric_from_graph(g: Graph) -> Graph:
     Using Floyd-Warshall we can solve the APSP problem.
     This gives edge weights that satisfy the triangle inequality
 
-    Runtime: O(n^3)
-
     Parameters
     ----------
     g: Graph
@@ -266,8 +277,6 @@ def wlp(g: Graph, path: list[int]) -> float:
     """
     Calculate the weighted latency of a given path
     Sums of weights of node * length along path from start to node
-
-    Runtime: O(n)
 
     Parameters
     ----------
@@ -308,8 +317,6 @@ def brute_force_mwlp(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
     Calculate minumum weighted latency
     Iterates over all possible paths and solves in brute force manner
-
-    Runtime: O(n!)
 
     Parameters
     ----------
@@ -368,8 +375,6 @@ def nearest_neighbor(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
     Approximates MWLP using nearest neighbor heuristic
     Starts from a node and goes to the nearest unvisited neighbor
-
-    Runtime: O(n^2)
 
     Parameters
     ----------
@@ -433,8 +438,6 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     Approximates MWLP using greedy heuristic
     Starts from a node and goes to the heaviest unvisited neighbor
 
-    Runtime: O(n^2)
-
     Parameters
     ----------
     g: Graph
@@ -492,8 +495,6 @@ def greedy(g: Graph, start: Optional[list[int]] = None) -> list[int]:
 def alternate(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
     Approximates MWLP using by alternating between two strategies (greedy + NN)
-
-    Runtime: O(n^2)
 
     Parameters
     ----------
@@ -566,8 +567,6 @@ def random_order(g: Graph, start: Optional[list[int]] = None) -> list[int]:
     """
     Creates a random order of unvisited nodes
 
-    Runtime: O(n) (?)
-
     Parameters
     ----------
     g: Graph
@@ -613,8 +612,6 @@ def brute_force_tsp(g: Graph, start: int = 0) -> list[int]:
     """
     Bruteforce solves the Travelling Salesman Problem to generate an order
     Iterates over all possible paths and solves in brute force manner
-
-    Runtime: O(n!)
 
     Parameters
     ----------
@@ -667,8 +664,6 @@ def held_karp(g: Graph, start: int = 0) -> list[int]:
     """
     Solves the Travelling Salesman Problem to generate an order
     Uses Held Karp algorithm
-
-    Runtime: O(n^2 2^n)
 
     Parameters
     ----------
@@ -751,8 +746,6 @@ def multi_agent_brute_force(
 ) -> list[list[int]]:
     """
     Computes the optimal assignment of targets for a given heuristic
-
-    Runtime: TODO
 
     Parameters
     ----------
@@ -841,8 +834,6 @@ def greedy_assignment(g: Graph, k: int) -> list[list[int]]:
     Finds the agent with the current shortest path
     Assigns them the heaviest unvisited node
 
-    Runtime: (if applicable)
-
     Parameters
     ----------
     g: Graph
@@ -889,8 +880,6 @@ def greedy_random_assignment(g: Graph, k: int, r: float) -> list[list[int]]:
     the heaviest node
     Otherwise find a random node in the radius r from the end of their path
     If no node exists, send them to the nearest neighbor
-
-    Runtime: (if applicable)
 
     Parameters
     ----------
@@ -957,8 +946,6 @@ def nearest_neighbor_assignment(g: Graph, k: int) -> list[list[int]]:
     Find the agent with the current shortest path.
     Assign them the nerest unvisited neighbor
 
-    Runtime: (if applicable)
-
     Parameters
     ----------
     g: Graph
@@ -1001,10 +988,7 @@ def transfers_and_swaps_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]]
 ) -> list[set[int]]:
     """
-    Algorithm 1: Improve Partition from "Balanced Task Allocation..."
     Transfers and swaps nodes from one agent to another based on the passed heuristic
-
-    Runtime: TODO
 
     Parameters
     ----------
@@ -1019,7 +1003,6 @@ def transfers_and_swaps_mwlp(
             Must be an agent partition
 
     f: Callable[..., list[int]]
-        maximum,  minimum, range, average
         Passed heuristic
 
     Returns
@@ -1190,11 +1173,8 @@ def transfer_outliers_mwlp(
     g: Graph, part: list[set[int]], f: Callable[..., list[int]], alpha: float
 ) -> list[set[int]]:
     """
-    Algorithm 2: Transfer Outliers from "Balanced Task Allocation..."
     Identifies outliers in each partition and moves them to a more ideal agent
     Uses passed heuristic and alpha threshold to determine if a node needs to move
-
-    Runtime: TBD
 
     Parameters
     ----------
@@ -1205,11 +1185,11 @@ def transfer_outliers_mwlp(
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent
+        Assertions:
+            must be an agent partition
 
     f: Callable[..., list[int]]
         Passed heuristic
-        Assertions:
-            Must be an agent partition
 
     alpha: float
         Threshold for detecting outliers
@@ -1281,8 +1261,6 @@ def evaluate_partition_heuristic(
     Function to evaluate a given partition of agents using a heuristic
     Returns partition with the largest weighted latency
 
-    Runtime: TBD
-
     Parameters
     ----------
     g: Graph
@@ -1292,11 +1270,11 @@ def evaluate_partition_heuristic(
 
     part: list[set[int]]
         Unordered assignment of nodes for each agent
+        Assertions:
+            Must be an agent partition
 
     f: Callable[..., list[int]]
         Passed heuristic
-        Assertions:
-            Must be an agent partition
 
     Returns
     -------
@@ -1326,11 +1304,8 @@ def find_partition_with_heuristic(
     alpha: float,
 ) -> list[set[int]]:
     """
-    Adaptation of Algorithm 3: AHP from "Balanced Task Allocation..."
-    Runs iterations of Algorithm 1 and 2 using the passed heuristic
-    Runs iterations until there are no more improvements to be made
-
-    Runtime: TBD
+    Run iterations of transfers and swaps and transfer outliers
+    until no improvements are possible
 
     Parameters
     ----------
@@ -1341,11 +1316,11 @@ def find_partition_with_heuristic(
 
     part: list[set[int]]
         Starting unordered assignment of nodes for each agent
+        Assertions:
+            Must be an agent partition
 
     f: Callable[..., list[int]]
         Passed heuristic
-        Assertions:
-            Must be an agent partition
 
     alpha: float
         Threshold for detecting outliers

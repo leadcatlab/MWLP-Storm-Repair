@@ -1,4 +1,4 @@
-# [Paper Title will go here eventually]
+# Post-Disaster Repair Crew Assignment Optimization Using Minimum Latency
 
 ## Authors: Anakin Dey, Melkior Ornik
 
@@ -11,4 +11,4 @@ The code was developed using Python 3.9.5 so as of now that is the recommended v
 
 ## Acknowledgment
 
-We thank Pranay Thangeda for helping identify some bugs in an early verison of this code and also with providing some reference code for some of the `champaign.py` benchmarking.
+We thank Pranay Thangeda for his help in identifying bugs in early versions of the code for this paper as well as providing baseline code for the Champaign simulations. We also thank Diego Cerrai for clarifying previous work on this topic and kindly sharing his recent results.

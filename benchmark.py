@@ -690,15 +690,15 @@ def line_plot(
         (line,) = ax.plot(x, y, label=f"{name}", linewidth=2.0, color=color)
         lines.append(line)
 
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
     mplcursors.cursor(lines, highlight=True)
     plt.legend(prop={'size': 30})
     figure = plt.gcf()
-    figure.set_size_inches(10, 7)  # horizontal x vertical
-    plt.title("Number of Unvisited People over Time")
-    plt.xlabel("Time (Hours)")
-    plt.ylabel("Number Unvisited")
+    figure.set_size_inches(11, 7)  # horizontal x vertical
+    plt.suptitle("Population without Service over Time", fontsize=20)
+    plt.xlabel("Time (Minutes)", fontsize=20)
+    plt.ylabel("Population Count", fontsize=20)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
     plt.savefig(loc)
     # plt.show()
 

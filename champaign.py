@@ -5,6 +5,7 @@ import json
 import random
 from typing import Any, DefaultDict
 
+from itertools import product
 import matplotlib.pyplot as plt  # type: ignore
 import networkx as nx  # type: ignore
 import osmnx as ox  # type: ignore
@@ -99,18 +100,18 @@ def main() -> None:
     # print("Writing graphML")
     # ox.save_graphml(G, "results/champaign/champaign.graphml")
 
-    # print("Loading graphml")
-    # G = ox.load_graphml("results/champaign/champaign.graphml")
+    print("Loading graphml")
+    G = ox.load_graphml("results/champaign/champaign.graphml")
 
-    # print("Fixing population numbers")
-    # for node in G.nodes():
-    #     G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
+    print("Fixing population numbers")
+    for node in G.nodes():
+        G.nodes[node]["pop"] = int(G.nodes[node]["pop"])
 
-    # # Find populated nodes in range
-    # node_list: list[int] = [int(node) for node in G.nodes()]
-    # populated: list[int] = list(
-    #     filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
-    # )
+    # Find populated nodes in range
+    node_list: list[int] = [int(node) for node in G.nodes()]
+    populated: list[int] = list(
+        filter(lambda node: 1 <= G.nodes[node]["pop"] <= 1500, node_list)
+    )
 
     # # Parameters for Graphs and Partitions
     num_graphs: int = 25
@@ -157,21 +158,6 @@ def main() -> None:
     #             g.edge_weight[u][v] = time / (3600)
     #             g.edge_weight[v][u] = time / (3600)
 
-    #     # print("Adding repair times")
-    #     # # Ranges from "Predicting Outage Restoration ..."
-    #     # for v in range(num_nodes):
-    #     #     pop: int = g.node_weight[v]
-    #     #     if pop <= 10:
-    #     #         repair_time: float = random.uniform(2, 4)
-    #     #     elif pop <= 100:
-    #     #         repair_time = random.uniform(2, 6)
-    #     #     elif pop <= 1000:
-    #     #         repair_time = random.uniform(3, 8)
-    #     #     else:
-    #     #         repair_time = random.uniform(5, 10)
-    #     #     for u in range(num_nodes):
-    #     #         if u != v:
-    #     #             g.edge_weight[u][v] += repair_time
     #     graph_bank.append(g)
     #     print(Bcolors.CLEAR_LAST_LINE)
     #     print(Bcolors.CLEAR_LAST_LINE)
@@ -209,80 +195,116 @@ def main() -> None:
     #     with open(f"results/champaign/{name}.json", "w", encoding="utf-8") as outfile:
     #         json.dump(res, outfile)
 
-    # Box Plot for sum of weighted latencies
-    with open("results/champaign/sums.json", encoding="utf-8") as file:
-        sums: dict[str, list[float]] = json.load(file)
+    # # Box Plot for sum of weighted latencies
+    # with open("results/champaign/sums.json", encoding="utf-8") as file:
+    #     sums: dict[str, list[float]] = json.load(file)
 
-    results: list[str] = [
-        "Greedy Assignment",
-        "Transfers and Swaps Greedy",
-    ]
-
-    boxes: list[list[float]] = [sums[name] for name in results]
+    # results: list[str] = [
+    #     "Greedy Assignment",
+    #     "Transfers and Swaps Greedy",
+    # ]
+    # 
+    # # Multiplying by 60 to convert to minutes
+    # boxes: list[list[float]] = [[60 * num for num in sums[name]] for name in results]
     colors: list[str] = ["royalblue", "limegreen"]
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    # fig, ax = plt.subplots(figsize=(4, 6))
 
-    bp = ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp["boxes"], colors):
-        patch.set_facecolor(color)
-    for median in bp["medians"]:
-        median.set(color="black", linewidth=3)
+    # bp = ax.boxplot(boxes, patch_artist=True, widths=0.60)
+    # for patch, color in zip(bp["boxes"], colors):
+    #     patch.set_facecolor(color)
+    # for median in bp["medians"]:
+    #     median.set(color="black", linewidth=3)
 
-    frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
-    plt.title("Sum of Weighted Latencies (Champaign)")
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/champaign_total_work", bbox_inches="tight")
+    # frame1 = plt.gca()
+    # frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    # ax.tick_params(axis='both', which='major', labelsize=20)
+    # ax.tick_params(axis='both', which='minor', labelsize=20)
+    # plt.suptitle("Sum of Weighted Latencies:\n Champaign", fontsize=20)
+    # plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    # fig.savefig("results/champaign/champaign_total_work", bbox_inches="tight")
 
-    # Bar Plot for average wait times
-    with open("results/champaign/wait_times.json", encoding="utf-8") as file:
-        wait: dict[str, list[float]] = json.load(file)
+    # # Bar Plot for average wait times
+    # with open("results/champaign/wait_times.json", encoding="utf-8") as file:
+    #     wait: dict[str, list[float]] = json.load(file)
 
-    boxes = [wait[name] for name in results]
+    # # Multiplying by 60 to convert to minutes
+    # boxes = [[60 * num for num in wait[name]] for name in results]
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    # fig, ax = plt.subplots(figsize=(4, 6))
 
-    bp = ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp["boxes"], colors):
-        patch.set_facecolor(color)
-    for median in bp["medians"]:
-        median.set(color="black", linewidth=3)
+    # bp = ax.boxplot(boxes, patch_artist=True, widths=0.6)
+    # for patch, color in zip(bp["boxes"], colors):
+    #     patch.set_facecolor(color)
+    # for median in bp["medians"]:
+    #     median.set(color="black", linewidth=3)
 
-    frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
-    plt.title("Average Wait Time (Champaign)")
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/champaign_wait_time", bbox_inches="tight")
+    # frame1 = plt.gca()
+    # frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    # ax.tick_params(axis='both', which='major', labelsize=20)
+    # ax.tick_params(axis='both', which='minor', labelsize=20)
+    # plt.suptitle("Average Wait Time:\n Champaign (Minutes)", fontsize=20)
+    # plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    # fig.savefig("results/champaign/champaign_wait_time", bbox_inches="tight")
 
-    # Bar Plot for ranges
-    with open("results/champaign/ranges.json", encoding="utf-8") as file:
-        ranges: dict[str, list[float]] = json.load(file)
+    # # Bar Plot for ranges
+    # with open("results/champaign/ranges.json", encoding="utf-8") as file:
+    #     ranges: dict[str, list[float]] = json.load(file)
 
-    boxes = [ranges[name] for name in results]
+    # # Multiplying by 60 to convert to minutes
+    # boxes = [[60 * num for num in ranges[name]] for name in results]
 
-    fig, ax = plt.subplots(figsize=(6, 6))
+    # fig, ax = plt.subplots(figsize=(4, 6))
 
-    bp = ax.boxplot(boxes, patch_artist=True)
-    for patch, color in zip(bp["boxes"], colors):
-        patch.set_facecolor(color)
-    for median in bp["medians"]:
-        median.set(color="black", linewidth=3)
+    # bp = ax.boxplot(boxes, patch_artist=True, widths=0.6)
+    # for patch, color in zip(bp["boxes"], colors):
+    #     patch.set_facecolor(color)
+    # for median in bp["medians"]:
+    #     median.set(color="black", linewidth=3)
 
-    frame1 = plt.gca()
-    frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
-    plt.title("Range of Weighted Latencies (Champaign)")
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    fig.savefig("results/champaign/champaign_ranges", bbox_inches="tight")
+    # frame1 = plt.gca()
+    # frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
+    # ax.tick_params(axis='both', which='major', labelsize=20)
+    # ax.tick_params(axis='both', which='minor', labelsize=20)
+    # plt.suptitle("Range of Weighted Latencies:\n Champaign", fontsize=20)
+    # plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+    # fig.savefig("results/champaign/champaign_ranges", bbox_inches="tight")
 
-    g = Graph.from_file("results/champaign/champaign_rep.json")
+    
+    # Choose random nodes to be damaged
+    g = Graph(num_nodes)
 
+    # Initializing a bunch of empty nodes and edges is faster than calling add_edge
+    print("Initializing adjacency lists")
+    for i in range(num_nodes):  # make complete
+        g.adjacen_list[i] = list(range(num_nodes))
+    print("Initializing edge weights")
+    for i in range(num_nodes):
+        g.edge_weight[i] = [-1.0 for _ in range(num_nodes)]
+
+    print(f"Choosing {num_nodes} damaged nodes")
+    damaged = list(populated)
+    random.shuffle(damaged)
+    damaged = damaged[:num_nodes]
+    print("Adding node weights to g")
+    for i in range(1, num_nodes):
+        g.node_weight[i] = G.nodes[damaged[i]]["pop"]
+    g.node_weight[0] = 0
+
+    print("Finding shortest path travel times in minutes")
+    for u in range(num_nodes):
+        for v in range(u + 1, num_nodes):
+            u_prime, v_prime = damaged[u], damaged[v]
+            time = nx.shortest_path_length(
+                G, u_prime, v_prime, weight="travel_time"
+            )
+            g.edge_weight[u][v] = time / (60)
+            g.edge_weight[v][u] = time / (60)
+    
+    nc = ['#43bf6e' if node == damaged[0] else 'r' if node in damaged else 'black' for node in G.nodes()]
+    ns = [50 if node == damaged[0] else 20 if node in damaged else 1 for node in G.nodes()] 
+    fig, ax = ox.plot_graph(G, node_size=ns, node_color=nc, node_zorder=2, bgcolor='w', edge_color="black", edge_linewidth=1.1)
+    
     # use the same parameters as above
     print(f"Creating partitions for {num_agents} agents")
     partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
@@ -304,7 +326,7 @@ def main() -> None:
         assignments,
         names,
         colors,
-        x_range=(0, 1),
+        x_range=(0, 80),
         loc="results/champaign/champaign_unvisited.png",
     )
 

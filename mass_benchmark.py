@@ -44,60 +44,60 @@ def main() -> None:
     node_w: tuple[int, int] = (1, 1500)
     num_agents: int = 20
 
-    print("Generating graphs")
-    graph_bank: list[Graph] = benchmark.generate_graph_bank(
-        count=num_graphs, n=num_nodes, metric=metric, upper=upper, node_w=node_w
-    )
+    # print("Generating graphs")
+    # graph_bank: list[Graph] = benchmark.generate_graph_bank(
+    #     count=num_graphs, n=num_nodes, metric=metric, upper=upper, node_w=node_w
+    # )
 
-    print("Seeing start location weight to 0")
-    for g in graph_bank:
-        g.node_weight[0] = 0
+    # print("Seeing start location weight to 0")
+    # for g in graph_bank:
+    #     g.node_weight[0] = 0
 
-    print("Adding repair times")
-    for g in graph_bank:
-        # Ranges from "Predicting Outage Restoration ..."
-        for v in range(num_nodes):
-            pop: int = g.node_weight[v]
-            if pop <= 10:
-                repair_time: float = random.uniform(2, 4)
-            elif pop <= 100:
-                repair_time = random.uniform(2, 6)
-            elif pop <= 1000:
-                repair_time = random.uniform(3, 8)
-            else:
-                repair_time = random.uniform(5, 10)
-            for u in range(num_nodes):
-                if u != v:
-                    g.edge_weight[u][v] += repair_time
+    # print("Adding repair times")
+    # for g in graph_bank:
+    #     # Ranges from "Predicting Outage Restoration ..."
+    #     for v in range(num_nodes):
+    #         pop: int = g.node_weight[v]
+    #         if pop <= 10:
+    #             repair_time: float = random.uniform(2, 4)
+    #         elif pop <= 100:
+    #             repair_time = random.uniform(2, 6)
+    #         elif pop <= 1000:
+    #             repair_time = random.uniform(3, 8)
+    #         else:
+    #             repair_time = random.uniform(5, 10)
+    #         for u in range(num_nodes):
+    #             if u != v:
+    #                 g.edge_weight[u][v] += repair_time
 
-    print("Generating initial partitions")
-    partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
-        graph_bank, num_agents
-    )
+    # print("Generating initial partitions")
+    # partition_bank: list[list[set[int]]] = benchmark.generate_agent_partitions(
+    #     graph_bank, num_agents
+    # )
 
-    # Mass benchmark of graphs given bank
-    # Need to edit the ranges
-    #   If metric: do (upper / 2, upper)
-    benchmark_results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
-        graph_bank, partition_bank, (0.5, 1.0)
-    )
+    # # Mass benchmark of graphs given bank
+    # # Need to edit the ranges
+    # #   If metric: do (upper / 2, upper)
+    # benchmark_results: list[DefaultDict[Any, Any]] = benchmark.mass_benchmark(
+    #     graph_bank, partition_bank, (0.5, 1.0)
+    # )
 
-    # Write to files
-    names: list[str] = [
-        "maximums",
-        "wait_times",
-        "times",
-        "minimums",
-        "sums",
-        "ranges",
-        "averages",
-        "bests",
-    ]
-    for res, name in zip(benchmark_results, names):
-        with open(
-            f"results/mass_benchmark/{name}.json", "w", encoding="utf-8"
-        ) as outfile:
-            json.dump(res, outfile)
+    # # Write to files
+    # names: list[str] = [
+    #     "maximums",
+    #     "wait_times",
+    #     "times",
+    #     "minimums",
+    #     "sums",
+    #     "ranges",
+    #     "averages",
+    #     "bests",
+    # ]
+    # for res, name in zip(benchmark_results, names):
+    #     with open(
+    #         f"results/mass_benchmark/{name}.json", "w", encoding="utf-8"
+    #     ) as outfile:
+    #         json.dump(res, outfile)
 
     # Box Plot for sum of weighted latencies
     with open("results/mass_benchmark/sums.json", encoding="utf-8") as file:
@@ -124,7 +124,9 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    plt.title("Sum of Weighted Latencies")
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
+    plt.suptitle("Sum of Weighted Latencies", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
 
@@ -145,7 +147,9 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    plt.title("Average Wait Time")
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
+    plt.suptitle("Average Wait Time (Hours)", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/wait_time", bbox_inches="tight")
 
@@ -166,7 +170,9 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    plt.title("Range of Weighted Latencies")
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='minor', labelsize=20)
+    plt.suptitle("Range of Weighted Latencies", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")
 

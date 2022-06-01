@@ -2,13 +2,14 @@
 Driver code for Champaign Benchmarking
 """
 import json
+import math
 import random
 from typing import Any, DefaultDict
 
-from itertools import product
 import matplotlib.pyplot as plt  # type: ignore
 import networkx as nx  # type: ignore
 import osmnx as ox  # type: ignore
+import pandas as pd  # type: ignore
 
 import algos
 import benchmark
@@ -56,8 +57,7 @@ def main() -> None:
     for u, v, key in G.edges(keys=True):
         G[u][v][key]["speed_kph"] = kph
     G = ox.add_edge_travel_times(G, precision=5)
-    print(max(G.edges(data=True),key= lambda x: x[2]['travel_time']))
-    print(min(G.edges(data=True),key= lambda x: x[2]['travel_time']))
+
     # Remove unreachable /  empty nodes
     print("Removing unreachable nodes")
     components = list(nx.strongly_connected_components(G))
@@ -203,7 +203,7 @@ def main() -> None:
         "Greedy Assignment",
         "Transfers and Swaps Greedy",
     ]
-    
+
     # Multiplying by 60 to convert to minutes
     boxes: list[list[float]] = [[60 * num for num in sums[name]] for name in results]
     colors: list[str] = ["royalblue", "limegreen"]
@@ -218,8 +218,8 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Sum of Weighted Latencies:\n Champaign", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/champaign/champaign_total_work", bbox_inches="tight")
@@ -241,8 +241,8 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Average Wait Time:\n Champaign (Minutes)", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/champaign/champaign_wait_time", bbox_inches="tight")
@@ -264,13 +264,12 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "TSG"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Range of Weighted Latencies:\n Champaign", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/champaign/champaign_ranges", bbox_inches="tight")
 
-    
     # Choose random nodes to be damaged
     g = Graph(num_nodes)
 
@@ -295,16 +294,27 @@ def main() -> None:
     for u in range(num_nodes):
         for v in range(u + 1, num_nodes):
             u_prime, v_prime = damaged[u], damaged[v]
-            time = nx.shortest_path_length(
-                G, u_prime, v_prime, weight="travel_time"
-            )
+            time = nx.shortest_path_length(G, u_prime, v_prime, weight="travel_time")
             g.edge_weight[u][v] = time / (60)
             g.edge_weight[v][u] = time / (60)
-    
-    nc = ['#43bf6e' if node == damaged[0] else 'r' if node in damaged else 'black' for node in G.nodes()]
-    ns = [50 if node == damaged[0] else 20 if node in damaged else 1 for node in G.nodes()] 
-    fig, ax = ox.plot_graph(G, node_size=ns, node_color=nc, node_zorder=2, bgcolor='w', edge_color="black", edge_linewidth=1.1)
-    
+
+    nc = [
+        "#43bf6e" if node == damaged[0] else "r" if node in damaged else "black"
+        for node in G.nodes()
+    ]
+    ns = [
+        50 if node == damaged[0] else 20 if node in damaged else 1 for node in G.nodes()
+    ]
+    fig, ax = ox.plot_graph(
+        G,
+        node_size=ns,
+        node_color=nc,
+        node_zorder=2,
+        bgcolor="w",
+        edge_color="black",
+        edge_linewidth=1.1,
+    )
+
     # use the same parameters as above
     print(f"Creating partitions for {num_agents} agents")
     partition: list[set[int]] = Graph.create_agent_partition(g, num_agents)
@@ -315,7 +325,6 @@ def main() -> None:
 
     paths = algos.greedy_assignment(g, num_agents)
     assignments.append(paths)
-
 
     part = algos.find_partition_with_heuristic(g, partition, algos.greedy, 0.13)
     paths = benchmark.solve_partition(g, part, algos.greedy)

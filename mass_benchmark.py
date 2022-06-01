@@ -124,8 +124,8 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Sum of Weighted Latencies", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/total_work", bbox_inches="tight")
@@ -147,8 +147,8 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Average Wait Time (Hours)", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/wait_time", bbox_inches="tight")
@@ -170,8 +170,8 @@ def main() -> None:
 
     frame1 = plt.gca()
     frame1.axes.xaxis.set_ticklabels(["GA", "NNA", "GRA", "TSG", "TSNN"])
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.suptitle("Range of Weighted Latencies", fontsize=20)
     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
     fig.savefig("results/mass_benchmark/ranges", bbox_inches="tight")

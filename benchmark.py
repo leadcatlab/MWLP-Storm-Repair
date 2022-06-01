@@ -691,14 +691,14 @@ def line_plot(
         lines.append(line)
 
     mplcursors.cursor(lines, highlight=True)
-    plt.legend(prop={'size': 30})
+    plt.legend(prop={"size": 30})
     figure = plt.gcf()
     figure.set_size_inches(11, 7)  # horizontal x vertical
     plt.suptitle("Population without Service over Time", fontsize=20)
     plt.xlabel("Time (Minutes)", fontsize=20)
     plt.ylabel("Population Count", fontsize=20)
-    ax.tick_params(axis='both', which='major', labelsize=20)
-    ax.tick_params(axis='both', which='minor', labelsize=20)
+    ax.tick_params(axis="both", which="major", labelsize=20)
+    ax.tick_params(axis="both", which="minor", labelsize=20)
     plt.savefig(loc)
     # plt.show()
 
